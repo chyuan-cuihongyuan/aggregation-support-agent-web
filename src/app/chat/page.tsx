@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { Topbar } from "@/components/topbar";
-import { MessageList, type Message } from "@/components/chat/message-list";
+import { MessageList } from "@/components/chat/message-list";
 import { ChatInput } from "@/components/chat/chat-input";
 import { SessionInfo } from "@/components/sidebar/session-info";
 import { HistoryPanel } from "@/components/sidebar/history-panel";
@@ -31,10 +31,25 @@ export default function ChatPage() {
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("session");
+  const [pendingQuestion, setPendingQuestion] = useState<string>("");
 
-  const { messages, isStreaming, sendMessage } = useChat({
+  const { messages, isStreaming, sessionId, sendMessage, loadConversation, sendAiOps } = useChat({
     userId: USER_ID,
     agentId: selectedAgentId,
+    onMessageComplete: async (message) => {
+      // 保存对话历史
+      if (pendingQuestion && message.role === "assistant") {
+        await saveHistory({
+          userId: USER_ID,
+          agentId: selectedAgentId,
+          agentName: selectedAgentName,
+          sessionId: sessionId,
+          question: pendingQuestion,
+          answer: message.content,
+        });
+        setPendingQuestion("");
+      }
+    },
   });
 
   const { histories, saveHistory, clearAllHistories } = useHistory({
@@ -73,27 +88,28 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async (content: string) => {
+    setPendingQuestion(content);
     await sendMessage(content);
-
-    // TODO: 保存对话历史
-    // await saveHistory({
-    //   userId: USER_ID,
-    //   agentId: selectedAgentId,
-    //   agentName: selectedAgentName,
-    //   sessionId: "", // 从 useChat 获取
-    //   question: content,
-    //   answer: "", // 从响应中获取
-    // });
   };
 
   const handleLoadHistory = (history: ChatHistoryDTO) => {
-    // TODO: 加载历史记录到对话区
-    console.log("Load history:", history);
+    // 加载单条历史记录到对话区
+    loadConversation([{ question: history.question, answer: history.answer }]);
   };
 
-  const handleAiOpsClick = () => {
-    // TODO: 打开 AIOps 对话
-    alert("AIOps 功能将在后续版本中实现");
+  const handleAiOpsClick = async () => {
+    const result = await sendAiOps(selectedAgentId);
+    if (result) {
+      // 保存 AIOps 对话历史
+      await saveHistory({
+        userId: USER_ID,
+        agentId: selectedAgentId,
+        agentName: `${selectedAgentName} (AIOps)`,
+        sessionId: "",
+        question: result.question,
+        answer: result.answer,
+      });
+    }
   };
 
   const sidebarContent = (
@@ -115,6 +131,7 @@ export default function ChatPage() {
           userId={USER_ID}
           agentId={selectedAgentId}
           agentName={selectedAgentName}
+          sessionId={sessionId}
         />
       </TabsContent>
 

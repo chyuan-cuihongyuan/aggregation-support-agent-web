@@ -4,14 +4,16 @@
  * 整合文件上传、文档列表和检索测试功能
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUpload } from "@/components/knowledge/file-upload";
 import { DocumentList } from "@/components/knowledge/document-list";
 import { SearchPanel } from "@/components/knowledge/search-panel";
-import { uploadFile } from "@/lib/api";
+import { uploadFile, requestJson } from "@/lib/api";
 import type { DocumentDTO, SearchTestResult } from "@/types/api";
 
 interface KnowledgeTabProps {
@@ -21,6 +23,23 @@ interface KnowledgeTabProps {
 export function KnowledgeTab({ userId }: KnowledgeTabProps) {
   const [documents, setDocuments] = useState<DocumentDTO[]>([]);
   const [activeTab, setActiveTab] = useState("upload");
+
+  const loadDocuments = useCallback(async () => {
+    try {
+      const data = await requestJson<DocumentDTO[]>(
+        `/api/v1/documents?userId=${encodeURIComponent(userId)}`
+      );
+      setDocuments(data ?? []);
+    } catch (error) {
+      console.error("加载文档列表失败:", error);
+      setDocuments([]);
+    }
+  }, [userId]);
+
+  // 初始加载文档列表
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
 
   const handleUpload = async (
     file: File,
@@ -35,30 +54,34 @@ export function KnowledgeTab({ userId }: KnowledgeTabProps) {
     await loadDocuments();
   };
 
-  const loadDocuments = async () => {
-    // TODO: 实现加载文档列表
-    // const data = await requestJson<DocumentDTO[]>(`/api/v1/documents?userId=${userId}`);
-    // setDocuments(data);
-  };
-
   const handleDeleteDocument = async (documentId: string) => {
-    // TODO: 实现删除文档
-    // await requestJson(`/api/v1/documents/${documentId}`, { method: 'DELETE' });
-    // await loadDocuments();
+    try {
+      await requestJson<void>(
+        `/api/v1/documents/${documentId}?userId=${encodeURIComponent(userId)}`,
+        { method: "DELETE" }
+      );
+      // 删除成功后重新加载文档列表
+      await loadDocuments();
+    } catch (error) {
+      console.error("删除文档失败:", error);
+    }
   };
 
   const handleSearch = async (query: string, topK: number) => {
-    // TODO: 实现检索
-    // return await requestJson<SearchTestResult>("/api/v1/documents/search", {
-    //   method: "POST",
-    //   body: JSON.stringify({ query, topK }),
-    // });
-    return {
-      query,
-      vectorResults: [],
-      bm25Results: [],
-      hybridResults: [],
-    };
+    try {
+      return await requestJson<SearchTestResult>("/api/v1/documents/search", {
+        method: "POST",
+        body: JSON.stringify({ query, topK }),
+      });
+    } catch (error) {
+      console.error("检索失败:", error);
+      return {
+        query,
+        vectorResults: [],
+        bm25Results: [],
+        hybridResults: [],
+      };
+    }
   };
 
   return (

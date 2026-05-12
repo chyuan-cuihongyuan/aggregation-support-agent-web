@@ -4,6 +4,8 @@
  * 在深色和浅色主题之间切换
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 "use client";
 
 import { Moon, Sun } from "lucide-react";

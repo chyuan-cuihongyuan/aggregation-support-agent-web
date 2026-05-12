@@ -18,36 +18,14 @@ interface SearchPanelProps {
   onSearch: (query: string, topK: number) => Promise<SearchTestResult>;
 }
 
-export function SearchPanel({ onSearch }: SearchPanelProps) {
-  const [query, setQuery] = useState("");
-  const [topK, setTopK] = useState(5);
-  const [results, setResults] = useState<SearchTestResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+// 结果列表组件
+interface ResultListProps {
+  items: SearchResultItem[];
+  title: string;
+}
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
-
-    setIsLoading(true);
-    setError("");
-    try {
-      const data = await onSearch(query, topK);
-      setResults(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "检索失败");
-      setResults(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const ResultList = ({
-    items,
-    title,
-  }: {
-    items: SearchResultItem[];
-    title: string;
-  }) => (
+function ResultList({ items, title }: ResultListProps) {
+  return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium">{title}</h4>
       {items.length === 0 ? (
@@ -77,6 +55,30 @@ export function SearchPanel({ onSearch }: SearchPanelProps) {
       )}
     </div>
   );
+}
+
+export function SearchPanel({ onSearch }: SearchPanelProps) {
+  const [query, setQuery] = useState("");
+  const [topK, setTopK] = useState(5);
+  const [results, setResults] = useState<SearchTestResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+
+    setIsLoading(true);
+    setError("");
+    try {
+      const data = await onSearch(query, topK);
+      setResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "检索失败");
+      setResults(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">

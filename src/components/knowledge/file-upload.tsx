@@ -22,6 +22,23 @@ export function FileUpload({ onUpload, disabled }: FileUploadProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
 
+  const uploadFile = useCallback(async (file: File) => {
+    setError("");
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      await onUpload(file, (progress) => {
+        setUploadProgress(progress);
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  }, [onUpload]);
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -41,7 +58,7 @@ export function FileUpload({ onUpload, disabled }: FileUploadProps) {
         await uploadFile(file);
       }
     },
-    [onUpload]
+    [uploadFile]
   );
 
   const handleFileSelect = useCallback(
@@ -51,25 +68,8 @@ export function FileUpload({ onUpload, disabled }: FileUploadProps) {
         await uploadFile(file);
       }
     },
-    [onUpload]
+    [uploadFile]
   );
-
-  const uploadFile = async (file: File) => {
-    setError("");
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      await onUpload(file, (progress) => {
-        setUploadProgress(progress);
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "上传失败");
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-  };
 
   return (
     <div className="space-y-4">

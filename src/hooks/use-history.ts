@@ -4,6 +4,8 @@
  * 管理对话历史的加载、保存和删除
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useState, useEffect, useCallback } from "react";
 import { requestJson } from "@/lib/api";
 import type { ChatHistoryDTO } from "@/types/api";
