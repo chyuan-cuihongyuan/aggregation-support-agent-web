@@ -60,7 +60,15 @@ export async function requestJson<T>(
   };
 
   try {
-    const response = await fetch(url, { ...defaultOptions, ...options });
+    const response = await fetch(url, { ...defaultOptions, ...options, credentials: 'include' });
+
+    if (response.status === 401) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new ApiError('登录已过期，请重新登录', 'A0004');
+    }
+
     const result: ApiResponse<T> = await response.json();
 
     if (result.code === SUCCESS_CODE) {
@@ -130,6 +138,7 @@ export function uploadFile<T>(
 
     // 发送请求
     xhr.open("POST", url);
+    xhr.withCredentials = true;
     xhr.send(formData);
   });
 }
@@ -210,6 +219,7 @@ export async function requestSSE(
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: 'include',
       body: JSON.stringify(body),
     });
 

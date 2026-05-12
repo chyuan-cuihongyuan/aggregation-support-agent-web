@@ -196,3 +196,62 @@ export interface AiOpsRequest {
   /** 告警描述 */
   alertDescription: string;
 }
+
+// ========== 认证相关 ==========
+
+/** 注册请求 */
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  email?: string;
+  nickname?: string;
+}
+
+/** 登录请求 */
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+/** 用户信息 */
+export interface UserInfoDTO {
+  id: number;
+  username: string;
+  nickname: string;
+  email: string;
+  avatar: string;
+  role: string;
+  status: number;
+  createTime: string;
+}
+
+/** 用户列表响应 */
+export interface UserListResponse {
+  list: UserInfoDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+/** 更新用户信息请求 */
+export interface UpdateUserRequest {
+  nickname?: string;
+  email?: string;
+  avatar?: string;
+}
+
+/** 修改密码请求 */
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+/** 更新用户状态请求 */
+export interface UpdateStatusRequest {
+  status: number;
+}
+
+/** 更新用户角色请求 */
+export interface UpdateRoleRequest {
+  role: string;
+}

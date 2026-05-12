@@ -8,11 +8,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { setAuthCookie } from "@/lib/auth";
+import { login } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Cpu, Database, Network, Shield, Sparkles } from "lucide-react";
+import { Bot, Cpu, Database, Network, Sparkles } from "lucide-react";
 
 /** 功能特性列表 */
 const FEATURES = [
@@ -45,27 +45,17 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-
-    // 演示账号验证：admin/admin
-    setTimeout(() => {
-      if (username === "admin" && password === "admin") {
-        setAuthCookie(username);
-        router.push("/chat");
-      } else {
-        setError("用户名或密码错误（演示账号：admin/admin）");
-        setIsLoading(false);
-      }
-    }, 500);
-  };
-
-  const fillDemoAccount = () => {
-    setUsername("admin");
-    setPassword("admin");
-    setError("");
+    try {
+      await login({ username, password });
+      router.push("/chat");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "登录失败");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -151,22 +141,12 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "登录中..." : "登录"}
                 </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={fillDemoAccount}
-                  disabled={isLoading}
-                >
-                  填充演示账号（admin/admin）
-                </Button>
               </form>
 
               <div className="mt-6 pt-6 border-t text-center text-sm text-muted-foreground">
                 <div className="flex items-center justify-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  <span>演示环境：无需注册</span>
+                  <span>还没有账号？</span>
+                  <a href="/register" className="text-primary hover:underline">去注册</a>
                 </div>
               </div>
             </CardContent>

@@ -6,7 +6,8 @@
 
 "use client";
 
-import { Bot, LogOut, Activity, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bot, LogOut, Activity, Menu, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,9 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { clearAuthCookie } from "@/lib/auth";
+import { getCurrentUser, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import type { AgentConfig } from "@/types/api";
+import type { AgentConfig, UserInfoDTO } from "@/types/api";
 
 interface TopbarProps {
   agents: AgentConfig[];
@@ -36,9 +37,18 @@ export function Topbar({
   onMenuClick,
 }: TopbarProps) {
   const router = useRouter();
+  const [user, setUser] = useState<UserInfoDTO | null>(null);
 
-  const handleLogout = () => {
-    clearAuthCookie();
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // 即使后端登出失败也跳转
+    }
     router.push("/login");
   };
 
@@ -75,6 +85,12 @@ export function Topbar({
 
       {/* 右侧：操作按钮 */}
       <div className="flex items-center gap-2">
+        {user?.role === "admin" && (
+          <Button variant="outline" size="sm" onClick={() => router.push("/admin/users")}>
+            <Users className="w-4 h-4 mr-2" />
+            用户管理
+          </Button>
+        )}
         <Button variant="outline" size="sm" onClick={onAiOpsClick}>
           <Activity className="w-4 h-4 mr-2" />
           AIOps

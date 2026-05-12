@@ -1,0 +1,61 @@
+<h2>选择设计风格</h2>
+<p class="subtitle">以下三种风格对应不同的视觉方向，点击选择你偏好的方案</p>
+
+<div class="cards">
+  <div class="card" data-choice="dark-glass" onclick="toggleSelect(this)">
+    <div class="card-image" style="min-height:220px;background:linear-gradient(135deg,#070a12,#0b1022);padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,rgba(98,246,199,0.9),rgba(90,169,255,0.9));display:flex;align-items:center;justify-content:center;font-weight:800;color:#070a12">AI</div>
+        <div><div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.92)">AI 智能体工作台</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">更快搭建 · 更稳运行</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:16px">
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.92);margin-bottom:12px">登录</div>
+        <div style="background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.14);border-radius:10px;height:36px;margin-bottom:8px"></div>
+        <div style="background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.14);border-radius:10px;height:36px;margin-bottom:12px"></div>
+        <div style="background:linear-gradient(135deg,#62f6c7,#5aa9ff);border-radius:10px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#070a12">登录</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 深色毛玻璃（当前风格）</h3>
+      <p>延续现有暗色主题 + 渐变背景 + 半透明卡片，科技感强</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="clean-light" onclick="toggleSelect(this)">
+    <div class="card-image" style="min-height:220px;background:linear-gradient(135deg,#f8fafc,#eef2ff);padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">AI</div>
+        <div><div style="font-size:14px;font-weight:700;color:#1e293b">AI 智能体工作台</div><div style="font-size:11px;color:#94a3b8">更快搭建 · 更稳运行</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+        <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:12px">登录</div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;height:36px;margin-bottom:8px"></div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;height:36px;margin-bottom:12px"></div>
+        <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff">登录</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 简约明亮</h3>
+      <p>白色背景 + 紫色渐变按钮，清爽专业，适合正式产品</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="blue-pro" onclick="toggleSelect(this)">
+    <div class="card-image" style="min-height:220px;background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="width:40px;height:40px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0f172a">AI</div>
+        <div><div style="font-size:14px;font-weight:700;color:#fff">AI 智能体工作台</div><div style="font-size:11px;color:rgba(255,255,255,0.6)">更快搭建 · 更稳运行</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:16px;backdrop-filter:blur(8px)">
+        <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:12px">登录</div>
+        <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;height:36px;margin-bottom:8px"></div>
+        <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;height:36px;margin-bottom:12px"></div>
+        <div style="background:#3b82f6;border-radius:10px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff">登录</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 商务蓝</h3>
+      <p>深蓝背景 + 蓝色主题色，企业级专业感，稳重可靠</p>
+    </div>
+  </div>
+</div>

@@ -15,14 +15,12 @@ import { HistoryPanel } from "@/components/sidebar/history-panel";
 import { KnowledgeTab } from "@/components/sidebar/knowledge-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { getAuthCookie } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
 import { useChat } from "@/hooks/use-chat";
 import { useHistory } from "@/hooks/use-history";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
-
-const USER_ID = "admin"; // 演示环境固定用户 ID
 
 export default function ChatPage() {
   const router = useRouter();
@@ -32,15 +30,16 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("session");
   const [pendingQuestion, setPendingQuestion] = useState<string>("");
+  const [userId, setUserId] = useState("default");
 
   const { messages, isStreaming, sessionId, sendMessage, loadConversation, sendAiOps } = useChat({
-    userId: USER_ID,
+    userId,
     agentId: selectedAgentId,
     onMessageComplete: async (message) => {
       // 保存对话历史
       if (pendingQuestion && message.role === "assistant") {
         await saveHistory({
-          userId: USER_ID,
+          userId,
           agentId: selectedAgentId,
           agentName: selectedAgentName,
           sessionId: sessionId,
@@ -53,8 +52,19 @@ export default function ChatPage() {
   });
 
   const { histories, saveHistory, clearAllHistories } = useHistory({
-    userId: USER_ID,
+    userId,
   });
+
+  // 获取当前用户信息
+  useEffect(() => {
+    getCurrentUser().then((user) => {
+      if (!user) {
+        router.push("/login");
+      } else {
+        setUserId(user.username);
+      }
+    });
+  }, [router]);
 
   // 加载智能体列表
   useEffect(() => {
@@ -72,12 +82,7 @@ export default function ChatPage() {
     };
 
     loadAgents();
-
-    // 检查登录状态
-    if (!getAuthCookie()) {
-      router.push("/login");
-    }
-  }, [router]);
+  }, []);
 
   const handleAgentChange = (agentId: string) => {
     const agent = agents.find((a) => a.agentId === agentId);
@@ -102,7 +107,7 @@ export default function ChatPage() {
     if (result) {
       // 保存 AIOps 对话历史
       await saveHistory({
-        userId: USER_ID,
+        userId: userId,
         agentId: selectedAgentId,
         agentName: `${selectedAgentName} (AIOps)`,
         sessionId: "",
@@ -128,7 +133,7 @@ export default function ChatPage() {
 
       <TabsContent value="session" className="flex-1 overflow-auto p-4">
         <SessionInfo
-          userId={USER_ID}
+          userId={userId}
           agentId={selectedAgentId}
           agentName={selectedAgentName}
           sessionId={sessionId}
@@ -144,7 +149,7 @@ export default function ChatPage() {
       </TabsContent>
 
       <TabsContent value="knowledge" className="flex-1 overflow-hidden">
-        <KnowledgeTab userId={USER_ID} />
+        <KnowledgeTab userId={userId} />
       </TabsContent>
     </Tabs>
   );

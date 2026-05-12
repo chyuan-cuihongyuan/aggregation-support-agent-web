@@ -6,23 +6,21 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { cookies } from "next/headers";
 
 /** Cookie 名称 */
-const COOKIE_NAME = "ai_agent_login";
+const COOKIE_NAME = "auth_token";
 
 /** 需要认证的路径 */
-const PROTECTED_PATHS = ["/chat"];
+const PROTECTED_PATHS = ["/chat", "/admin"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 只保护指定路径
   if (PROTECTED_PATHS.some((path) => pathname.startsWith(path))) {
-    const cookieStore = await cookies();
-    const authCookie = cookieStore.get(COOKIE_NAME);
+    const token = request.cookies.get(COOKIE_NAME);
 
-    if (!authCookie) {
+    if (!token) {
       // 未登录，重定向到登录页
       const url = request.nextUrl.clone();
       url.pathname = "/login";
@@ -34,5 +32,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/chat/:path*"],
+  matcher: ["/chat/:path*", "/admin/:path*"],
 };
