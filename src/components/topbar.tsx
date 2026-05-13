@@ -6,8 +6,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bot, LogOut, Activity, Menu, Users } from "lucide-react";
+import { Activity, Menu, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -17,9 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { getCurrentUser, logout } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import type { AgentConfig, UserInfoDTO } from "@/types/api";
+import type { AgentConfig } from "@/types/api";
+import { UserMenu } from "@/components/auth/user-menu";
 
 interface TopbarProps {
   agents: AgentConfig[];
@@ -37,40 +37,23 @@ export function Topbar({
   onMenuClick,
 }: TopbarProps) {
   const router = useRouter();
-  const [user, setUser] = useState<UserInfoDTO | null>(null);
-
-  useEffect(() => {
-    getCurrentUser().then(setUser);
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch {
-      // 即使后端登出失败也跳转
-    }
-    router.push("/login");
-  };
+  const { user } = useAuth();
 
   return (
-    <header className="h-14 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 lg:px-6">
+    <header className="h-14 border-b border-white/[0.1] bg-[#0b1022]/76 backdrop-blur-[14px] flex items-center justify-between px-4 lg:px-5">
       {/* 左侧：品牌和菜单按钮 */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
+        <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden text-white/70 hover:text-white hover:bg-white/10">
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-            <Bot className="w-5 h-5 text-primary-foreground" />
+          <div className="w-9 h-9 rounded-[12px] bg-gradient-to-br from-[#62f6c7]/90 to-[#5aa9ff]/90 flex items-center justify-center font-extrabold text-[#070a12] text-[13px]">
+            AI
           </div>
-          <span className="font-semibold hidden sm:inline-block">AI 智能体平台</span>
+          <span className="text-[13px] font-bold text-white/90 hidden sm:inline-block">AI 智能体对话</span>
         </div>
-      </div>
-
-      {/* 中间：智能体选择 */}
-      <div className="flex-1 max-w-md mx-4">
         <Select value={selectedAgentId} onValueChange={onAgentChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-[160px] ml-3 bg-black/20 border-white/[0.14] rounded-[10px] text-xs text-white/70 h-9">
             <SelectValue placeholder="选择智能体" />
           </SelectTrigger>
           <SelectContent>
@@ -84,21 +67,24 @@ export function Topbar({
       </div>
 
       {/* 右侧：操作按钮 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {user?.role === "admin" && (
-          <Button variant="outline" size="sm" onClick={() => router.push("/admin/users")}>
+          <Button variant="outline" size="sm" onClick={() => router.push("/admin/users")}
+            className="border-white/[0.14] text-white/70 hover:bg-white/10 hover:text-white">
             <Users className="w-4 h-4 mr-2" />
             用户管理
           </Button>
         )}
-        <Button variant="outline" size="sm" onClick={onAiOpsClick}>
-          <Activity className="w-4 h-4 mr-2" />
-          AIOps
+        <Button
+          size="sm"
+          onClick={onAiOpsClick}
+          className="bg-gradient-to-r from-[#62f6c7] to-[#5aa9ff] text-[#070a12] font-bold rounded-[10px] px-3.5 h-8 text-xs hover:opacity-90"
+        >
+          <Activity className="w-3.5 h-3.5 mr-1.5" />
+          AIOps 分析
         </Button>
         <ThemeToggle />
-        <Button variant="ghost" size="icon" onClick={handleLogout} title="退出登录">
-          <LogOut className="h-4 w-4" />
-        </Button>
+        <UserMenu />
       </div>
     </header>
   );

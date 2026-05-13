@@ -15,7 +15,8 @@ import { HistoryPanel } from "@/components/sidebar/history-panel";
 import { KnowledgeTab } from "@/components/sidebar/knowledge-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth";
+import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
 import { useChat } from "@/hooks/use-chat";
@@ -24,19 +25,20 @@ import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 
 export default function ChatPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [agents, setAgents] = useState<AgentConfig[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("session");
   const [pendingQuestion, setPendingQuestion] = useState<string>("");
-  const [userId, setUserId] = useState("default");
+
+  const userId = user?.username || "default";
 
   const { messages, isStreaming, sessionId, sendMessage, loadConversation, sendAiOps } = useChat({
     userId,
     agentId: selectedAgentId,
     onMessageComplete: async (message) => {
-      // 保存对话历史
       if (pendingQuestion && message.role === "assistant") {
         await saveHistory({
           userId,
@@ -51,20 +53,14 @@ export default function ChatPage() {
     },
   });
 
-  const { histories, saveHistory, clearAllHistories } = useHistory({
-    userId,
-  });
+  const { histories, saveHistory, clearAllHistories } = useHistory({ userId });
 
-  // 获取当前用户信息
+  // 未登录则跳转
   useEffect(() => {
-    getCurrentUser().then((user) => {
-      if (!user) {
-        router.push("/login");
-      } else {
-        setUserId(user.username);
-      }
-    });
-  }, [router]);
+    if (!authLoading && !user) {
+      router.push("/login");
+    }
+  }, [authLoading, user, router]);
 
   // 加载智能体列表
   useEffect(() => {
@@ -80,7 +76,6 @@ export default function ChatPage() {
         // 静默失败
       }
     };
-
     loadAgents();
   }, []);
 
@@ -98,16 +93,14 @@ export default function ChatPage() {
   };
 
   const handleLoadHistory = (history: ChatHistoryDTO) => {
-    // 加载单条历史记录到对话区
     loadConversation([{ question: history.question, answer: history.answer }]);
   };
 
   const handleAiOpsClick = async () => {
     const result = await sendAiOps(selectedAgentId);
     if (result) {
-      // 保存 AIOps 对话历史
       await saveHistory({
-        userId: userId,
+        userId,
         agentId: selectedAgentId,
         agentName: `${selectedAgentName} (AIOps)`,
         sessionId: "",
@@ -120,32 +113,17 @@ export default function ChatPage() {
   const sidebarContent = (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
       <TabsList className="grid w-full grid-cols-3 m-2">
-        <TabsTrigger value="session" className="text-xs">
-          会话
-        </TabsTrigger>
-        <TabsTrigger value="history" className="text-xs">
-          历史
-        </TabsTrigger>
-        <TabsTrigger value="knowledge" className="text-xs">
-          知识库
-        </TabsTrigger>
+        <TabsTrigger value="session" className="text-xs">会话</TabsTrigger>
+        <TabsTrigger value="history" className="text-xs">历史</TabsTrigger>
+        <TabsTrigger value="knowledge" className="text-xs">知识库</TabsTrigger>
       </TabsList>
 
       <TabsContent value="session" className="flex-1 overflow-auto p-4">
-        <SessionInfo
-          userId={userId}
-          agentId={selectedAgentId}
-          agentName={selectedAgentName}
-          sessionId={sessionId}
-        />
+        <SessionInfo userId={userId} agentId={selectedAgentId} agentName={selectedAgentName} sessionId={sessionId} />
       </TabsContent>
 
       <TabsContent value="history" className="flex-1 overflow-auto">
-        <HistoryPanel
-          histories={histories}
-          onLoad={handleLoadHistory}
-          onClearAll={clearAllHistories}
-        />
+        <HistoryPanel histories={histories} onLoad={handleLoadHistory} onClearAll={clearAllHistories} />
       </TabsContent>
 
       <TabsContent value="knowledge" className="flex-1 overflow-hidden">
@@ -153,6 +131,14 @@ export default function ChatPage() {
       </TabsContent>
     </Tabs>
   );
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -178,7 +164,11 @@ export default function ChatPage() {
 
       {/* 主对话区 */}
       <main className="flex-1 flex flex-col min-w-0">
-        <MessageList messages={messages} />
+        {messages.length === 0 ? (
+          <WelcomePanel />
+        ) : (
+          <MessageList messages={messages} />
+        )}
         <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
       </main>
     </>

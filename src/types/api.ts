@@ -203,6 +203,7 @@ export interface AiOpsRequest {
 export interface RegisterRequest {
   username: string;
   password: string;
+  phone: string;
   email?: string;
   nickname?: string;
 }
