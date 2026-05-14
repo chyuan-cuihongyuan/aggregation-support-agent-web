@@ -38,9 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh().finally(() => setLoading(false));
   }, [refresh]);
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest): Promise<UserInfoDTO> => {
     const u = await authLogin(data);
     setUser(u);
+    return u;
   };
 
   const register = async (data: RegisterRequest) => {

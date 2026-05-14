@@ -14,7 +14,8 @@ import { SessionInfo } from "@/components/sidebar/session-info";
 import { HistoryPanel } from "@/components/sidebar/history-panel";
 import { KnowledgeTab } from "@/components/sidebar/knowledge-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuth } from "@/hooks/use-auth";
 import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
@@ -141,7 +142,7 @@ export default function ChatPage() {
   }
 
   return (
-    <>
+    <div className="flex flex-col h-screen">
       <Topbar
         agents={agents}
         selectedAgentId={selectedAgentId}
@@ -150,27 +151,34 @@ export default function ChatPage() {
         onMenuClick={() => setSidebarOpen(true)}
       />
 
-      {/* 桌面端侧边栏 */}
-      <aside className="hidden lg:block w-80 border-r border-border/40">
-        {sidebarContent}
-      </aside>
+      {/* 主内容区：侧边栏 + 对话区 */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* 桌面端侧边栏 */}
+        <aside className="hidden lg:block w-80 border-r border-border/40">
+          {sidebarContent}
+        </aside>
+
+        {/* 主对话区 */}
+        <main className="flex-1 flex flex-col min-w-0">
+          {messages.length === 0 ? (
+            <WelcomePanel />
+          ) : (
+            <MessageList messages={messages} />
+          )}
+          <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
+        </main>
+      </div>
 
       {/* 移动端侧边栏（浮层） */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="w-80 p-0">
+          <VisuallyHidden>
+            <SheetTitle>侧边栏</SheetTitle>
+            <SheetDescription>会话信息、历史记录和知识库</SheetDescription>
+          </VisuallyHidden>
           {sidebarContent}
         </SheetContent>
       </Sheet>
-
-      {/* 主对话区 */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {messages.length === 0 ? (
-          <WelcomePanel />
-        ) : (
-          <MessageList messages={messages} />
-        )}
-        <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
-      </main>
-    </>
+    </div>
   );
 }

@@ -45,13 +45,18 @@ export function KnowledgeTab({ userId }: KnowledgeTabProps) {
     file: File,
     onProgress: (progress: number) => void
   ) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("userId", userId);
+    try {
+      const formData = new FormData();
+      // 直接发送原始文件（支持 PDF/Word/HTML 等二进制格式）
+      formData.append("file", file);
+      formData.append("userId", userId);
 
-    await uploadFile("/api/v1/upload", formData, onProgress);
-    // 上传成功后刷新文档列表
-    await loadDocuments();
+      await uploadFile("/api/v1/upload", formData, onProgress);
+      // 上传成功后刷新文档列表
+      await loadDocuments();
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "文件上传失败");
+    }
   };
 
   const handleDeleteDocument = async (documentId: string) => {

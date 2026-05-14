@@ -34,10 +34,10 @@ export const MessageBubble = memo(({ role, content, isStreaming }: MessageBubble
 
       {/* 消息内容 */}
       <div className={`flex-1 max-w-[80%] ${isUser ? "flex flex-col items-end" : ""}`}>
-        <div className={`rounded-lg px-4 py-3 ${
+        <div className={`rounded-2xl px-4 py-3 border ${
           isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground"
+            ? "bg-gradient-to-br from-[#62f6c7] to-[#5aa9ff] text-[#070a12] border-[#62f6c7]/30"
+            : "bg-muted/80 text-foreground border-border/40 backdrop-blur-sm"
         }`}>
           {isUser ? (
             <p className="whitespace-pre-wrap">{content}</p>

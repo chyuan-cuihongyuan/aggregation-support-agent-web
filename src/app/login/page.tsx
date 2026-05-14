@@ -7,7 +7,7 @@
 
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -34,10 +34,11 @@ function LoginForm() {
   const registeredNotice = searchParams.get("registered") === "true";
 
   // 已登录则跳转
-  if (!authLoading && user) {
-    router.replace("/chat");
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/chat");
+    }
+  }, [authLoading, user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,8 +49,13 @@ function LoginForm() {
     }
     setIsLoading(true);
     try {
-      await login({ username: username.trim(), password });
-      router.push("/chat");
+      const user = await login({ username: username.trim(), password });
+      // 验证用户信息
+      if (!user || !user.id) {
+        throw new Error("登录响应格式错误：用户信息无效");
+      }
+      // 使用硬跳转确保 Cookie 和页面状态同步
+      window.location.href = "/chat";
     } catch (err) {
       setError(err instanceof Error ? err.message : "登录失败");
       setIsLoading(false);
