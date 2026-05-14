@@ -1,10 +1,10 @@
 /**
  * 插件状态管理 Hook
  *
- * 轮询获取插件状态，支持自动刷新
+ * 轮询获取插件状态，接口不可用时停止轮询
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { requestJson } from "@/lib/api";
 import type { PluginStatusResponse } from "@/types/plugin";
 
@@ -20,11 +20,12 @@ export function usePluginStatus({
   enabled = true,
 }: UsePluginStatusOptions = {}) {
   const [status, setStatus] = useState<PluginStatusResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const unavailableRef = useRef(false);
 
   const fetchStatus = useCallback(async () => {
-    if (!enabled) return;
+    if (!enabled || unavailableRef.current) return;
 
     try {
       setIsLoading(true);
@@ -32,9 +33,9 @@ export function usePluginStatus({
       const data = await requestJson<PluginStatusResponse>("/api/v1/plugins/status");
       setStatus(data);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("获取插件状态失败");
-      setError(error);
-      console.error("获取插件状态失败:", err);
+      // 接口不可用时标记，停止后续轮询
+      unavailableRef.current = true;
+      setError(err instanceof Error ? err : new Error("获取插件状态失败"));
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +44,7 @@ export function usePluginStatus({
   useEffect(() => {
     fetchStatus();
 
-    if (!enabled) return;
+    if (!enabled || unavailableRef.current) return;
 
     const interval = setInterval(fetchStatus, pollingInterval);
     return () => clearInterval(interval);

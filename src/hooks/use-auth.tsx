@@ -38,6 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh().finally(() => setLoading(false));
   }, [refresh]);
 
+  // 监听 API 层的 401 事件，统一处理认证失效
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
   const login = async (data: LoginRequest): Promise<UserInfoDTO> => {
     const u = await authLogin(data);
     setUser(u);

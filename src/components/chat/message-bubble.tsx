@@ -1,7 +1,8 @@
 /**
  * 消息气泡组件
  *
- * ChatGPT 风格：用户消息有背景，AI 消息透明背景
+ * 用户消息：红色背景气泡，右对齐
+ * AI 消息：卡片式，左对齐，支持 Markdown 渲染
  */
 
 "use client";
@@ -20,30 +21,39 @@ export const MessageBubble = memo(({ role, content, isStreaming }: MessageBubble
   const isUser = role === "user";
 
   return (
-    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""} group`}>
       {/* 头像 */}
-      <div className={`flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center ${
-        isUser ? "bg-emerald-500 dark:bg-emerald-600" : "bg-muted"
-      }`}>
-        {isUser ? (
-          <User className="w-5 h-5 text-white" />
-        ) : (
-          <Bot className="w-5 h-5 text-muted-foreground" />
-        )}
+      <div
+        className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-semibold ${
+          isUser
+            ? "bg-[var(--brand-accent)] text-white"
+            : "bg-gradient-to-br from-[var(--brand-gradient-start)] to-[var(--brand-gradient-end)] text-white"
+        }`}
+      >
+        {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
       </div>
 
       {/* 消息内容 */}
       <div className={`flex-1 max-w-[85%] ${isUser ? "flex flex-col items-end" : ""}`}>
-        <div className={`rounded-2xl px-4 py-3 ${
-          isUser
-            ? "bg-emerald-500 dark:bg-emerald-600/90 text-white"
-            : "bg-transparent text-zinc-800 dark:text-zinc-100"
-        }`}>
+        {/* 发送者名称 */}
+        <div className={`flex items-center gap-2 mb-1 text-[13px] font-semibold ${isUser ? "flex-row-reverse" : ""}`}>
+          <span className="text-[var(--text-primary)]">
+            {isUser ? "Admin" : "AI"}
+          </span>
+        </div>
+
+        <div
+          className={`rounded-2xl px-4 py-3 ${
+            isUser
+              ? "bg-[var(--brand-accent)] text-white rounded-[12px_12px_4px_12px]"
+              : "bg-[var(--chat-ai-bubble)] border border-[var(--border-default)] dark:border-[#2a2a3a] text-[var(--chat-ai-text)]"
+          }`}
+        >
           {isUser ? (
-            <p className="whitespace-pre-wrap">{content}</p>
+            <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{content}</p>
           ) : (
             <div
-              className="prose prose-sm dark:prose-invert max-w-none"
+              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed"
               dangerouslySetInnerHTML={{ __html: marked.parse(content, { async: false }) as string }}
             />
           )}

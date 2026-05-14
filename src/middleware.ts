@@ -76,7 +76,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 未登录用户访问受保护路由 → 重定向到 /login
-  if (pathname.startsWith("/chat")) {
+  if (pathname.startsWith("/chat") || pathname.startsWith("/knowledge") || pathname.startsWith("/settings") || pathname.startsWith("/aiops")) {
     if (!hasToken) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
@@ -95,5 +95,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/chat/:path*", "/login", "/register"],
+  matcher: ["/chat/:path*", "/knowledge/:path*", "/settings/:path*", "/aiops/:path*", "/login", "/register"],
 };

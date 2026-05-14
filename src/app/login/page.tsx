@@ -1,8 +1,9 @@
 /**
  * 登录页
  *
- * 左右两栏布局（1.3:0.7）：左侧品牌展示+功能特性，右侧登录表单
- * 深色毛玻璃风格，品牌渐变色 #62f6c7 / #5aa9ff
+ * 居中卡片布局，浅色/深色双主题支持
+ * 浅色：白色背景 + 装饰渐变圆 + 网格
+ * 深色：#0f0f14 背景 + 微光效果
  */
 
 "use client";
@@ -14,12 +15,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { UserInfoDTO } from "@/types/api";
 
-/** 功能特性列表 */
+/** 功能特性 */
 const FEATURES = [
-  { title: "智能对话", description: "多智能体切换，SSE 流式响应" },
-  { title: "知识库", description: "文档上传，向量/BM25 检索" },
-  { title: "AIOps 分析", description: "一键告警分析，运维报告" },
-  { title: "导出分享", description: "支持 Markdown / PDF / Word" },
+  { title: "多模型对话", description: "统一接入多个 AI 智能体" },
+  { title: "知识库管理", description: "文档上传，智能检索" },
+  { title: "AIOps 分析", description: "智能告警分析，运维报告" },
+  { title: "SSH 远程执行", description: "安全连接，自动化运维" },
 ];
 
 function LoginForm() {
@@ -51,11 +52,9 @@ function LoginForm() {
     setIsLoading(true);
     try {
       const user = await login({ username: username.trim(), password });
-      // 验证用户信息
       if (!user || !user.id) {
         throw new Error("登录响应格式错误：用户信息无效");
       }
-      // 使用硬跳转确保 Cookie 和页面状态同步
       window.location.href = "/chat";
     } catch (err) {
       setError(err instanceof Error ? err.message : "登录失败");
@@ -64,81 +63,65 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#070a12] to-[#0b1022] text-white grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr]">
-      {/* 左栏：品牌区 */}
-      <div className="p-8 lg:p-10 flex flex-col gap-5">
-        {/* Logo + 品牌名 */}
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#62f6c7]/90 to-[#5aa9ff]/90 flex items-center justify-center font-extrabold text-[#070a12] text-base">
-            AI
-          </div>
-          <div>
-            <div className="text-[15px] font-bold text-white/90">AI 智能体聚合平台</div>
-            <div className="text-[11px] text-white/50">Aggregation Support Agent</div>
-          </div>
+    <div className="relative min-h-screen flex items-center justify-center bg-[var(--surface-bg)] dark:bg-[#0f0f14] overflow-hidden">
+      {/* 背景装饰 */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* 浅色模式装饰 */}
+        <div className="block dark:hidden">
+          <div className="absolute -top-[200px] -right-[200px] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(102,126,234,0.08)_0%,transparent_70%)] rounded-full" />
+          <div className="absolute -bottom-[150px] -left-[150px] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(230,57,70,0.06)_0%,transparent_70%)] rounded-full" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }}
+          />
         </div>
-
-        {/* 标语 */}
-        <div>
-          <div className="text-[28px] font-extrabold text-white/95 leading-tight mb-2">
-            智能对话 · 知识驱动<br />运维无忧
-          </div>
-          <div className="text-[13px] text-white/60 leading-relaxed max-w-[42ch]">
-            集成多智能体对话、RAG 知识库检索、AIOps 告警分析的一站式 AI 工作台
-          </div>
-        </div>
-
-        {/* 功能特性卡片 */}
-        <div className="grid grid-cols-2 gap-2.5 mt-auto">
-          {FEATURES.map((feature) => (
-            <div
-              key={feature.title}
-              className="border border-white/[0.08] bg-white/[0.04] rounded-xl p-3 flex gap-2.5 items-start"
-            >
-              <div className="w-2 h-2 rounded-full bg-gradient-to-br from-[#62f6c7] to-[#5aa9ff] mt-1.5 shrink-0" />
-              <div>
-                <div className="text-xs font-semibold text-white/90">{feature.title}</div>
-                <div className="text-[11px] text-white/45 mt-0.5">{feature.description}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* AI 效果展示图占位 */}
-        <div className="mt-2 rounded-[14px] overflow-hidden border border-white/10 bg-black/20 h-[120px] flex items-center justify-center text-white/15 text-xs">
-          AI 效果展示图
+        {/* 深色模式装饰 */}
+        <div className="hidden dark:block">
+          <div className="absolute -top-[200px] -right-[200px] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(102,126,234,0.1)_0%,transparent_70%)] rounded-full" />
+          <div className="absolute -bottom-[150px] -left-[150px] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(230,57,70,0.08)_0%,transparent_70%)] rounded-full" />
         </div>
       </div>
 
-      {/* 右栏：登录表单 */}
-      <div className="p-8 flex flex-col justify-center gap-4">
-        <div className="bg-white/[0.06] border border-white/[0.12] rounded-2xl p-6 backdrop-blur-sm">
-          <div className="text-xl font-bold text-white/95 mb-1">欢迎回来</div>
-          <div className="text-xs text-white/50 mb-5">登录你的 AI 工作台账号</div>
+      <div className="relative z-10 w-full max-w-[440px] px-6">
+        {/* Logo 区域 */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--brand-gradient-start)] to-[var(--brand-gradient-end)] shadow-lg shadow-purple-500/25 mb-5">
+            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">AI 智能体聚合平台</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-2">统一管理 · 智能对话 · 知识赋能</p>
+        </div>
 
+        {/* 登录卡片 */}
+        <div className="bg-[var(--surface-main)] dark:bg-[#1a1a24] rounded-2xl p-8 shadow-lg border border-[var(--border-default)] dark:border-[#2a2a3a]">
           {registeredNotice && (
-            <div className="text-sm text-[#62f6c7] bg-[#62f6c7]/10 p-3 rounded-lg mb-4">
+            <div className="text-sm text-[var(--status-success)] bg-[var(--status-success)]/10 p-3 rounded-lg mb-4">
               注册成功，请登录
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-3.5">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <div className="text-xs text-white/60 mb-1.5">账号</div>
+              <label className="block text-[13px] font-semibold text-[var(--text-primary)] mb-2">用户名</label>
               <Input
                 id="username"
                 type="text"
-                placeholder="请输入账号"
+                placeholder="请输入用户名"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 disabled={isLoading}
-                className="bg-black/20 border-white/[0.14] rounded-[10px] h-10 text-white placeholder:text-white/40 focus-visible:ring-[#62f6c7]/30 focus-visible:border-[#62f6c7]"
+                className="h-11 bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus-visible:ring-[var(--brand-accent)]/20 focus-visible:border-[var(--brand-accent)]"
               />
             </div>
 
             <div>
-              <div className="text-xs text-white/60 mb-1.5">密码</div>
+              <label className="block text-[13px] font-semibold text-[var(--text-primary)] mb-2">密码</label>
               <Input
                 id="password"
                 type="password"
@@ -147,43 +130,77 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
-                className="bg-black/20 border-white/[0.14] rounded-[10px] h-10 text-white placeholder:text-white/40 focus-visible:ring-[#62f6c7]/30 focus-visible:border-[#62f6c7]"
+                className="h-11 bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus-visible:ring-[var(--brand-accent)]/20 focus-visible:border-[var(--brand-accent)]"
               />
             </div>
 
-            {/* 记住我 + 忘记密码 */}
-            <div className="flex justify-between items-center">
-              <label className="flex items-center gap-1.5 text-xs text-white/60 cursor-pointer">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded-[4px] border border-white/20 accent-[#62f6c7]"
+                  className="w-4 h-4 rounded accent-[var(--brand-accent)]"
                 />
                 记住我
               </label>
-              <span className="text-xs text-[#5aa9ff] cursor-pointer hover:underline">忘记密码？</span>
+              <a href="#" className="text-[13px] text-[var(--brand-accent)] font-medium hover:underline">忘记密码？</a>
             </div>
 
             {error && (
-              <div className="text-sm text-[#ff5a7a] bg-[#ff5a7a]/10 p-3 rounded-lg">{error}</div>
+              <div className="text-sm text-[var(--status-error)] bg-[var(--status-error)]/10 p-3 rounded-lg">{error}</div>
             )}
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#62f6c7] to-[#5aa9ff] text-[#070a12] font-bold rounded-[10px] h-10 hover:opacity-90 disabled:opacity-50"
+              className="w-full h-12 text-[15px] font-semibold bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white rounded-xl shadow-none disabled:opacity-50"
             >
-              {isLoading ? "登录中..." : "登录"}
+              {isLoading ? "登录中..." : "登 录"}
             </Button>
           </form>
+
+          {/* 分割线 */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px bg-[var(--border-default)] dark:bg-[#2a2a3a]" />
+            <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">其他登录方式</span>
+            <div className="flex-1 h-px bg-[var(--border-default)] dark:bg-[#2a2a3a]" />
+          </div>
+
+          {/* 社交登录 */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              className="flex-1 h-11 flex items-center justify-center gap-2 text-[13px] font-medium bg-[var(--surface-card)] dark:bg-[#22222e] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors"
+            >
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              GitHub
+            </button>
+            <button
+              type="button"
+              className="flex-1 h-11 flex items-center justify-center gap-2 text-[13px] font-medium bg-[var(--surface-card)] dark:bg-[#22222e] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors"
+            >
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              SSO 登录
+            </button>
+          </div>
+
+          {/* 演示账号提示 */}
+          <div className="text-center mt-5 p-3 bg-red-50 dark:bg-[#e63946]/10 rounded-lg border border-red-100 dark:border-[#e63946]/20">
+            <span className="text-xs text-red-800 dark:text-red-300">
+              演示账号：<code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-[11px] font-mono">admin</code> / <code className="bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-[11px] font-mono">admin</code>
+            </span>
+          </div>
         </div>
 
-        <div className="text-center text-xs text-white/50">
-          还没有账号？<a href="/register" className="text-[#62f6c7] font-semibold hover:underline">立即注册</a>
+        {/* 底部 */}
+        <div className="text-center mt-8 text-xs text-[var(--text-muted)]">
+          <span>还没有账号？</span>
+          <a href="/register" className="text-[var(--brand-accent)] font-semibold hover:underline ml-1">立即注册</a>
         </div>
-
-        <div className="text-center text-[11px] text-white/30 mt-auto">© 2026 AI 智能体聚合平台</div>
+        <div className="text-center mt-4 text-[11px] text-[var(--text-muted)]">
+          © 2026 AI 智能体聚合平台 · <a href="#" className="hover:underline">隐私政策</a> · <a href="#" className="hover:underline">使用条款</a>
+        </div>
       </div>
     </div>
   );
@@ -192,8 +209,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#070a12] text-white/50">
-        加载中...
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-bg)] dark:bg-[#0f0f14]">
+        <div className="text-[var(--text-muted)]">加载中...</div>
       </div>
     }>
       <LoginForm />

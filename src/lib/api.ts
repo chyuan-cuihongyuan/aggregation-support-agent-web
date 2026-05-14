@@ -6,8 +6,8 @@
 
 import type { ApiResponse } from "@/types/api";
 
-/** 后端 API 基础地址 */
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
+/** 后端 API 基础地址（通过 Next.js rewrites 代理） */
+const API_BASE = "";
 
 /** 成功响应码 */
 const SUCCESS_CODE = "0000";
@@ -64,7 +64,8 @@ export async function requestJson<T>(
 
     if (response.status === 401) {
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        // 通知 AuthProvider 认证失效，由其统一处理跳转
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
       throw new ApiError('登录已过期，请重新登录', 'A0004');
     }

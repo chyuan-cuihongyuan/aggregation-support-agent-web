@@ -38,11 +38,7 @@ export function PluginStatusBar({ onOpenSettings }: PluginStatusBarProps) {
   };
 
   if (!status) {
-    return (
-      <div className="w-full max-w-3xl mx-auto px-4 pb-2">
-        <div className="text-xs text-muted-foreground">加载插件状态...</div>
-      </div>
-    );
+    return null;
   }
 
   const builtInPlugins = Object.entries(status.builtIn);

@@ -1,18 +1,19 @@
 /**
  * 对话主页面
  *
- * ChatGPT 风格布局：居中主对话区
+ * 新布局：顶栏 + 左侧边栏 + 主聊天区
+ * 浅色/深色双主题支持
  */
 
 "use client";
 
 import { useState, useEffect } from "react";
 import { MessageList } from "@/components/chat/message-list";
-import { ChatInput } from "@/components/chat/chat-input";
-import { SessionInfo } from "@/components/sidebar/session-info";
-import { HistoryPanel } from "@/components/sidebar/history-panel";
-import { KnowledgeTab } from "@/components/sidebar/knowledge-tab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChatInput, type InputMode } from "@/components/chat/chat-input";
+import { ChatTopbar } from "@/components/chat/chat-topbar";
+import { ChatSidebar } from "@/components/chat/chat-sidebar";
+import { StatusBar } from "@/components/chat/status-bar";
+import { SessionHeader } from "@/components/chat/session-header";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuth } from "@/hooks/use-auth";
@@ -21,9 +22,8 @@ import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
 import { useChat } from "@/hooks/use-chat";
 import { useHistory } from "@/hooks/use-history";
-import { AgentSelector } from "@/components/topbar/agent-selector";
-import { PluginStatusBar } from "@/components/plugins/plugin-status-bar";
-import { PluginSettingsDialog } from "@/components/plugins/plugin-settings-dialog";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 
 export default function ChatPage() {
@@ -33,9 +33,8 @@ export default function ChatPage() {
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("history");
+  const [inputMode, setInputMode] = useState<InputMode>("chat");
   const [pendingQuestion, setPendingQuestion] = useState<string>("");
-  const [pluginSettingsOpen, setPluginSettingsOpen] = useState(false);
 
   const userId = user?.username || "default";
 
@@ -57,7 +56,7 @@ export default function ChatPage() {
     },
   });
 
-  const { histories, saveHistory, clearAllHistories } = useHistory({ userId });
+  const { histories, saveHistory, clearAllHistories, deleteHistory } = useHistory({ userId });
 
   // 未登录则跳转
   useEffect(() => {
@@ -98,6 +97,7 @@ export default function ChatPage() {
 
   const handleLoadHistory = (history: ChatHistoryDTO) => {
     loadConversation([{ question: history.question, answer: history.answer }]);
+    setSidebarOpen(false);
   };
 
   const handleAiOpsClick = async () => {
@@ -114,79 +114,88 @@ export default function ChatPage() {
     }
   };
 
-  const sidebarContent = (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-      <TabsList className="grid w-full grid-cols-2 m-2">
-        <TabsTrigger value="history" className="text-xs">历史</TabsTrigger>
-        <TabsTrigger value="knowledge" className="text-xs">知识库</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="history" className="flex-1 overflow-auto">
-        <HistoryPanel histories={histories} onLoad={handleLoadHistory} onClearAll={clearAllHistories} />
-      </TabsContent>
-
-      <TabsContent value="session" className="flex-1 overflow-auto p-4">
-        <SessionInfo userId={userId} agentId={selectedAgentId} agentName={selectedAgentName} sessionId={sessionId} />
-      </TabsContent>
-
-      <TabsContent value="knowledge" className="flex-1 overflow-hidden">
-        <KnowledgeTab userId={userId} />
-      </TabsContent>
-    </Tabs>
-  );
+  const handleNewChat = () => {
+    // 清空当前消息（刷新页面）
+    window.location.href = "/chat";
+  };
 
   if (authLoading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-muted-foreground">加载中...</div>
+      <div className="flex h-screen items-center justify-center bg-[var(--chat-main-bg)]">
+        <div className="text-[var(--text-muted)]">加载中...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen">
-      {/* 侧边栏 */}
-      <aside className="hidden lg:flex w-[260px] flex-col border-r border-border/50 bg-[var(--chat-sidebar-bg)]">
-        {sidebarContent}
-      </aside>
-
-      {/* 主对话区 */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[var(--chat-main-bg)]">
-        {/* 智能体选择器 */}
-        <AgentSelector
-          agents={agents}
-          selectedAgentId={selectedAgentId}
-          onAgentChange={handleAgentChange}
-        />
-
-        {/* 消息列表或欢迎面板 */}
-        {messages.length === 0 ? (
-          <WelcomePanel />
-        ) : (
-          <MessageList messages={messages} />
-        )}
-
-        {/* 输入框 */}
-        <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
-
-        {/* 插件状态栏 */}
-        <PluginStatusBar onOpenSettings={() => setPluginSettingsOpen(true)} />
-      </main>
-
-      {/* 插件设置对话框 */}
-      <PluginSettingsDialog
-        open={pluginSettingsOpen}
-        onOpenChange={setPluginSettingsOpen}
+    <div className="flex flex-col h-screen bg-[var(--chat-main-bg)]">
+      {/* 顶栏 */}
+      <ChatTopbar
+        agents={agents}
+        selectedAgentId={selectedAgentId}
+        onAgentChange={handleAgentChange}
+        onAiOpsClick={handleAiOpsClick}
+        onMenuClick={() => setSidebarOpen(true)}
       />
+
+      {/* 主内容区 */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* 左侧边栏 - 桌面端 */}
+        <aside className="hidden lg:flex w-[260px] shrink-0">
+          <ChatSidebar
+            histories={histories}
+            onLoad={handleLoadHistory}
+            onDelete={deleteHistory}
+            onNewChat={handleNewChat}
+          />
+        </aside>
+
+        {/* 主聊天区 */}
+        <main className="flex-1 flex flex-col min-w-0">
+          {/* 状态栏 */}
+          <StatusBar />
+
+          {/* 会话标题 */}
+          {messages.length > 0 && (
+            <SessionHeader
+              title={pendingQuestion || "新对话"}
+              modelInfo={`${selectedAgentName || "AI"} · 会话 #${sessionId?.slice(0, 8) || "新"}`}
+            />
+          )}
+
+          {/* 消息列表或欢迎面板 */}
+          {messages.length === 0 ? (
+            <WelcomePanel />
+          ) : (
+            <MessageList messages={messages} />
+          )}
+
+          {/* 输入框 */}
+          <ChatInput
+            onSend={handleSendMessage}
+            disabled={isStreaming}
+            agents={agents}
+            selectedAgentId={selectedAgentId}
+            onAgentChange={handleAgentChange}
+            activeMode={inputMode}
+            onModeChange={setInputMode}
+          />
+        </main>
+      </div>
 
       {/* 移动端侧边栏浮层 */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-[260px] p-0">
+        <SheetContent side="left" className="w-[280px] p-0">
           <VisuallyHidden>
             <SheetTitle>侧边栏</SheetTitle>
-            <SheetDescription>历史记录和知识库</SheetDescription>
+            <SheetDescription>历史记录和导航</SheetDescription>
           </VisuallyHidden>
-          {sidebarContent}
+          <ChatSidebar
+            histories={histories}
+            onLoad={handleLoadHistory}
+            onDelete={deleteHistory}
+            onNewChat={handleNewChat}
+          />
         </SheetContent>
       </Sheet>
     </div>
