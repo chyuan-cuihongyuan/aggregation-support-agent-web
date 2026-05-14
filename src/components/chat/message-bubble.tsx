@@ -1,7 +1,7 @@
 /**
  * 消息气泡组件
  *
- * 显示用户或 AI 的消息内容
+ * ChatGPT 风格：用户消息有背景，AI 消息透明背景
  */
 
 "use client";
@@ -23,21 +23,21 @@ export const MessageBubble = memo(({ role, content, isStreaming }: MessageBubble
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
       {/* 头像 */}
       <div className={`flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center ${
-        isUser ? "bg-primary" : "bg-muted"
+        isUser ? "bg-emerald-500 dark:bg-emerald-600" : "bg-muted"
       }`}>
         {isUser ? (
-          <User className="w-5 h-5 text-primary-foreground" />
+          <User className="w-5 h-5 text-white" />
         ) : (
           <Bot className="w-5 h-5 text-muted-foreground" />
         )}
       </div>
 
       {/* 消息内容 */}
-      <div className={`flex-1 max-w-[80%] ${isUser ? "flex flex-col items-end" : ""}`}>
-        <div className={`rounded-2xl px-4 py-3 border ${
+      <div className={`flex-1 max-w-[85%] ${isUser ? "flex flex-col items-end" : ""}`}>
+        <div className={`rounded-2xl px-4 py-3 ${
           isUser
-            ? "bg-gradient-to-br from-[#62f6c7] to-[#5aa9ff] text-[#070a12] border-[#62f6c7]/30"
-            : "bg-muted/80 text-foreground border-border/40 backdrop-blur-sm"
+            ? "bg-emerald-500 dark:bg-emerald-600/90 text-white"
+            : "bg-transparent text-zinc-800 dark:text-zinc-100"
         }`}>
           {isUser ? (
             <p className="whitespace-pre-wrap">{content}</p>
@@ -48,7 +48,7 @@ export const MessageBubble = memo(({ role, content, isStreaming }: MessageBubble
             />
           )}
           {isStreaming && (
-            <span className="inline-block w-2 h-4 bg-foreground/50 animate-pulse ml-1" />
+            <span className="inline-block w-2 h-4 bg-current/50 animate-pulse ml-1" />
           )}
         </div>
       </div>

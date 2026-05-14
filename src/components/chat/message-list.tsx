@@ -1,7 +1,7 @@
 /**
  * 消息列表组件
  *
- * 显示对话消息列表，自动滚动到底部
+ * ChatGPT 风格：居中显示，最大宽度 3xl
  */
 
 "use client";
@@ -45,15 +45,17 @@ export function MessageList({ messages }: MessageListProps) {
 
   return (
     <ScrollArea className="flex-1">
-      <div ref={scrollRef} className="space-y-4 p-4">
-        {messages.map((message) => (
-          <MessageBubble
-            key={message.id}
-            role={message.role}
-            content={message.content}
-            isStreaming={message.isStreaming}
-          />
-        ))}
+      <div className="w-full max-w-3xl mx-auto">
+        <div ref={scrollRef} className="space-y-4 p-4">
+          {messages.map((message) => (
+            <MessageBubble
+              key={message.id}
+              role={message.role}
+              content={message.content}
+              isStreaming={message.isStreaming}
+            />
+          ))}
+        </div>
       </div>
     </ScrollArea>
   );

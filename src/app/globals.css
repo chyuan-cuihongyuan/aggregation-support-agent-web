@@ -38,6 +38,20 @@
   --brand-danger: #ff5a7a;
   --brand-bg0: #070a12;
   --brand-bg1: #0b1022;
+
+  /* ChatGPT 风格颜色变量 */
+  --chat-sidebar-bg: #f9fafb;
+  --chat-main-bg: #ffffff;
+  --chat-user-bubble: #10b981;
+  --chat-ai-text: #27272a;
+  --chat-border: rgba(0,0,0,0.1);
+
+  /* 插件状态颜色 */
+  --plugin-enabled: #22c55e;
+  --plugin-disabled: #d1d5db;
+  --plugin-unavailable: #ef4444;
+  --plugin-connecting: #3b82f6;
+  --plugin-warning: #f59e0b;
 }
 
 /* ========== 深色主题覆盖（匹配现有配色） ========== */
@@ -60,6 +74,15 @@
   --border: oklch(0.25 0.02 260);
   --input: oklch(0.25 0.02 260);
   --ring: oklch(0.78 0.17 170);
+
+  /* ChatGPT 风格深色主题 */
+  --chat-sidebar-bg: #171717;
+  --chat-main-bg: #212121;
+  --chat-user-bubble: #059669;
+  --chat-ai-text: #f4f4f5;
+  --chat-border: rgba(255,255,255,0.1);
+
+  --plugin-disabled: #6b7280;
 }
 
 /* ========== 基础样式 ========== */

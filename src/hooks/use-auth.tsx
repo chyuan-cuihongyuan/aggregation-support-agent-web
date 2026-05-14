@@ -13,7 +13,7 @@ import type { UserInfoDTO, LoginRequest, RegisterRequest } from "@/types/api";
 interface AuthState {
   user: UserInfoDTO | null;
   loading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<UserInfoDTO>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
