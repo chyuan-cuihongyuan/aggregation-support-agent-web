@@ -19,7 +19,59 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
   const [isStreaming, setIsStreaming] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
   const streamingBufferRef = useRef<string>("");
-  const rafRef = useRef<number | undefined>(undefined);
+  const displayedContentRef = useRef<string>("");
+  const typewriterTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const pendingChunksRef = useRef<string[]>([]);
+
+  // 打字机效果：逐字显示内容
+  const startTypewriter = useCallback((messageId: string) => {
+    // 如果已经存在定时器，则不重复启动
+    if (typewriterTimerRef.current) {
+      return;
+    }
+
+    // 启动定时器，每 30ms 显示一个字符
+    typewriterTimerRef.current = setInterval(() => {
+      const displayed = displayedContentRef.current;
+      const targetContent = streamingBufferRef.current;
+
+      // 如果当前显示的内容已经达到或超过目标内容，则停止
+      if (displayed.length >= targetContent.length) {
+        // 检查是否还有新的数据正在到达（通过比较 buffer 和 displayed）
+        // 如果相等，说明没有新数据了，停止打字机效果
+        if (displayed.length === targetContent.length) {
+          if (typewriterTimerRef.current) {
+            clearInterval(typewriterTimerRef.current);
+            typewriterTimerRef.current = undefined;
+          }
+        }
+        return;
+      }
+
+      // 添加下一个字符
+      const nextChar = targetContent[displayed.length];
+      displayedContentRef.current = displayed + nextChar;
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, content: displayedContentRef.current }
+            : msg
+        )
+      );
+    }, 30);
+  }, []);
+
+  // 处理新的数据块
+  const processChunk = useCallback((chunk: string, messageId: string) => {
+    streamingBufferRef.current += chunk;
+    pendingChunksRef.current.push(chunk);
+
+    // 如果打字机效果未启动，则启动它
+    if (!typewriterTimerRef.current) {
+      startTypewriter(messageId);
+    }
+  }, [startTypewriter]);
 
   // 发送消息
   const sendMessage = useCallback(
@@ -44,6 +96,8 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
       setIsStreaming(true);
       streamingBufferRef.current = "";
+      displayedContentRef.current = "";
+      pendingChunksRef.current = [];
 
       try {
         // 创建会话
@@ -58,28 +112,25 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
           "/api/v1/chat_stream",
           { agentId, userId, sessionId: newSessionId, message: content },
           (chunk) => {
-            streamingBufferRef.current += chunk;
-
-            // 使用 requestAnimationFrame 节流渲染
-            if (rafRef.current) {
-              cancelAnimationFrame(rafRef.current);
-            }
-            rafRef.current = requestAnimationFrame(() => {
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === aiMessageId
-                    ? { ...msg, content: streamingBufferRef.current }
-                    : msg
-                )
-              );
-            });
+            processChunk(chunk, aiMessageId);
           }
         );
 
-        // 流结束，最终渲染
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
+        // 流结束，等待打字机效果完成
+        const waitForTypewriter = () => {
+          return new Promise<void>((resolve) => {
+            const checkInterval = setInterval(() => {
+              if (!typewriterTimerRef.current) {
+                clearInterval(checkInterval);
+                resolve();
+              }
+            }, 100);
+          });
+        };
+
+        await waitForTypewriter();
+
+        // 最终渲染
         const finalContent = streamingBufferRef.current;
         setMessages((prev) =>
           prev.map((msg) =>
@@ -110,7 +161,7 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
         setIsStreaming(false);
       }
     },
-    [userId, agentId, onMessageComplete]
+    [userId, agentId, onMessageComplete, processChunk]
   );
 
   // 清空消息
@@ -160,6 +211,8 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
     setIsStreaming(true);
     streamingBufferRef.current = "";
+    displayedContentRef.current = "";
+    pendingChunksRef.current = [];
 
     try {
       // SSE 流式响应
@@ -171,28 +224,25 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
           alertDescription: "请分析当前所有活动告警并生成运维报告",
         },
         (chunk) => {
-          streamingBufferRef.current += chunk;
-
-          // 使用 requestAnimationFrame 节流渲染
-          if (rafRef.current) {
-            cancelAnimationFrame(rafRef.current);
-          }
-          rafRef.current = requestAnimationFrame(() => {
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === aiMessageId
-                  ? { ...msg, content: streamingBufferRef.current }
-                  : msg
-              )
-            );
-          });
+          processChunk(chunk, aiMessageId);
         }
       );
 
-      // 流结束，最终渲染
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
+      // 流结束，等待打字机效果完成
+      const waitForTypewriter = () => {
+        return new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            if (!typewriterTimerRef.current) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 100);
+        });
+      };
+
+      await waitForTypewriter();
+
+      // 最终渲染
       const finalContent = streamingBufferRef.current;
       setMessages((prev) =>
         prev.map((msg) =>
@@ -223,7 +273,7 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
     } finally {
       setIsStreaming(false);
     }
-  }, [userId, agentId, onMessageComplete]);
+  }, [userId, agentId, onMessageComplete, processChunk]);
 
   return {
     messages,
