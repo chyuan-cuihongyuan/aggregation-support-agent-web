@@ -124,8 +124,13 @@ export const MessageBubble = memo(({ role, content, isStreaming, timestamp }: Me
           className={`rounded-2xl px-4 py-3 ${
             isUser
               ? "bg-[var(--brand-accent)] text-white rounded-[12px_12px_4px_12px]"
-              : "bg-[var(--chat-ai-bubble)] border border-[var(--chat-border)] text-[var(--chat-ai-text)]"
+              : "border border-[var(--chat-border)] text-[var(--chat-ai-text)]"
           }`}
+          style={
+            !isUser
+              ? { background: "var(--chat-ai-bubble)", color: "var(--chat-ai-text)" }
+              : undefined
+          }
         >
           {isUser ? (
             <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{content}</p>

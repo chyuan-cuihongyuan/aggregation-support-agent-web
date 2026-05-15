@@ -128,7 +128,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--chat-main-bg)]">
+    <div className="flex flex-col h-screen min-h-0 bg-[var(--chat-main-bg)]">
       {/* 顶栏 */}
       <ChatTopbar
         agents={agents}
@@ -139,9 +139,9 @@ export default function ChatPage() {
       />
 
       {/* 主内容区 */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="grid flex-1 overflow-hidden min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* 左侧边栏 - 桌面端 */}
-        <aside className="hidden lg:flex w-[260px] shrink-0">
+        <aside className="hidden lg:block h-full">
           <ChatSidebar
             histories={histories}
             onLoad={handleLoadHistory}
@@ -151,7 +151,7 @@ export default function ChatPage() {
         </aside>
 
         {/* 主聊天区 */}
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
           {/* 状态栏 */}
           <StatusBar />
 

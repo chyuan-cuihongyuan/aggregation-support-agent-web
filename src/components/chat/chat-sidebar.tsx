@@ -62,14 +62,14 @@ export function ChatSidebar({
 
   const filtered = search
     ? histories.filter((h) =>
-        (h.question || "").toLowerCase().includes(search.toLowerCase())
-      )
+      (h.question || "").toLowerCase().includes(search.toLowerCase())
+    )
     : histories;
 
   const groups = groupByDate(filtered);
 
   return (
-    <div className="flex flex-col h-full bg-[var(--chat-sidebar-bg)] border-r border-[var(--chat-border)]">
+    <div className="flex flex-col h-full min-h-0 bg-[var(--chat-sidebar-bg)] border-r border-[var(--chat-border)]">
       {/* 新建对话 */}
       <div className="p-4 border-b border-[var(--chat-border)]">
         <Button

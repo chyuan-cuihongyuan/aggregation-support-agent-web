@@ -22,22 +22,22 @@ interface SessionHeaderProps {
 
 export function SessionHeader({ title, modelInfo, sessionId, onNewChat }: SessionHeaderProps) {
   return (
-    <div className="px-6 py-3 border-b border-[var(--chat-border)] flex items-center justify-between">
-      <div>
+    <div className="px-6 py-3 border-b border-[var(--chat-border)] flex flex-wrap items-center justify-between relative z-10 gap-3">
+      <div className="min-w-0 flex-1">
         {title && (
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">{title}</h2>
+          <h2 className="text-[15px] font-semibold text-[var(--text-primary)] truncate">{title}</h2>
         )}
         {modelInfo && (
-          <p className="text-[12px] text-[var(--text-muted)] mt-0.5">{modelInfo}</p>
+          <p className="text-[12px] text-[var(--text-muted)] mt-0.5 truncate">{modelInfo}</p>
         )}
       </div>
-      <div className="flex gap-1.5">
+      <div className="flex flex-wrap gap-1.5 items-center justify-end">
         {onNewChat && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onNewChat}
-            className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)]"
+            className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)] relative z-20 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             新建对话
@@ -46,7 +46,7 @@ export function SessionHeader({ title, modelInfo, sessionId, onNewChat }: Sessio
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)]"
+          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)] shrink-0"
         >
           <Download className="w-3.5 h-3.5" />
           导出
@@ -54,7 +54,7 @@ export function SessionHeader({ title, modelInfo, sessionId, onNewChat }: Sessio
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)]"
+          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)] shrink-0"
         >
           <Share2 className="w-3.5 h-3.5" />
           分享
