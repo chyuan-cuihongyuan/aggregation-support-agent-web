@@ -69,7 +69,7 @@ export function ChatInput({
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-4">
-      <div className="rounded-2xl border border-[var(--border-default)] dark:border-[#2a2a3a] bg-[var(--surface-main)] dark:bg-[#1a1a24] overflow-hidden shadow-lg shadow-black/[0.03] dark:shadow-black/20 focus-within:border-[var(--brand-accent)] focus-within:ring-2 focus-within:ring-[var(--brand-accent)]/10 transition-all">
+      <div className="rounded-2xl border border-[var(--chat-border)] bg-[var(--surface-main)] overflow-hidden shadow-lg shadow-black/[0.03] dark:shadow-black/20 focus-within:border-[var(--brand-accent)] focus-within:ring-2 focus-within:ring-[var(--brand-accent)]/10 transition-all">
         {/* 输入区域 */}
         <div className="flex items-end">
           <Textarea
@@ -91,7 +91,7 @@ export function ChatInput({
         </div>
 
         {/* 底部工具栏 */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--border-default)] dark:border-[#2a2a3a] bg-[var(--surface-card)] dark:bg-[#22222e]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--chat-border)] bg-[var(--surface-card)]">
           <div className="flex items-center gap-1.5">
             {MODES.map((mode) => (
               <button
@@ -122,10 +122,16 @@ export function ChatInput({
             </SelectContent>
           </Select>
         </div>
+
+        {/* 快捷键提示 */}
+        <div className="text-center text-[11px] text-[var(--text-muted)]">
+          <span className="text-[var(--text-muted)]">Ctrl + Enter</span>
+          <span className="mx-1">·</span>
+          <span className="text-[var(--text-muted)]">Shift + Enter</span>
+          <span className="mx-1">·</span>
+          <span className="text-[var(--text-muted)]">AI 可能产生不准确的信息，请注意甄别</span>
+        </div>
       </div>
-      <p className="text-center text-[11px] text-[var(--text-muted)] mt-2">
-        AI 可能产生不准确的信息，请注意甄别
-      </p>
     </div>
   );
 }

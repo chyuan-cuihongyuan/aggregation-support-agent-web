@@ -90,15 +90,14 @@
 
   /* 边框 */
   --border-default: #e5e7eb;
-  --border-strong: #d1d5db;
 
   /* ChatGPT 风格颜色变量 */
   --chat-sidebar-bg: #f5f5f5;
   --chat-main-bg: #ffffff;
   --chat-user-bubble: #e63946;
   --chat-ai-bubble: #f9fafb;
-  --chat-ai-text: #1a1a2e;
-  --chat-border: rgba(0,0,0,0.06);
+  --chat-ai-text: #0f172a;
+  --chat-border: #e5e7eb;
   --chat-status-bar-bg: #ecfdf5;
   --chat-status-bar-text: #065f46;
 
@@ -151,7 +150,7 @@
 
   /* 边框 */
   --border-default: #2a2a3a;
-  --border-strong: #3a3a4a;
+  --border-strong: #2a2a3a;
 
   /* ChatGPT 风格深色主题 */
   --chat-sidebar-bg: #1a1a24;
@@ -159,11 +158,11 @@
   --chat-user-bubble: #e63946;
   --chat-ai-bubble: transparent;
   --chat-ai-text: #e4e4ef;
-  --chat-border: rgba(255,255,255,0.06);
+  --chat-border: #2a2a3a;
   --chat-status-bar-bg: #1a1a24;
   --chat-status-bar-text: #10b981;
 
-  --plugin-disabled: #6b7280;
+  --plugin-disabled: #55556a;
 }
 
 /* ========== 基础样式 ========== */

@@ -36,6 +36,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       title={theme === "dark" ? "切换到浅色模式" : "切换到深色模式"}
+      className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)]"
     >
       {theme === "dark" ? (
         <Sun className="h-5 w-5" />

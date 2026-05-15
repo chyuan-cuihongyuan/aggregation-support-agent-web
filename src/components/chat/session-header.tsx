@@ -6,7 +6,7 @@
 
 "use client";
 
-import { Download, Share2 } from "lucide-react";
+import { Download, Share2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SessionHeaderProps {
@@ -16,11 +16,11 @@ interface SessionHeaderProps {
   modelInfo?: string;
   /** 会话 ID */
   sessionId?: string;
+  /** 新建对话回调 */
+  onNewChat?: () => void;
 }
 
-export function SessionHeader({ title, modelInfo, sessionId }: SessionHeaderProps) {
-  if (!title && !sessionId) return null;
-
+export function SessionHeader({ title, modelInfo, sessionId, onNewChat }: SessionHeaderProps) {
   return (
     <div className="px-6 py-3 border-b border-[var(--chat-border)] flex items-center justify-between">
       <div>
@@ -32,10 +32,21 @@ export function SessionHeader({ title, modelInfo, sessionId }: SessionHeaderProp
         )}
       </div>
       <div className="flex gap-1.5">
+        {onNewChat && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNewChat}
+            className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)]"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            新建对话
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)]"
         >
           <Download className="w-3.5 h-3.5" />
           导出
@@ -43,7 +54,7 @@ export function SessionHeader({ title, modelInfo, sessionId }: SessionHeaderProp
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+          className="h-7 px-2 text-[12px] gap-1 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--chat-border)] bg-[var(--surface-card)]"
         >
           <Share2 className="w-3.5 h-3.5" />
           分享

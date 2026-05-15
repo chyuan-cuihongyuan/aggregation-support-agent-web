@@ -156,12 +156,11 @@ export default function ChatPage() {
           <StatusBar />
 
           {/* 会话标题 */}
-          {messages.length > 0 && (
-            <SessionHeader
-              title={pendingQuestion || "新对话"}
-              modelInfo={`${selectedAgentName || "AI"} · 会话 #${sessionId?.slice(0, 8) || "新"}`}
-            />
-          )}
+          <SessionHeader
+            title={messages.length > 0 ? (pendingQuestion || "新对话") : "新对话"}
+            modelInfo={`${selectedAgentName || "AI 智能助手"} · 会话 #${sessionId?.slice(0, 8) || "新"}`}
+            onNewChat={handleNewChat}
+          />
 
           {/* 消息列表或欢迎面板 */}
           {messages.length === 0 ? (

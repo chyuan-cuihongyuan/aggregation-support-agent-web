@@ -40,7 +40,7 @@ export function WelcomePanel() {
         {QUICK_ACTIONS.map((action) => (
           <div
             key={action.title}
-            className="border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl px-4 py-3 hover:bg-[var(--surface-card)] dark:hover:bg-[#22222e] transition-colors cursor-pointer group"
+            className="border border-[var(--chat-border)] rounded-xl px-4 py-3 hover:bg-[var(--surface-card)] dark:hover:bg-[#22222e] transition-colors cursor-pointer group"
           >
             <div className="flex items-center gap-2 mb-1">
               <action.icon className="w-4 h-4 text-[var(--brand-accent)]" />

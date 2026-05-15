@@ -69,7 +69,7 @@ export function ChatTopbar({
 
         {/* 智能体选择器 */}
         <Select value={selectedAgentId} onValueChange={onAgentChange}>
-          <SelectTrigger className="w-[180px] h-9 bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px] font-medium text-[var(--text-primary)]">
+          <SelectTrigger className="w-[180px] h-9 bg-[var(--surface-card)] border border-[var(--chat-border)] rounded-lg text-[13px] font-medium text-[var(--text-primary)]">
             <SelectValue placeholder="选择智能体" />
           </SelectTrigger>
           <SelectContent>
@@ -104,7 +104,7 @@ export function ChatTopbar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+          className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)]"
           onClick={() => router.push("/knowledge")}
           title="知识库"
         >
@@ -114,7 +114,7 @@ export function ChatTopbar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+          className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)]"
           onClick={onAiOpsClick}
           title="AIOps 分析"
         >

@@ -89,7 +89,7 @@ export function ChatSidebar({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索对话记录..."
-            className="h-9 pl-9 bg-[var(--surface-main)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px] placeholder:text-[var(--text-muted)]"
+            className="h-9 pl-9 bg-[var(--surface-main)] border border-[var(--chat-border)] rounded-lg text-[13px] placeholder:text-[var(--text-muted)]"
           />
         </div>
       </div>
@@ -105,7 +105,7 @@ export function ChatSidebar({
               {group.items.map((item) => (
                 <div
                   key={item.id}
-                  className="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[var(--surface-hover)] mb-0.5 text-[var(--text-primary)]"
+                  className="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[#2a2a38] mb-0.5 text-[var(--text-primary)]"
                   onClick={() => onLoad(item)}
                 >
                   <MessageSquare className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
@@ -118,7 +118,7 @@ export function ChatSidebar({
                         e.stopPropagation();
                         onDelete(item.id);
                       }}
-                      className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-[var(--text-muted)] hover:text-[var(--status-error)] transition-all"
+                      className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded hover:bg-[#fecaca] dark:hover:bg-red-900/30 text-[var(--text-muted)] hover:text-[#dc2626] transition-all"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -138,14 +138,14 @@ export function ChatSidebar({
       {/* 底部导航 */}
       <div className="border-t border-[var(--chat-border)]">
         <div
-          className="flex items-center gap-2.5 px-4 py-3 text-[13px] text-[var(--text-secondary)] cursor-pointer hover:bg-[var(--surface-hover)] transition-colors"
+          className="flex items-center gap-2.5 px-4 py-3 text-[13px] text-[var(--text-secondary)] cursor-pointer hover:bg-[#2a2a38] transition-colors"
           onClick={() => router.push("/knowledge")}
         >
           <BookOpen className="w-4 h-4" />
           知识库管理
         </div>
         <div
-          className="flex items-center gap-2.5 px-4 py-3 text-[13px] text-[var(--text-secondary)] cursor-pointer hover:bg-[var(--surface-hover)] transition-colors"
+          className="flex items-center gap-2.5 px-4 py-3 text-[13px] text-[var(--text-secondary)] cursor-pointer hover:bg-[#2a2a38] transition-colors"
           onClick={() => router.push("/settings")}
         >
           <Settings className="w-4 h-4" />

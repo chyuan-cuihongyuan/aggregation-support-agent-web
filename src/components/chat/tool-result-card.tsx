@@ -26,9 +26,9 @@ export function ToolResultCard({
   status = "completed",
 }: ToolResultCardProps) {
   return (
-    <div className="mt-3 rounded-[10px] overflow-hidden border border-[var(--border-default)] dark:border-[#2a2a3a]">
+    <div className="mt-3 rounded-[10px] overflow-hidden border border-[var(--chat-border)]">
       {/* 卡片头部 */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--surface-card)] dark:bg-[#22222e] border-b border-[var(--border-default)] dark:border-[#2a2a3a]">
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--surface-card)] border-b border-[var(--chat-border)]">
         <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[var(--text-secondary)]">
           <Terminal className="w-3.5 h-3.5" />
           工具调用 · {toolName}

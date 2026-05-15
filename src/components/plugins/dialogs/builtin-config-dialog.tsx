@@ -50,7 +50,7 @@ export function BuiltInConfigDialog({
           <Switch
             id={key}
             checked={value}
-            onCheckedChange={(checked) =>
+            onCheckedChange={(checked: boolean) =>
               setSettings((prev) => ({ ...prev, [key]: checked }))
             }
           />
