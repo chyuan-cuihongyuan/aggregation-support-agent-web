@@ -161,6 +161,8 @@ export interface ChatHistoryDTO {
   answer: string;
   /** 创建时间 */
   createTime: string;
+  /** 会话标题（可选） */
+  sessionTitle?: string;
 }
 
 /**
@@ -255,4 +257,41 @@ export interface UpdateStatusRequest {
 /** 更新用户角色请求 */
 export interface UpdateRoleRequest {
   role: string;
+}
+
+// ========== 会话状态相关 ==========
+
+/**
+ * 会话视图模式
+ */
+export type HistoryViewMode = "all" | "by-agent";
+
+/**
+ * 会话缓存数据
+ */
+export interface SessionCacheData {
+  /** 会话 ID */
+  sessionId: string;
+  /** 智能体 ID */
+  agentId: string;
+  /** 智能体名称 */
+  agentName: string;
+  /** 会话消息列表 */
+  messages: Array<{ id?: string; role: string; content: string }>;
+  /** 最后更新时间 */
+  lastUpdateTime: number;
+}
+
+/**
+ * 会话状态
+ */
+export interface SessionState {
+  /** 当前会话 ID */
+  currentSessionId: string | null;
+  /** 当前智能体 ID */
+  currentAgentId: string | null;
+  /** 是否有未保存的更改 */
+  hasUnsavedChanges: boolean;
+  /** 是否正在切换会话 */
+  isSwitching: boolean;
 }

@@ -2,7 +2,7 @@
  * 对话主页面
  *
  * 新布局：顶栏 + 左侧边栏 + 主聊天区
- * 浅色/深色双主题支持
+ * 集成多会话上下文管理
  */
 
 "use client";
@@ -20,11 +20,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
-import { useChat } from "@/hooks/use-chat";
-import { useHistory } from "@/hooks/use-history";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
+import { useSessionManager } from "@/components/session/session-manager";
+import type { AgentConfig, HistoryViewMode } from "@/types/api";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -34,29 +31,28 @@ export default function ChatPage() {
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inputMode, setInputMode] = useState<InputMode>("chat");
-  const [pendingQuestion, setPendingQuestion] = useState<string>("");
 
   const userId = user?.username || "default";
 
-  const { messages, isStreaming, sessionId, sendMessage, loadConversation, sendAiOps } = useChat({
+  const {
+    currentSessionId,
+    isSwitching,
+    messages,
+    isStreaming,
+    histories,
+    groupedHistories,
+    viewMode,
+    setViewMode,
+    handleNewChat,
+    handleSendMessage,
+    handleLoadHistory,
+    sendAiOps,
+    deleteHistory,
+  } = useSessionManager({
     userId,
     agentId: selectedAgentId,
-    onMessageComplete: async (message) => {
-      if (pendingQuestion && message.role === "assistant") {
-        await saveHistory({
-          userId,
-          agentId: selectedAgentId,
-          agentName: selectedAgentName,
-          sessionId: sessionId,
-          question: pendingQuestion,
-          answer: message.content,
-        });
-        setPendingQuestion("");
-      }
-    },
+    agentName: selectedAgentName,
   });
-
-  const { histories, saveHistory, clearAllHistories, deleteHistory } = useHistory({ userId });
 
   // 未登录则跳转
   useEffect(() => {
@@ -87,36 +83,12 @@ export default function ChatPage() {
     if (agent) {
       setSelectedAgentId(agentId);
       setSelectedAgentName(agent.agentName);
+      // 切换智能体时创建新会话（handleNewChat 已在 session-manager 内部处理）
     }
-  };
-
-  const handleSendMessage = async (content: string) => {
-    setPendingQuestion(content);
-    await sendMessage(content);
-  };
-
-  const handleLoadHistory = (history: ChatHistoryDTO) => {
-    loadConversation([{ question: history.question, answer: history.answer }]);
-    setSidebarOpen(false);
   };
 
   const handleAiOpsClick = async () => {
-    const result = await sendAiOps(selectedAgentId);
-    if (result) {
-      await saveHistory({
-        userId,
-        agentId: selectedAgentId,
-        agentName: `${selectedAgentName} (AIOps)`,
-        sessionId: "",
-        question: result.question,
-        answer: result.answer,
-      });
-    }
-  };
-
-  const handleNewChat = () => {
-    // 清空当前消息（刷新页面）
-    window.location.href = "/chat";
+    await sendAiOps(selectedAgentId);
   };
 
   if (authLoading || !user) {
@@ -143,10 +115,15 @@ export default function ChatPage() {
         {/* 左侧边栏 - 桌面端 */}
         <aside className="hidden lg:block h-full">
           <ChatSidebar
+            activeSessionId={currentSessionId || undefined}
             histories={histories}
+            groupedHistories={groupedHistories}
+            viewMode={viewMode}
+            onViewModeChange={(m) => setViewMode(m as HistoryViewMode)}
             onLoad={handleLoadHistory}
             onDelete={deleteHistory}
             onNewChat={handleNewChat}
+            isSwitching={isSwitching}
           />
         </aside>
 
@@ -157,8 +134,8 @@ export default function ChatPage() {
 
           {/* 会话标题 */}
           <SessionHeader
-            title={messages.length > 0 ? (pendingQuestion || "新对话") : "新对话"}
-            modelInfo={`${selectedAgentName || "AI 智能助手"} · 会话 #${sessionId?.slice(0, 8) || "新"}`}
+            title={messages.length > 0 ? "对话中" : "新对话"}
+            modelInfo={`${selectedAgentName || "AI 智能助手"} · 会话 #${currentSessionId?.slice(0, 8) || "新"}`}
             onNewChat={handleNewChat}
           />
 
@@ -172,7 +149,7 @@ export default function ChatPage() {
           {/* 输入框 */}
           <ChatInput
             onSend={handleSendMessage}
-            disabled={isStreaming}
+            disabled={isStreaming || !currentSessionId}
             agents={agents}
             selectedAgentId={selectedAgentId}
             onAgentChange={handleAgentChange}
@@ -190,10 +167,21 @@ export default function ChatPage() {
             <SheetDescription>历史记录和导航</SheetDescription>
           </VisuallyHidden>
           <ChatSidebar
+            activeSessionId={currentSessionId || undefined}
             histories={histories}
-            onLoad={handleLoadHistory}
+            groupedHistories={groupedHistories}
+            viewMode={viewMode}
+            onViewModeChange={(m) => setViewMode(m as HistoryViewMode)}
+            onLoad={(history) => {
+              handleLoadHistory(history);
+              setSidebarOpen(false);
+            }}
             onDelete={deleteHistory}
-            onNewChat={handleNewChat}
+            onNewChat={() => {
+              handleNewChat();
+              setSidebarOpen(false);
+            }}
+            isSwitching={isSwitching}
           />
         </SheetContent>
       </Sheet>

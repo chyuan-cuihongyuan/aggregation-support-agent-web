@@ -1,14 +1,15 @@
 /**
  * 对话历史 Hook
  *
- * 管理对话历史的加载、保存和删除
+ * 管理对话历史的加载、保存、删除和视图切换
  */
 
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { requestJson } from "@/lib/api";
-import type { ChatHistoryDTO } from "@/types/api";
+import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
+import { groupHistoriesByAgent, migrateLegacyHistory } from "@/utils/session-utils";
 
 interface UseHistoryOptions {
   userId: string;
@@ -16,8 +17,16 @@ interface UseHistoryOptions {
 
 export function useHistory({ userId }: UseHistoryOptions) {
   const [histories, setHistories] = useState<ChatHistoryDTO[]>([]);
+  const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // 按智能体分组的历史记录
+  const groupedHistories = useMemo(() => {
+    if (viewMode !== "by-agent") return {};
+
+    return groupHistoriesByAgent(histories);
+  }, [histories, viewMode]);
 
   // 加载历史记录
   const loadHistories = useCallback(async () => {
@@ -27,7 +36,10 @@ export function useHistory({ userId }: UseHistoryOptions) {
       const data = await requestJson<ChatHistoryDTO[]>(
         `/api/v1/chat_history/query?userId=${userId}`
       );
-      setHistories(data);
+
+      // 迁移旧数据（为没有 sessionId 的记录生成虚拟 ID）
+      const migratedData = data.map(migrateLegacyHistory);
+      setHistories(migratedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");
     } finally {
@@ -43,7 +55,6 @@ export function useHistory({ userId }: UseHistoryOptions) {
           method: "POST",
           body: JSON.stringify(history),
         });
-        // 保存成功后重新加载
         await loadHistories();
       } catch (err) {
         setError(err instanceof Error ? err.message : "保存失败");
@@ -59,7 +70,6 @@ export function useHistory({ userId }: UseHistoryOptions) {
         await requestJson(`/api/v1/chat_history/delete?userId=${userId}&id=${historyId}`, {
           method: "POST",
         });
-        // 删除成功后重新加载
         await loadHistories();
       } catch (err) {
         setError(err instanceof Error ? err.message : "删除失败");
@@ -87,6 +97,9 @@ export function useHistory({ userId }: UseHistoryOptions) {
 
   return {
     histories,
+    groupedHistories,
+    viewMode,
+    setViewMode,
     isLoading,
     error,
     loadHistories,

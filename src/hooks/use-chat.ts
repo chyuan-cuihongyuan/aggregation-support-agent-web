@@ -1,23 +1,33 @@
 /**
  * 对话 Hook
  *
- * 管理对话消息、SSE 流式响应和会话创建
+ * 管理对话消息、SSE 流式响应
+ * 会话管理由 useSession Hook 负责
  */
 
 import { useState, useCallback, useRef } from "react";
-import { requestJson, requestSSE } from "@/lib/api";
+import { requestSSE } from "@/lib/api";
 import type { Message } from "@/components/chat/message-list";
 
 interface UseChatOptions {
   userId: string;
   agentId: string;
+  /** 从 useSession 传入的会话 ID */
+  sessionId?: string | null;
+  /** 标记未保存状态 */
+  setHasUnsavedChanges?: (value: boolean) => void;
   onMessageComplete?: (message: Message) => void;
 }
 
-export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) {
+export function useChat({
+  userId,
+  agentId,
+  sessionId,
+  setHasUnsavedChanges,
+  onMessageComplete,
+}: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [sessionId, setSessionId] = useState<string>("");
   const streamingBufferRef = useRef<string>("");
   const displayedContentRef = useRef<string>("");
   const typewriterTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -25,20 +35,15 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
   // 打字机效果：逐字显示内容
   const startTypewriter = useCallback((messageId: string) => {
-    // 如果已经存在定时器，则不重复启动
     if (typewriterTimerRef.current) {
       return;
     }
 
-    // 启动定时器，每 30ms 显示一个字符
     typewriterTimerRef.current = setInterval(() => {
       const displayed = displayedContentRef.current;
       const targetContent = streamingBufferRef.current;
 
-      // 如果当前显示的内容已经达到或超过目标内容，则停止
       if (displayed.length >= targetContent.length) {
-        // 检查是否还有新的数据正在到达（通过比较 buffer 和 displayed）
-        // 如果相等，说明没有新数据了，停止打字机效果
         if (displayed.length === targetContent.length) {
           if (typewriterTimerRef.current) {
             clearInterval(typewriterTimerRef.current);
@@ -48,7 +53,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
         return;
       }
 
-      // 添加下一个字符
       const nextChar = targetContent[displayed.length];
       displayedContentRef.current = displayed + nextChar;
 
@@ -62,12 +66,10 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
     }, 30);
   }, []);
 
-  // 处理新的数据块
   const processChunk = useCallback((chunk: string, messageId: string) => {
     streamingBufferRef.current += chunk;
     pendingChunksRef.current.push(chunk);
 
-    // 如果打字机效果未启动，则启动它
     if (!typewriterTimerRef.current) {
       startTypewriter(messageId);
     }
@@ -76,7 +78,8 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
   // 发送消息
   const sendMessage = useCallback(
     async (content: string) => {
-      // 添加用户消息
+      if (!sessionId) return;
+
       const userMessage: Message = {
         id: Date.now().toString(),
         role: "user",
@@ -84,7 +87,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
       };
       setMessages((prev) => [...prev, userMessage]);
 
-      // 创建 AI 消息占位符
       const aiMessageId = (Date.now() + 1).toString();
       const aiMessage: Message = {
         id: aiMessageId,
@@ -99,18 +101,14 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
       displayedContentRef.current = "";
       pendingChunksRef.current = [];
 
-      try {
-        // 创建会话
-        const { sessionId: newSessionId } = await requestJson<{ sessionId: string }>("/api/v1/create_session", {
-          method: "POST",
-          body: JSON.stringify({ agentId, userId }),
-        });
-        setSessionId(newSessionId);
+      // 标记有未保存更改
+      setHasUnsavedChanges?.(true);
 
-        // SSE 流式响应
+      try {
+        // SSE 流式响应（使用传入的 sessionId，不再每次创建新会话）
         await requestSSE(
           "/api/v1/chat_stream",
-          { agentId, userId, sessionId: newSessionId, message: content },
+          { agentId, userId, sessionId, message: content },
           (chunk) => {
             processChunk(chunk, aiMessageId);
           }
@@ -130,7 +128,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
         await waitForTypewriter();
 
-        // 最终渲染
         const finalContent = streamingBufferRef.current;
         setMessages((prev) =>
           prev.map((msg) =>
@@ -146,8 +143,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
           content: finalContent,
         };
         onMessageComplete?.(finalMessage);
-
-        // 对话历史保存已在页面层通过 onMessageComplete 回调实现
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "发送失败";
         setMessages((prev) =>
@@ -161,7 +156,7 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
         setIsStreaming(false);
       }
     },
-    [userId, agentId, onMessageComplete, processChunk]
+    [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, processChunk]
   );
 
   // 清空消息
@@ -189,9 +184,8 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
   // 发送 AIOps 分析请求
   const sendAiOps = useCallback(async (aiOpsAgentId: string) => {
-    const effectiveAgentId = aiOpsAgentId || agentId || "200002"; // 默认 AIOps 智能体 ID
+    const effectiveAgentId = aiOpsAgentId || agentId || "200002";
 
-    // 添加用户消息
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -199,7 +193,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
     };
     setMessages((prev) => [...prev, userMessage]);
 
-    // 创建 AI 消息占位符
     const aiMessageId = (Date.now() + 1).toString();
     const aiMessage: Message = {
       id: aiMessageId,
@@ -215,7 +208,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
     pendingChunksRef.current = [];
 
     try {
-      // SSE 流式响应
       await requestSSE(
         "/api/v1/ai_ops",
         {
@@ -228,7 +220,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
         }
       );
 
-      // 流结束，等待打字机效果完成
       const waitForTypewriter = () => {
         return new Promise<void>((resolve) => {
           const checkInterval = setInterval(() => {
@@ -242,7 +233,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
       await waitForTypewriter();
 
-      // 最终渲染
       const finalContent = streamingBufferRef.current;
       setMessages((prev) =>
         prev.map((msg) =>
@@ -278,7 +268,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
   return {
     messages,
     isStreaming,
-    sessionId,
     sendMessage,
     clearMessages,
     loadConversation,

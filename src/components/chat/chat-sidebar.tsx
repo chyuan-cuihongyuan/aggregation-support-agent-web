@@ -1,30 +1,39 @@
 /**
  * 聊天侧边栏
  *
- * 新建对话按钮 + 搜索框 + 按日期分组的历史记录 + 底部设置入口
+ * 新建对话按钮 + 搜索框 + 视图切换 + 按日期/智能体分组的历史记录 + 底部设置入口
  */
 
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, MessageSquare, Settings, Trash2, BookOpen } from "lucide-react";
+import { Plus, Search, MessageSquare, Settings, Trash2, BookOpen, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ViewToggle } from "@/components/ui/view-toggle";
 import { useRouter } from "next/navigation";
-import type { ChatHistoryDTO } from "@/types/api";
+import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
 
 interface ChatSidebarProps {
   /** 当前选中的会话 ID（用于高亮） */
   activeSessionId?: string;
   /** 历史记录列表 */
   histories: ChatHistoryDTO[];
+  /** 按智能体分组的历史记录 */
+  groupedHistories?: Record<string, ChatHistoryDTO[]>;
+  /** 视图模式 */
+  viewMode?: HistoryViewMode;
+  /** 视图模式变更 */
+  onViewModeChange?: (mode: string) => void;
   /** 点击历史记录项 */
   onLoad: (history: ChatHistoryDTO) => void;
   /** 删除历史记录 */
   onDelete?: (id: string) => void;
   /** 新建对话 */
   onNewChat: () => void;
+  /** 是否正在切换会话 */
+  isSwitching?: boolean;
 }
 
 /** 按日期分组 */
@@ -32,7 +41,6 @@ function groupByDate(histories: ChatHistoryDTO[]): { label: string; items: ChatH
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today.getTime() - 86400000);
-  const thisWeek = new Date(today.getTime() - 7 * 86400000);
 
   const groups: { label: string; items: ChatHistoryDTO[] }[] = [
     { label: "今天", items: [] },
@@ -53,20 +61,33 @@ function groupByDate(histories: ChatHistoryDTO[]): { label: string; items: ChatH
 export function ChatSidebar({
   activeSessionId,
   histories,
+  groupedHistories,
+  viewMode = "by-agent",
+  onViewModeChange,
   onLoad,
   onDelete,
   onNewChat,
+  isSwitching,
 }: ChatSidebarProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const filtered = search
     ? histories.filter((h) =>
-      (h.question || "").toLowerCase().includes(search.toLowerCase())
-    )
+        (h.question || "").toLowerCase().includes(search.toLowerCase())
+      )
     : histories;
 
-  const groups = groupByDate(filtered);
+  // 切换分组展开/收起
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--chat-sidebar-bg)] border-r border-[var(--chat-border)]">
@@ -74,15 +95,20 @@ export function ChatSidebar({
       <div className="p-4 border-b border-[var(--chat-border)]">
         <Button
           onClick={onNewChat}
+          disabled={isSwitching}
           className="w-full h-10 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white rounded-lg text-[14px] font-medium gap-2 shadow-none"
         >
-          <Plus className="w-4 h-4" />
+          {isSwitching ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
           新建对话
         </Button>
       </div>
 
-      {/* 搜索框 */}
-      <div className="px-4 py-3">
+      {/* 搜索框 + 视图切换 */}
+      <div className="px-4 py-3 space-y-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
           <Input
@@ -92,41 +118,41 @@ export function ChatSidebar({
             className="h-9 pl-9 bg-[var(--surface-main)] border border-[var(--chat-border)] rounded-lg text-[13px] placeholder:text-[var(--text-muted)]"
           />
         </div>
+        {onViewModeChange && (
+          <div className="flex items-center">
+            <ViewToggle
+              mode={viewMode}
+              onModeChange={onViewModeChange}
+              options={[
+                { value: "by-agent", label: "按智能体" },
+                { value: "all", label: "全部历史" },
+              ]}
+            />
+          </div>
+        )}
       </div>
 
       {/* 历史记录列表 */}
       <ScrollArea className="flex-1 px-2">
         <div className="py-1">
-          {groups.map((group) => (
-            <div key={group.label}>
-              <div className="px-3 py-2 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">
-                {group.label}
-              </div>
-              {group.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="group flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[#2a2a38] mb-0.5 text-[var(--text-primary)]"
-                  onClick={() => onLoad(item)}
-                >
-                  <MessageSquare className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
-                  <span className="flex-1 text-[13px] truncate">
-                    {item.question || "新对话"}
-                  </span>
-                  {onDelete && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(item.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded hover:bg-[#fecaca] dark:hover:bg-red-900/30 text-[var(--text-muted)] hover:text-[#dc2626] transition-all"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          ))}
+          {viewMode === "by-agent" && groupedHistories ? (
+            <GroupedAgentView
+              grouped={groupedHistories}
+              activeSessionId={activeSessionId}
+              collapsedGroups={collapsedGroups}
+              onToggleGroup={toggleGroup}
+              onLoad={onLoad}
+              onDelete={onDelete}
+              search={search}
+            />
+          ) : (
+            <DateGroupedView
+              histories={filtered}
+              activeSessionId={activeSessionId}
+              onLoad={onLoad}
+              onDelete={onDelete}
+            />
+          )}
           {histories.length === 0 && (
             <div className="px-4 py-8 text-center text-[13px] text-[var(--text-muted)]">
               暂无对话记录
@@ -152,6 +178,155 @@ export function ChatSidebar({
           设置
         </div>
       </div>
+    </div>
+  );
+}
+
+/** 按智能体分组视图 */
+function GroupedAgentView({
+  grouped,
+  activeSessionId,
+  collapsedGroups,
+  onToggleGroup,
+  onLoad,
+  onDelete,
+  search,
+}: {
+  grouped: Record<string, ChatHistoryDTO[]>;
+  activeSessionId?: string;
+  collapsedGroups: Set<string>;
+  onToggleGroup: (key: string) => void;
+  onLoad: (history: ChatHistoryDTO) => void;
+  onDelete?: (id: string) => void;
+  search: string;
+}) {
+  // 如果有搜索关键词，过滤分组
+  const filteredGrouped: Record<string, ChatHistoryDTO[]> = {};
+  if (search) {
+    Object.entries(grouped).forEach(([agentName, items]) => {
+      const filtered = items.filter((h) =>
+        (h.question || "").toLowerCase().includes(search.toLowerCase())
+      );
+      if (filtered.length > 0) {
+        filteredGrouped[agentName] = filtered;
+      }
+    });
+  }
+
+  const displayGrouped = search ? filteredGrouped : grouped;
+
+  return (
+    <div className="space-y-1">
+      {Object.entries(displayGrouped).map(([agentName, items]) => {
+        const isCollapsed = collapsedGroups.has(agentName);
+        return (
+          <div key={agentName}>
+            <div
+              className="flex items-center gap-1.5 px-3 py-2 cursor-pointer hover:bg-[#2a2a38] rounded-lg"
+              onClick={() => onToggleGroup(agentName)}
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-3 h-3 text-[var(--text-muted)]" />
+              ) : (
+                <ChevronDown className="w-3 h-3 text-[var(--text-muted)]" />
+              )}
+              <span className="text-[12px] font-semibold text-[var(--text-muted)] truncate">
+                {agentName}
+              </span>
+              <span className="text-[11px] text-[var(--text-muted)] ml-auto">
+                {items.length}
+              </span>
+            </div>
+            {!isCollapsed && (
+              <div className="ml-2">
+                {items.map((item) => (
+                  <HistoryItem
+                    key={item.id}
+                    item={item}
+                    isActive={item.sessionId === activeSessionId}
+                    onLoad={onLoad}
+                    onDelete={onDelete}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** 按日期分组视图 */
+function DateGroupedView({
+  histories,
+  activeSessionId,
+  onLoad,
+  onDelete,
+}: {
+  histories: ChatHistoryDTO[];
+  activeSessionId?: string;
+  onLoad: (history: ChatHistoryDTO) => void;
+  onDelete?: (id: string) => void;
+}) {
+  const groups = groupByDate(histories);
+
+  return (
+    <div>
+      {groups.map((group) => (
+        <div key={group.label}>
+          <div className="px-3 py-2 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+            {group.label}
+          </div>
+          {group.items.map((item) => (
+            <HistoryItem
+              key={item.id}
+              item={item}
+              isActive={item.sessionId === activeSessionId}
+              onLoad={onLoad}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 历史记录项 */
+function HistoryItem({
+  item,
+  isActive,
+  onLoad,
+  onDelete,
+}: {
+  item: ChatHistoryDTO;
+  isActive: boolean;
+  onLoad: (history: ChatHistoryDTO) => void;
+  onDelete?: (id: string) => void;
+}) {
+  return (
+    <div
+      className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[#2a2a38] mb-0.5 text-[var(--text-primary)] ${
+        isActive ? "bg-[#2a2a38]" : ""
+      }`}
+      onClick={() => onLoad(item)}
+    >
+      <MessageSquare className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+      <span className="flex-1 text-[13px] truncate">
+        {item.question || "新对话"}
+      </span>
+      {onDelete && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(item.id);
+          }}
+          className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded hover:bg-[#fecaca] dark:hover:bg-red-900/30 text-[var(--text-muted)] hover:text-[#dc2626] transition-all"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 }
