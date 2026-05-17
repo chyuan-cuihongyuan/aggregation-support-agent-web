@@ -122,12 +122,12 @@ export function useSessionManager({ userId, agentId, agentName, onMessageComplet
     messagesRef.current = messages;
   }, [messages]);
 
-  // 初始化时创建新会话
+  // 初始化时创建新会话（等待 agentId 加载完成）
   useEffect(() => {
-    if (!currentSessionId && !isSwitching) {
+    if (!currentSessionId && !isSwitching && agentId) {
       createNewSession(false);
     }
-  }, [currentSessionId, isSwitching, createNewSession]);
+  }, [currentSessionId, isSwitching, agentId, createNewSession]);
 
   // 新建对话
   const handleNewChat = useCallback(async () => {

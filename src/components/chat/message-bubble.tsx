@@ -12,8 +12,10 @@ import { Bot, User, Terminal, Activity, Copy, Check } from "lucide-react";
 import { marked } from "marked";
 import { memo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ExportActions } from "./export-actions";
 
 interface MessageBubbleProps {
+  id: string;
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
@@ -93,7 +95,7 @@ function MetricCard({ label, value, status, change }: { label: string; value: st
   );
 }
 
-export const MessageBubble = memo(({ role, content, isStreaming, timestamp }: MessageBubbleProps) => {
+export const MessageBubble = memo(({ id, role, content, isStreaming, timestamp }: MessageBubbleProps) => {
   const isUser = role === "user";
   const now = timestamp || new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 
@@ -141,7 +143,7 @@ export const MessageBubble = memo(({ role, content, isStreaming, timestamp }: Me
             />
           )}
           {isStreaming && (
-            <span className="inline-block w-2 h-4 bg-current/50 animate-pulse ml-1" />
+            <span className="inline-block w-[3px] h-[18px] bg-[var(--brand-accent)] animate-pulse ml-0.5 rounded-sm align-text-bottom" />
           )}
         </div>
 
@@ -164,6 +166,11 @@ PID  USER   %CPU  %MEM  COMMAND
         {/* 示例：系统指标分析 */}
         {!isUser && content.includes("性能") && content.includes("CPU") && (
           <AnalysisCard />
+        )}
+
+        {/* 导出操作 - 仅 AI 消息且非流式状态时显示 */}
+        {!isUser && !isStreaming && content && (
+          <ExportActions content={content} messageId={id} />
         )}
       </div>
     </div>

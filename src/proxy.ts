@@ -1,5 +1,5 @@
 /**
- * Next.js 中间件
+ * Next.js 代理（原 middleware，Next.js 16 已重命名为 proxy）
  *
  * 保护需要认证的路由，未登录用户重定向到登录页
  * 已登录用户访问登录/注册页时重定向到对话页
@@ -57,7 +57,7 @@ async function verifyToken(token: string): Promise<boolean> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const hasToken = !!token;

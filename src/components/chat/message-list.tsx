@@ -50,6 +50,7 @@ export function MessageList({ messages }: MessageListProps) {
           {messages.map((message) => (
             <MessageBubble
               key={message.id}
+              id={message.id}
               role={message.role}
               content={message.content}
               isStreaming={message.isStreaming}

@@ -50,6 +50,7 @@ export function useSession({
   // 创建新会话
   const createNewSession = useCallback(async (shouldSaveCurrent = true) => {
     if (isSwitchingRef.current) return null;
+    if (!agentId) return null;
 
     isSwitchingRef.current = true;
     setIsSwitching(true);

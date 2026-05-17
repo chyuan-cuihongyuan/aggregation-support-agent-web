@@ -29,51 +29,18 @@ export function useChat({
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const streamingBufferRef = useRef<string>("");
-  const displayedContentRef = useRef<string>("");
-  const typewriterTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const pendingChunksRef = useRef<string[]>([]);
-
-  // 打字机效果：逐字显示内容
-  const startTypewriter = useCallback((messageId: string) => {
-    if (typewriterTimerRef.current) {
-      return;
-    }
-
-    typewriterTimerRef.current = setInterval(() => {
-      const displayed = displayedContentRef.current;
-      const targetContent = streamingBufferRef.current;
-
-      if (displayed.length >= targetContent.length) {
-        if (displayed.length === targetContent.length) {
-          if (typewriterTimerRef.current) {
-            clearInterval(typewriterTimerRef.current);
-            typewriterTimerRef.current = undefined;
-          }
-        }
-        return;
-      }
-
-      const nextChar = targetContent[displayed.length];
-      displayedContentRef.current = displayed + nextChar;
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, content: displayedContentRef.current }
-            : msg
-        )
-      );
-    }, 30);
-  }, []);
 
   const processChunk = useCallback((chunk: string, messageId: string) => {
     streamingBufferRef.current += chunk;
-    pendingChunksRef.current.push(chunk);
-
-    if (!typewriterTimerRef.current) {
-      startTypewriter(messageId);
-    }
-  }, [startTypewriter]);
+    // 直接更新消息内容，实现实时显示
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? { ...msg, content: streamingBufferRef.current }
+          : msg
+      )
+    );
+  }, []);
 
   // 发送消息
   const sendMessage = useCallback(
@@ -98,8 +65,6 @@ export function useChat({
 
       setIsStreaming(true);
       streamingBufferRef.current = "";
-      displayedContentRef.current = "";
-      pendingChunksRef.current = [];
 
       // 标记有未保存更改
       setHasUnsavedChanges?.(true);
@@ -113,20 +78,6 @@ export function useChat({
             processChunk(chunk, aiMessageId);
           }
         );
-
-        // 流结束，等待打字机效果完成
-        const waitForTypewriter = () => {
-          return new Promise<void>((resolve) => {
-            const checkInterval = setInterval(() => {
-              if (!typewriterTimerRef.current) {
-                clearInterval(checkInterval);
-                resolve();
-              }
-            }, 100);
-          });
-        };
-
-        await waitForTypewriter();
 
         const finalContent = streamingBufferRef.current;
         setMessages((prev) =>
@@ -204,8 +155,6 @@ export function useChat({
 
     setIsStreaming(true);
     streamingBufferRef.current = "";
-    displayedContentRef.current = "";
-    pendingChunksRef.current = [];
 
     try {
       await requestSSE(
@@ -219,19 +168,6 @@ export function useChat({
           processChunk(chunk, aiMessageId);
         }
       );
-
-      const waitForTypewriter = () => {
-        return new Promise<void>((resolve) => {
-          const checkInterval = setInterval(() => {
-            if (!typewriterTimerRef.current) {
-              clearInterval(checkInterval);
-              resolve();
-            }
-          }, 100);
-        });
-      };
-
-      await waitForTypewriter();
 
       const finalContent = streamingBufferRef.current;
       setMessages((prev) =>

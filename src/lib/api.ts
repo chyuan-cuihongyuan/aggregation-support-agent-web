@@ -147,10 +147,14 @@ export function uploadFile<T>(
 // ========== SSE 流式读取 ==========
 
 /**
- * 读取 SSE 流
+ * 读取 SSE 流，兼容非 SSE 格式（JSON / 纯文本）响应
+ *
+ * - SSE 格式：逐块解析 `data:` 行并回调
+ * - JSON 格式：提取 data / answer / content 字段后整块回调，前端仍可做打字机动画
+ * - 纯文本：整块回调
+ *
  * @param response - fetch 响应对象
  * @param onChunk - 接收数据块回调
- * @returns Promise，流结束时 resolve
  */
 export async function readSSEStream(
   response: Response,
@@ -163,6 +167,7 @@ export async function readSSEStream(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let hasSSEData = false;
 
   try {
     while (true) {
@@ -171,7 +176,7 @@ export async function readSSEStream(
 
       buffer += decoder.decode(value, { stream: true });
 
-      // 处理完整的 SSE 事件
+      // 处理完整的 SSE 事件（以 \n\n 分隔）
       const events = buffer.split("\n\n");
       buffer = events.pop() || ""; // 保留不完整的事件
 
@@ -179,22 +184,41 @@ export async function readSSEStream(
         const lines = event.split("\n");
         const dataLines = lines
           .filter((line) => line.startsWith("data:"))
-          .map((line) => line.slice(5)); // 去掉 "data:" 前缀
+          .map((line) => line.slice(5));
 
         if (dataLines.length > 0) {
+          hasSSEData = true;
           onChunk(dataLines.join("\n"));
         }
       }
     }
 
-    // 处理缓冲区中剩余的数据
+    // 处理缓冲区中剩余的 SSE 数据
     if (buffer.trim()) {
       const lines = buffer.split("\n");
       const dataLines = lines
         .filter((line) => line.startsWith("data:"))
         .map((line) => line.slice(5));
       if (dataLines.length > 0) {
+        hasSSEData = true;
         onChunk(dataLines.join("\n"));
+      }
+    }
+
+    // 非 SSE 降级：尝试解析 JSON 或纯文本
+    if (!hasSSEData && buffer.trim()) {
+      try {
+        const json = JSON.parse(buffer);
+        // 兼容多种后端响应结构
+        const content =
+          json.data?.answer ?? json.data?.content ?? json.data?.message ??
+          json.data ?? json.answer ?? json.content ?? json.message ?? "";
+        if (content) {
+          onChunk(typeof content === "string" ? content : JSON.stringify(content));
+        }
+      } catch {
+        // 纯文本回退
+        onChunk(buffer.trim());
       }
     }
   } finally {
