@@ -93,15 +93,31 @@ export default function ChatPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[var(--chat-main-bg)]">
-        <div className="text-[var(--text-muted)]">加载中...</div>
+      <div className="flex h-screen items-center justify-center bg-[var(--chat-main-bg)] relative overflow-hidden">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="bg-orb bg-orb-1 w-[500px] h-[500px] -top-[100px] -right-[100px] bg-[rgba(102,126,234,0.06)] dark:bg-[rgba(102,126,234,0.08)]" />
+          <div className="bg-orb bg-orb-2 w-[400px] h-[400px] -bottom-[80px] -left-[80px] bg-[rgba(230,57,70,0.04)] dark:bg-[rgba(230,57,70,0.06)]" />
+        </div>
+        <div className="relative z-10 text-[var(--text-muted)]">加载中...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen min-h-0 bg-[var(--chat-main-bg)]">
+    <div className="flex flex-col h-screen min-h-0 bg-[var(--chat-main-bg)] relative overflow-hidden">
+      {/* 背景装饰层 */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* 渐变光晕 */}
+        <div className="bg-orb bg-orb-1 w-[600px] h-[600px] -top-[150px] -right-[150px] bg-[rgba(102,126,234,0.05)] dark:bg-[rgba(102,126,234,0.07)]" />
+        <div className="bg-orb bg-orb-2 w-[450px] h-[450px] top-[40%] -left-[100px] bg-[rgba(118,75,162,0.04)] dark:bg-[rgba(118,75,162,0.06)]" />
+        <div className="bg-orb bg-orb-3 w-[350px] h-[350px] -bottom-[80px] right-[20%] bg-[rgba(230,57,70,0.03)] dark:bg-[rgba(230,57,70,0.05)]" />
+        {/* 点阵图案 */}
+        <div className="absolute inset-0 bg-dot-pattern text-[var(--text-muted)] opacity-[0.04] dark:opacity-[0.03]" />
+      </div>
+
       {/* 顶栏 */}
+      <div className="relative z-10 shrink-0">
       <ChatTopbar
         agents={agents}
         selectedAgentId={selectedAgentId}
@@ -109,9 +125,10 @@ export default function ChatPage() {
         onAiOpsClick={handleAiOpsClick}
         onMenuClick={() => setSidebarOpen(true)}
       />
+      </div>
 
       {/* 主内容区 */}
-      <div className="grid flex-1 overflow-hidden min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="relative z-10 grid flex-1 overflow-hidden min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* 左侧边栏 - 桌面端 */}
         <aside className="hidden lg:block h-full">
           <ChatSidebar

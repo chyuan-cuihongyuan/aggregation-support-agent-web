@@ -68,8 +68,9 @@ function LoginForm() {
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* 浅色模式装饰 */}
         <div className="block dark:hidden">
-          <div className="absolute -top-[200px] -right-[200px] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(102,126,234,0.08)_0%,transparent_70%)] rounded-full" />
-          <div className="absolute -bottom-[150px] -left-[150px] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(230,57,70,0.06)_0%,transparent_70%)] rounded-full" />
+          <div className="bg-orb bg-orb-1 w-[600px] h-[600px] -top-[200px] -right-[200px] bg-[rgba(102,126,234,0.08)]" />
+          <div className="bg-orb bg-orb-2 w-[500px] h-[500px] -bottom-[150px] -left-[150px] bg-[rgba(230,57,70,0.06)]" />
+          <div className="bg-orb bg-orb-3 w-[300px] h-[300px] top-[50%] left-[30%] bg-[rgba(118,75,162,0.05)]" />
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -80,8 +81,10 @@ function LoginForm() {
         </div>
         {/* 深色模式装饰 */}
         <div className="hidden dark:block">
-          <div className="absolute -top-[200px] -right-[200px] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(102,126,234,0.1)_0%,transparent_70%)] rounded-full" />
-          <div className="absolute -bottom-[150px] -left-[150px] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(230,57,70,0.08)_0%,transparent_70%)] rounded-full" />
+          <div className="bg-orb bg-orb-1 w-[600px] h-[600px] -top-[200px] -right-[200px] bg-[rgba(102,126,234,0.1)]" />
+          <div className="bg-orb bg-orb-2 w-[500px] h-[500px] -bottom-[150px] -left-[150px] bg-[rgba(230,57,70,0.08)]" />
+          <div className="bg-orb bg-orb-3 w-[350px] h-[350px] top-[45%] left-[25%] bg-[rgba(118,75,162,0.06)]" />
+          <div className="absolute inset-0 bg-dot-pattern text-[var(--text-muted)] opacity-[0.02]" />
         </div>
       </div>
 
