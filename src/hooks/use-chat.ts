@@ -43,6 +43,8 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
+      setIsStreaming(false);
+      streamingBufferRef.current = "";
     }
   }, []);
 

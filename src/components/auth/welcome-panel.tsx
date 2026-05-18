@@ -7,6 +7,7 @@
 
 "use client";
 
+import { useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Search, Activity, FileUp } from "lucide-react";
@@ -27,7 +28,7 @@ export function WelcomePanel({ onQuickAction }: WelcomePanelProps) {
   const router = useRouter();
   const displayName = user?.nickname || user?.username || "用户";
 
-  const handleAction = (action: typeof QUICK_ACTIONS[0]) => {
+  const handleAction = useCallback((action: typeof QUICK_ACTIONS[0]) => {
     if (action.message) {
       onQuickAction?.(action.message);
     } else if (action.action === "knowledge") {
@@ -37,7 +38,7 @@ export function WelcomePanel({ onQuickAction }: WelcomePanelProps) {
     } else if (action.action === "upload") {
       router.push("/knowledge");
     }
-  };
+  }, [onQuickAction, router]);
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 relative">

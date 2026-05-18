@@ -27,7 +27,7 @@ interface ChatSidebarProps {
   /** 视图模式 */
   viewMode?: HistoryViewMode;
   /** 视图模式切换 */
-  onViewModeChange?: (mode: HistoryViewMode) => void;
+  onViewModeChange?: (mode: HistoryViewMode | ((prev: HistoryViewMode) => HistoryViewMode)) => void;
   /** 点击历史记录项 */
   onLoad: (history: ChatHistoryDTO) => void;
   /** 删除历史记录 */

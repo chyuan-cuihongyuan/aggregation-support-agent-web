@@ -14,6 +14,7 @@ import { usePluginStatus } from "@/hooks/use-plugin-status";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 import {
   User, Lock, Settings as SettingsIcon, Layers, Wrench, Terminal,
   Bell, Activity, FileText, ChevronLeft,
@@ -59,7 +60,6 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [activeNav, setActiveNav] = useState<NavKey>("profile");
   const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
   const [formData, setFormData] = useState({
     nickname: "",
     email: "",
@@ -77,6 +77,47 @@ export default function SettingsPage() {
       });
     }
   }, [user]);
+
+  // 表单验证函数
+  const validateForm = (): { valid: boolean; error?: string } => {
+    if (!formData.nickname.trim()) {
+      return { valid: false, error: "显示名称不能为空" };
+    }
+    if (formData.nickname.length > 50) {
+      return { valid: false, error: "显示名称不能超过50个字符" };
+    }
+    if (!formData.email.trim()) {
+      return { valid: false, error: "邮箱地址不能为空" };
+    }
+    // 简单的邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return { valid: false, error: "请输入有效的邮箱地址" };
+    }
+    return { valid: true };
+  };
+
+  // 保存用户信息
+  const handleSaveProfile = async () => {
+    const validation = validateForm();
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateUser({
+        nickname: formData.nickname,
+        email: formData.email,
+      });
+      toast.success("保存成功");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "保存失败，请重试");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (authLoading || !user) {
     return <div className="flex h-screen items-center justify-center bg-[var(--surface-bg)] text-[var(--text-muted)]">加载中...</div>;
@@ -139,7 +180,7 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <div className="text-[18px] font-bold text-[var(--text-primary)]">{user.nickname || user.username}</div>
-                    <div className="text-[13px] text-[var(--text-secondary)]">系统管理员 · {user.email || `${user.username}@company.com`}</div>
+                    <div className="text-[13px] text-[var(--text-secondary)]">系统管理员 · {user.email || `${user.username}@example.com`}</div>
                   </div>
                 </div>
                 {[
@@ -169,25 +210,10 @@ export default function SettingsPage() {
                 <Button
                   className="h-9 px-4 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white rounded-lg text-[13px]"
                   disabled={isSaving}
-                  onClick={async () => {
-                    setIsSaving(true);
-                    setSaveMessage("");
-                    const success = await updateUser({
-                      nickname: formData.nickname,
-                      email: formData.email,
-                    });
-                    setSaveMessage(success ? "保存成功" : "保存失败");
-                    setIsSaving(false);
-                    setTimeout(() => setSaveMessage(""), 3000);
-                  }}
+                  onClick={handleSaveProfile}
                 >
                   {isSaving ? "保存中..." : "保存修改"}
                 </Button>
-                {saveMessage && (
-                  <span className={`text-[13px] ${saveMessage === "保存成功" ? "text-[var(--status-success)]" : "text-[var(--status-error)]"}`}>
-                    {saveMessage}
-                  </span>
-                )}
               </div>
             </>
           )}

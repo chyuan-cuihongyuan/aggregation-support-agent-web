@@ -31,6 +31,7 @@ export default function ChatPage() {
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inputMode, setInputMode] = useState<InputMode>("chat");
+  const [pendingQuestion, setPendingQuestion] = useState("");
 
   const userId = user?.username || "default";
 

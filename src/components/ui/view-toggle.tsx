@@ -9,19 +9,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface ViewOption {
-  value: string;
+interface ViewOption<T extends string = string> {
+  value: T;
   label: string;
 }
 
-interface ViewToggleProps {
-  mode: string;
-  onModeChange: (mode: string) => void;
-  options: ViewOption[];
+interface ViewToggleProps<T extends string = string> {
+  mode: T;
+  onModeChange: (mode: T) => void;
+  options: ViewOption<T>[];
   className?: string;
 }
 
-export function ViewToggle({ mode, onModeChange, options, className }: ViewToggleProps) {
+export function ViewToggle<T extends string = string>({
+  mode,
+  onModeChange,
+  options,
+  className
+}: ViewToggleProps<T>) {
   const currentLabel = options.find(opt => opt.value === mode)?.label || options[0]?.label || "";
 
   return (
