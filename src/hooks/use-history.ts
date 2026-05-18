@@ -6,9 +6,10 @@
 
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { requestJson } from "@/lib/api";
-import type { ChatHistoryDTO } from "@/types/api";
+import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
+import { groupHistoriesByAgent, migrateLegacyHistory } from "@/utils/session-utils";
 
 interface UseHistoryOptions {
   userId: string;
@@ -18,6 +19,14 @@ export function useHistory({ userId }: UseHistoryOptions) {
   const [histories, setHistories] = useState<ChatHistoryDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
+
+  // 按智能体分组的历史记录
+  const groupedHistories = useMemo(() => {
+    if (viewMode !== "by-agent") return {};
+    const grouped = groupHistoriesByAgent(histories);
+    return Object.fromEntries(grouped);
+  }, [histories, viewMode]);
 
   // 加载历史记录
   const loadHistories = useCallback(async () => {
@@ -27,7 +36,9 @@ export function useHistory({ userId }: UseHistoryOptions) {
       const data = await requestJson<ChatHistoryDTO[]>(
         `/api/v1/chat_history/query?userId=${userId}`
       );
-      setHistories(data);
+      // 旧数据迁移：为没有 sessionId 的记录生成虚拟 sessionId
+      const migratedData = data.map(migrateLegacyHistory);
+      setHistories(migratedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "加载失败");
     } finally {
@@ -87,6 +98,9 @@ export function useHistory({ userId }: UseHistoryOptions) {
 
   return {
     histories,
+    groupedHistories,
+    viewMode,
+    setViewMode,
     isLoading,
     error,
     loadHistories,
