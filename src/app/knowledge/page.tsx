@@ -91,11 +91,12 @@ export default function KnowledgePage() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const data = await requestJson<{ source: string; text: string; score: number }[]>(
+      const data = await requestJson<{ query: string; vectorResults: { content: string; score: number; source?: string }[]; bm25Results: { content: string; score: number; source?: string }[]; hybridResults: { content: string; score: number; source?: string }[] }>(
         "/api/v1/documents/search",
-        { method: "POST", body: JSON.stringify({ query: searchQuery, userId }) }
+        { method: "POST", body: JSON.stringify({ query: searchQuery, topK: 5 }) }
       );
-      setSearchResults(data);
+      // 使用混合检索结果作为展示
+      setSearchResults(data.hybridResults?.map(r => ({ source: r.source || "", text: r.content, score: r.score })) || []);
     } catch {
       // 静默
     }

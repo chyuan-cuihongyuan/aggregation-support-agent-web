@@ -199,6 +199,51 @@ export interface AiOpsRequest {
   alertDescription: string;
 }
 
+/**
+ * 告警信息
+ */
+export interface AlertDTO {
+  /** 告警ID */
+  id: string;
+  /** 严重程度: critical, warning, info */
+  severity: "critical" | "warning" | "info";
+  /** 告警名称 */
+  name: string;
+  /** 告警摘要 */
+  summary: string;
+  /** 来源主机 */
+  host: string;
+  /** 告警时间 */
+  time: string;
+  /** 告警状态: active, acknowledged, resolved */
+  status: "active" | "acknowledged" | "resolved";
+  /** 告警来源 */
+  source?: string;
+  /** 告警指标 */
+  metrics?: Record<string, any>;
+  /** 告警标签 */
+  labels?: Record<string, string>;
+  /** 告警描述 */
+  description?: string;
+}
+
+/**
+ * 告警列表响应
+ */
+export interface AlertListResponse {
+  /** 告警列表 */
+  alerts: AlertDTO[];
+  /** 总数 */
+  total: number;
+  /** 各状态告警数量 */
+  counts: {
+    critical: number;
+    warning: number;
+    info: number;
+    total: number;
+  };
+}
+
 // ========== 认证相关 ==========
 
 /** 注册请求 */

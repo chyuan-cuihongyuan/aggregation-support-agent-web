@@ -20,7 +20,6 @@ export function useHistory({ userId }: UseHistoryOptions) {
   const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
 
   // 按智能体分组的历史记录
   const groupedHistories = useMemo(() => {

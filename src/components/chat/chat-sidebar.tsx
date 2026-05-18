@@ -174,18 +174,6 @@ export function ChatSidebar({
         )}
       </div>
 
-      {/* 视图切换 */}
-      {onViewModeChange && (
-        <div className="px-4 pb-2">
-          <ViewToggle
-            mode={viewMode}
-            onModeChange={(mode) => onViewModeChange(mode as HistoryViewMode)}
-            options={viewOptions}
-            className="h-7 text-[12px] text-[var(--text-secondary)]"
-          />
-        </div>
-      )}
-
       {/* 历史记录列表 */}
       <ScrollArea className="flex-1 px-2">
         <div className="py-1">
@@ -369,44 +357,6 @@ function DateGroupedView({
           ))}
         </div>
       ))}
-    </div>
-  );
-}
-
-/** 历史记录项 */
-function HistoryItem({
-  item,
-  isActive,
-  onLoad,
-  onDelete,
-}: {
-  item: ChatHistoryDTO;
-  isActive: boolean;
-  onLoad: (history: ChatHistoryDTO) => void;
-  onDelete?: (id: string) => void;
-}) {
-  return (
-    <div
-      className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[#2a2a38] mb-0.5 text-[var(--text-primary)] ${
-        isActive ? "bg-[#2a2a38]" : ""
-      }`}
-      onClick={() => onLoad(item)}
-    >
-      <MessageSquare className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
-      <span className="flex-1 text-[13px] truncate">
-        {item.question || "新对话"}
-      </span>
-      {onDelete && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(item.id);
-          }}
-          className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded hover:bg-[#fecaca] dark:hover:bg-red-900/30 text-[var(--text-muted)] hover:text-[#dc2626] transition-all"
-        >
-          <Trash2 className="w-3 h-3" />
-        </button>
-      )}
     </div>
   );
 }
