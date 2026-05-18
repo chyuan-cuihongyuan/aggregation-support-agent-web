@@ -100,12 +100,12 @@ export function useSessionManager({
     [histories, loadSession, loadConversation]
   );
 
-  // 初始化时创建新会话
+  // 初始化时创建新会话（仅在 agentId 非空时）
   useEffect(() => {
-    if (!currentSessionId && !isSwitching) {
+    if (!currentSessionId && !isSwitching && agentId) {
       createNewSession(false);
     }
-  }, [currentSessionId, isSwitching, createNewSession]);
+  }, [currentSessionId, isSwitching, createNewSession, agentId]);
 
   // 智能体切换时创建新会话
   useEffect(() => {

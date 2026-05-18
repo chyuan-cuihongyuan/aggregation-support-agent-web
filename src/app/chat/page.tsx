@@ -21,8 +21,6 @@ import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
 import { useSessionManager } from "@/components/session/session-manager";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 
 export default function ChatPage() {
@@ -39,7 +37,6 @@ export default function ChatPage() {
 
   const {
     currentSessionId,
-    isSwitching,
     messages,
     isStreaming,
     sendMessage,
@@ -50,7 +47,6 @@ export default function ChatPage() {
     setViewMode,
     saveHistory,
     deleteHistory,
-    clearAllHistories,
     handleNewChat,
     handleLoadHistory,
   } = useSessionManager({

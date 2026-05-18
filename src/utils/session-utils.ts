@@ -11,15 +11,16 @@ export function historyItemsToMessages(
   historyItems: Array<{ question: string; answer: string }>
 ): Message[] {
   const messages: Message[] = [];
+  const baseTs = Date.now();
 
   historyItems.forEach((item, index) => {
     messages.push({
-      id: `history-q-${index}-${Date.now()}`,
+      id: `history-q-${index}-${baseTs}`,
       role: "user",
       content: item.question,
     });
     messages.push({
-      id: `history-a-${index}-${Date.now()}`,
+      id: `history-a-${index}-${baseTs}`,
       role: "assistant",
       content: item.answer,
     });
