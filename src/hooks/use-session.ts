@@ -7,6 +7,7 @@
 
 import { useState, useCallback } from "react";
 import { requestJson } from "@/lib/api";
+import { sessionStorage } from "@/lib/session-storage";
 import { generateTempSessionId } from "@/utils/session-utils";
 import type { SessionCacheData, Message } from "@/types/api";
 
@@ -78,6 +79,7 @@ export function useSession({
       setCurrentSessionId(sessionId);
       setHasUnsavedChanges(false);
       setSessionCache(new Map());
+      sessionStorage.clear(); // 清空持久化缓存
 
       console.log("[useSession] 新会话创建成功", { sessionId });
       onSessionChange?.(sessionId);
@@ -91,6 +93,7 @@ export function useSession({
       setCurrentSessionId(tempSessionId);
       setHasUnsavedChanges(false);
       setSessionCache(new Map());
+      sessionStorage.clear(); // 清空持久化缓存
 
       console.warn("[useSession] 使用临时会话 ID", { tempSessionId });
       onSessionChange?.(tempSessionId);
@@ -126,11 +129,22 @@ export function useSession({
         await saveCurrentSession();
       }
 
-      // 2. 更新当前会话 ID
+      // 2. 尝试从持久化缓存加载
+      const cached = sessionStorage.get(sessionId);
+      if (cached) {
+        // 缓存命中，直接使用缓存数据，跳过重新加载
+        console.log("[useSession] 缓存命中，使用缓存数据", { sessionId });
+        setCurrentSessionId(sessionId);
+        setHasUnsavedChanges(false);
+        setSessionCache((prev) => new Map(prev).set(sessionId, cached));
+        onSessionChange?.(sessionId);
+        return;
+      }
+
+      // 3. 缓存未命中，正常加载并保存到缓存
       setCurrentSessionId(sessionId);
       setHasUnsavedChanges(false);
 
-      // 3. 更新缓存
       const sessionData: SessionCacheData = {
         sessionId,
         agentId,
@@ -139,6 +153,9 @@ export function useSession({
         lastUpdateTime: Date.now(),
       };
       setSessionCache((prev) => new Map(prev).set(sessionId, sessionData));
+
+      // 保存到持久化缓存
+      sessionStorage.set(sessionId, sessionData);
 
       console.log("[useSession] 历史会话加载成功", { sessionId });
       onSessionChange?.(sessionId);
