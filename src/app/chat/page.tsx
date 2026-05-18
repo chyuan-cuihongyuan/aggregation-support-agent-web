@@ -21,7 +21,9 @@ import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
 import { useSessionManager } from "@/components/session/session-manager";
-import type { AgentConfig, HistoryViewMode } from "@/types/api";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -39,19 +41,35 @@ export default function ChatPage() {
     isSwitching,
     messages,
     isStreaming,
+    sendMessage,
+    sendAiOps,
     histories,
     groupedHistories,
     viewMode,
     setViewMode,
-    handleNewChat,
-    handleSendMessage,
-    handleLoadHistory,
-    sendAiOps,
+    saveHistory,
     deleteHistory,
+    clearAllHistories,
+    handleNewChat,
+    handleLoadHistory,
   } = useSessionManager({
     userId,
     agentId: selectedAgentId,
     agentName: selectedAgentName,
+    onMessageComplete: async (message) => {
+      // 消息完成回调：保存对话历史
+      if (pendingQuestion && message.role === "assistant") {
+        await saveHistory({
+          userId,
+          agentId: selectedAgentId,
+          agentName: selectedAgentName,
+          sessionId: currentSessionId || "",
+          question: pendingQuestion,
+          answer: message.content,
+        });
+        setPendingQuestion("");
+      }
+    },
   });
 
   // 未登录则跳转
@@ -83,12 +101,31 @@ export default function ChatPage() {
     if (agent) {
       setSelectedAgentId(agentId);
       setSelectedAgentName(agent.agentName);
-      // 切换智能体时创建新会话（handleNewChat 已在 session-manager 内部处理）
     }
   };
 
+  const handleSendMessage = async (content: string) => {
+    setPendingQuestion(content);
+    await sendMessage(content);
+  };
+
+  const onLoadHistory = (history: ChatHistoryDTO) => {
+    handleLoadHistory(history);
+    setSidebarOpen(false);
+  };
+
   const handleAiOpsClick = async () => {
-    await sendAiOps(selectedAgentId);
+    const result = await sendAiOps(selectedAgentId);
+    if (result) {
+      await saveHistory({
+        userId,
+        agentId: selectedAgentId,
+        agentName: `${selectedAgentName} (AIOps)`,
+        sessionId: currentSessionId || "",
+        question: result.question,
+        answer: result.answer,
+      });
+    }
   };
 
   if (authLoading || !user) {
@@ -136,11 +173,11 @@ export default function ChatPage() {
             histories={histories}
             groupedHistories={groupedHistories}
             viewMode={viewMode}
-            onViewModeChange={(m) => setViewMode(m as HistoryViewMode)}
-            onLoad={handleLoadHistory}
+            onViewModeChange={setViewMode}
+            onLoad={onLoadHistory}
             onDelete={deleteHistory}
             onNewChat={handleNewChat}
-            isSwitching={isSwitching}
+            currentSessionId={currentSessionId}
           />
         </aside>
 
@@ -151,7 +188,7 @@ export default function ChatPage() {
 
           {/* 会话标题 */}
           <SessionHeader
-            title={messages.length > 0 ? "对话中" : "新对话"}
+            title={messages.length > 0 ? (pendingQuestion || "新对话") : "新对话"}
             modelInfo={`${selectedAgentName || "AI 智能助手"} · 会话 #${currentSessionId?.slice(0, 8) || "新"}`}
             onNewChat={handleNewChat}
           />
@@ -188,17 +225,11 @@ export default function ChatPage() {
             histories={histories}
             groupedHistories={groupedHistories}
             viewMode={viewMode}
-            onViewModeChange={(m) => setViewMode(m as HistoryViewMode)}
-            onLoad={(history) => {
-              handleLoadHistory(history);
-              setSidebarOpen(false);
-            }}
+            onViewModeChange={setViewMode}
+            onLoad={onLoadHistory}
             onDelete={deleteHistory}
-            onNewChat={() => {
-              handleNewChat();
-              setSidebarOpen(false);
-            }}
-            isSwitching={isSwitching}
+            onNewChat={handleNewChat}
+            currentSessionId={currentSessionId}
           />
         </SheetContent>
       </Sheet>

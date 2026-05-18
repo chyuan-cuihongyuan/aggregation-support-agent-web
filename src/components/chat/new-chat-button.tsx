@@ -1,11 +1,7 @@
-/**
- * 新建对话按钮组件
- */
-
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface NewChatButtonProps {
   onClick: () => void;
@@ -13,6 +9,10 @@ interface NewChatButtonProps {
   isSwitching?: boolean;
 }
 
+/**
+ * 新建对话按钮组件
+ * 用于创建新的对话会话
+ */
 export function NewChatButton({ onClick, disabled, isSwitching }: NewChatButtonProps) {
   return (
     <Button
@@ -20,13 +20,9 @@ export function NewChatButton({ onClick, disabled, isSwitching }: NewChatButtonP
       disabled={disabled || isSwitching}
       variant="outline"
       size="sm"
-      className="gap-2 h-8 text-[13px] border-[var(--chat-border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+      className="gap-2"
     >
-      {isSwitching ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Plus className="h-4 w-4" />
-      )}
+      <Plus className="h-4 w-4" />
       新建对话
     </Button>
   );

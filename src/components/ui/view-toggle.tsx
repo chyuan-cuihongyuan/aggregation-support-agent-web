@@ -1,9 +1,3 @@
-/**
- * 视图切换组件
- *
- * 用于在多种视图模式之间切换
- */
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -28,14 +22,14 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ mode, onModeChange, options, className }: ViewToggleProps) {
-  const currentLabel = options.find((opt) => opt.value === mode)?.label || options[0]?.label || "";
+  const currentLabel = options.find(opt => opt.value === mode)?.label || options[0]?.label || "";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className={`h-7 text-[12px] gap-1 px-2 text-[var(--text-muted)] ${className || ""}`}>
+        <Button variant="ghost" size="sm" className={className}>
           {currentLabel}
-          <ChevronDown className="h-3 w-3" />
+          <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">

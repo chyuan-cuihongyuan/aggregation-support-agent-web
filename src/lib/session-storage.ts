@@ -1,9 +1,3 @@
-/**
- * 会话本地存储
- *
- * 用于缓存会话数据，提升切换性能
- */
-
 import type { SessionCacheData } from "@/types/api";
 
 const STORAGE_KEY = "chat_session_cache";
@@ -24,38 +18,36 @@ export class SessionStorage {
 
   private loadFromLocalStorage() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
       if (stored) {
-        const parsed = JSON.parse(stored);
+        const parsed = JSON.parse(stored) as Record<string, CacheEntry>;
         this.cache = new Map(Object.entries(parsed));
         this.cleanExpired();
       }
-    } catch {
-      // 静默失败
+    } catch (error) {
+      console.error("[SessionStorage] 加载缓存失败", error);
     }
   }
 
   private saveToLocalStorage() {
     try {
+      if (typeof window === "undefined") return;
       const obj = Object.fromEntries(this.cache);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-    } catch {
-      // 静默失败
+    } catch (error) {
+      console.error("[SessionStorage] 保存缓存失败", error);
     }
   }
 
   private cleanExpired() {
     const now = Date.now();
     const expired: string[] = [];
-
     this.cache.forEach((entry, key) => {
       if (now - entry.timestamp > CACHE_TTL) {
         expired.push(key);
       }
     });
-
-    expired.forEach((key) => this.cache.delete(key));
-
+    expired.forEach(key => this.cache.delete(key));
     if (expired.length > 0) {
       this.saveToLocalStorage();
     }
@@ -66,25 +58,18 @@ export class SessionStorage {
       const firstKey = this.cache.keys().next().value;
       if (firstKey) this.cache.delete(firstKey);
     }
-
-    this.cache.set(sessionId, {
-      data,
-      timestamp: Date.now(),
-    });
-
+    this.cache.set(sessionId, { data, timestamp: Date.now() });
     this.saveToLocalStorage();
   }
 
   get(sessionId: string): SessionCacheData | null {
     const entry = this.cache.get(sessionId);
     if (!entry) return null;
-
     if (Date.now() - entry.timestamp > CACHE_TTL) {
       this.cache.delete(sessionId);
       this.saveToLocalStorage();
       return null;
     }
-
     return entry.data;
   }
 

@@ -16,16 +16,18 @@ import { useRouter } from "next/navigation";
 import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
 
 interface ChatSidebarProps {
-  /** 当前选中的会话 ID（用于高亮） */
+  /** 当前选中的会话 ID（用于高亮，向后兼容） */
   activeSessionId?: string;
+  /** 当前会话 ID（由会话管理器提供） */
+  currentSessionId?: string | null;
   /** 历史记录列表 */
   histories: ChatHistoryDTO[];
   /** 按智能体分组的历史记录 */
   groupedHistories?: Record<string, ChatHistoryDTO[]>;
   /** 视图模式 */
   viewMode?: HistoryViewMode;
-  /** 视图模式变更 */
-  onViewModeChange?: (mode: string) => void;
+  /** 视图模式切换 */
+  onViewModeChange?: (mode: HistoryViewMode) => void;
   /** 点击历史记录项 */
   onLoad: (history: ChatHistoryDTO) => void;
   /** 删除历史记录 */
@@ -58,8 +60,47 @@ function groupByDate(histories: ChatHistoryDTO[]): { label: string; items: ChatH
   return groups.filter((g) => g.items.length > 0);
 }
 
+/** 单条历史记录项组件 */
+function HistoryItem({
+  item,
+  isActive,
+  onLoad,
+  onDelete,
+}: {
+  item: ChatHistoryDTO;
+  isActive: boolean;
+  onLoad: (history: ChatHistoryDTO) => void;
+  onDelete?: (id: string) => void;
+}) {
+  return (
+    <div
+      className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-[#2a2a38] mb-0.5 ${
+        isActive ? "bg-[#2a2a38]" : "text-[var(--text-primary)]"
+      }`}
+      onClick={() => onLoad(item)}
+    >
+      <MessageSquare className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+      <span className="flex-1 text-[13px] truncate">
+        {item.question || "新对话"}
+      </span>
+      {onDelete && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(item.id);
+          }}
+          className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded hover:bg-[#fecaca] dark:hover:bg-red-900/30 text-[var(--text-muted)] hover:text-[#dc2626] transition-all"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function ChatSidebar({
   activeSessionId,
+  currentSessionId,
   histories,
   groupedHistories,
   viewMode = "by-agent",
@@ -71,7 +112,9 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // 使用 currentSessionId 或向后兼容 activeSessionId
+  const activeId = currentSessionId || activeSessionId;
 
   const filtered = search
     ? histories.filter((h) =>
@@ -79,15 +122,14 @@ export function ChatSidebar({
       )
     : histories;
 
-  // 切换分组展开/收起
-  const toggleGroup = (key: string) => {
-    setCollapsedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
+  // 按日期分组的结果
+  const dateGroups = groupByDate(filtered);
+
+  // 视图切换选项
+  const viewOptions = [
+    { value: "by-agent", label: "按智能体" },
+    { value: "all", label: "全部" },
+  ];
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--chat-sidebar-bg)] border-r border-[var(--chat-border)]">
@@ -132,27 +174,65 @@ export function ChatSidebar({
         )}
       </div>
 
+      {/* 视图切换 */}
+      {onViewModeChange && (
+        <div className="px-4 pb-2">
+          <ViewToggle
+            mode={viewMode}
+            onModeChange={(mode) => onViewModeChange(mode as HistoryViewMode)}
+            options={viewOptions}
+            className="h-7 text-[12px] text-[var(--text-secondary)]"
+          />
+        </div>
+      )}
+
       {/* 历史记录列表 */}
       <ScrollArea className="flex-1 px-2">
         <div className="py-1">
-          {viewMode === "by-agent" && groupedHistories ? (
-            <GroupedAgentView
-              grouped={groupedHistories}
-              activeSessionId={activeSessionId}
-              collapsedGroups={collapsedGroups}
-              onToggleGroup={toggleGroup}
-              onLoad={onLoad}
-              onDelete={onDelete}
-              search={search}
-            />
-          ) : (
-            <DateGroupedView
-              histories={filtered}
-              activeSessionId={activeSessionId}
-              onLoad={onLoad}
-              onDelete={onDelete}
-            />
-          )}
+          {viewMode === "by-agent" && groupedHistories && Object.keys(groupedHistories).length > 0
+            ? // 按智能体分组显示
+              Object.entries(groupedHistories).map(([agentName, items]) => {
+                // 搜索过滤
+                const filteredItems = search
+                  ? items.filter((h) =>
+                      (h.question || "").toLowerCase().includes(search.toLowerCase())
+                    )
+                  : items;
+                if (filteredItems.length === 0) return null;
+                return (
+                  <div key={agentName}>
+                    <div className="px-3 py-2 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+                      {agentName}
+                    </div>
+                    {filteredItems.map((item) => (
+                      <HistoryItem
+                        key={item.id}
+                        item={item}
+                        isActive={item.sessionId === activeId}
+                        onLoad={onLoad}
+                        onDelete={onDelete}
+                      />
+                    ))}
+                  </div>
+                );
+              })
+            : // 按日期分组显示（全部模式）
+              dateGroups.map((group) => (
+                <div key={group.label}>
+                  <div className="px-3 py-2 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+                    {group.label}
+                  </div>
+                  {group.items.map((item) => (
+                    <HistoryItem
+                      key={item.id}
+                      item={item}
+                      isActive={item.sessionId === activeId}
+                      onLoad={onLoad}
+                      onDelete={onDelete}
+                    />
+                  ))}
+                </div>
+              ))}
           {histories.length === 0 && (
             <div className="px-4 py-8 text-center text-[13px] text-[var(--text-muted)]">
               暂无对话记录

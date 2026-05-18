@@ -262,6 +262,20 @@ export interface UpdateRoleRequest {
 // ========== 会话状态相关 ==========
 
 /**
+ * 消息类型（用于会话缓存）
+ */
+export interface Message {
+  /** 消息 ID */
+  id: string;
+  /** 消息角色 */
+  role: "user" | "assistant";
+  /** 消息内容 */
+  content: string;
+  /** 是否正在流式输出 */
+  isStreaming?: boolean;
+}
+
+/**
  * 会话视图模式
  */
 export type HistoryViewMode = "all" | "by-agent";
@@ -277,7 +291,7 @@ export interface SessionCacheData {
   /** 智能体名称 */
   agentName: string;
   /** 会话消息列表 */
-  messages: Array<{ id?: string; role: string; content: string }>;
+  messages: Message[];
   /** 最后更新时间 */
   lastUpdateTime: number;
 }

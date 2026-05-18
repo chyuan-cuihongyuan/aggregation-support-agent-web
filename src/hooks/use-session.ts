@@ -1,12 +1,15 @@
 /**
  * 会话管理 Hook
  *
- * 管理会话状态、创建新会话、加载历史会话
+ * 管理会话状态、创建新会话、加载历史会话。
+ * 提供并发保护（isSwitching）和降级策略（临时 sessionId）。
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { requestJson } from "@/lib/api";
+import { sessionStorage } from "@/lib/session-storage";
 import { generateTempSessionId } from "@/utils/session-utils";
+import type { SessionCacheData, Message } from "@/types/api";
 
 interface UseSessionOptions {
   /** 用户 ID */
@@ -25,93 +28,154 @@ export function useSession({
   onSessionChange,
   saveCurrentSession,
 }: UseSessionOptions) {
+  // 当前会话 ID
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+  // 会话缓存
+  const [sessionCache, setSessionCache] = useState<Map<string, SessionCacheData>>(new Map());
+
+  // 是否有未保存的更改
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // 是否正在切换会话（并发保护）
   const [isSwitching, setIsSwitching] = useState(false);
 
-  // 用 ref 跟踪状态，避免闭包问题
-  const isSwitchingRef = useRef(false);
-  const hasUnsavedChangesRef = useRef(false);
-  const saveCurrentSessionRef = useRef(saveCurrentSession);
-
-  // 在 effect 中同步 ref，避免 React 19 的渲染期间更新 ref 警告
-  useEffect(() => {
-    hasUnsavedChangesRef.current = hasUnsavedChanges;
-  }, [hasUnsavedChanges]);
-  useEffect(() => {
-    saveCurrentSessionRef.current = saveCurrentSession;
-  }, [saveCurrentSession]);
-
-  const setHasUnsavedChangesSafe = useCallback((value: boolean) => {
-    setHasUnsavedChanges(value);
-    hasUnsavedChangesRef.current = value;
-  }, []);
-
-  // 创建新会话
+  /**
+   * 创建新会话
+   *
+   * 1. 检查并发保护
+   * 2. 自动保存当前会话（如果有未保存更改）
+   * 3. 调用后端 API 创建新会话
+   * 4. 失败时降级为临时 sessionId
+   *
+   * @param shouldSaveCurrent - 是否自动保存当前会话，默认 true
+   * @returns 新会话 ID，失败时返回临时 sessionId
+   */
   const createNewSession = useCallback(async (shouldSaveCurrent = true) => {
-    if (isSwitchingRef.current) return null;
-    if (!agentId) return null;
+    if (isSwitching) {
+      console.warn("[useSession] 正在切换会话，忽略创建请求");
+      return null;
+    }
 
-    isSwitchingRef.current = true;
     setIsSwitching(true);
     try {
-      // 自动保存当前会话
-      if (shouldSaveCurrent && hasUnsavedChangesRef.current && saveCurrentSessionRef.current) {
-        await saveCurrentSessionRef.current();
+      // 1. 自动保存当前会话
+      if (shouldSaveCurrent && hasUnsavedChanges && saveCurrentSession) {
+        console.log("[useSession] 自动保存当前会话");
+        await saveCurrentSession();
       }
 
-      // 调用后端创建新会话
-      const { sessionId } = await requestJson<{ sessionId: string }>("/api/v1/create_session", {
-        method: "POST",
-        body: JSON.stringify({ agentId, userId }),
-      });
+      // 2. 调用后端创建新会话
+      console.log("[useSession] 创建新会话", { agentId, userId });
+      const { sessionId } = await requestJson<{ sessionId: string }>(
+        "/api/v1/create_session",
+        {
+          method: "POST",
+          body: JSON.stringify({ agentId, userId }),
+        }
+      );
 
+      // 3. 更新状态
       setCurrentSessionId(sessionId);
-      setHasUnsavedChangesSafe(false);
+      setHasUnsavedChanges(false);
+      setSessionCache(new Map());
+      sessionStorage.clear(); // 清空持久化缓存
 
+      console.log("[useSession] 新会话创建成功", { sessionId });
       onSessionChange?.(sessionId);
+
       return sessionId;
-    } catch {
+    } catch (error) {
+      console.error("[useSession] 创建会话失败", error);
+
       // 降级策略：生成临时会话 ID
       const tempSessionId = generateTempSessionId();
       setCurrentSessionId(tempSessionId);
-      setHasUnsavedChangesSafe(false);
+      setHasUnsavedChanges(false);
+      setSessionCache(new Map());
+      sessionStorage.clear(); // 清空持久化缓存
 
+      console.warn("[useSession] 使用临时会话 ID", { tempSessionId });
       onSessionChange?.(tempSessionId);
+
       return tempSessionId;
     } finally {
-      isSwitchingRef.current = false;
       setIsSwitching(false);
     }
-  }, [userId, agentId, onSessionChange, setHasUnsavedChangesSafe]);
+  }, [userId, agentId, hasUnsavedChanges, isSwitching, saveCurrentSession, onSessionChange]);
 
-  // 加载历史会话
-  const loadSession = useCallback(async (sessionId: string) => {
-    if (isSwitchingRef.current) return;
+  /**
+   * 加载历史会话
+   *
+   * 1. 检查并发保护
+   * 2. 自动保存当前会话（如果有未保存更改）
+   * 3. 恢复历史会话状态
+   * 4. 更新会话缓存
+   *
+   * @param sessionId - 要加载的会话 ID
+   * @param messages - 历史消息列表
+   */
+  const loadSession = useCallback(async (sessionId: string, messages: Message[]) => {
+    if (isSwitching) {
+      console.warn("[useSession] 正在切换会话，忽略加载请求");
+      return;
+    }
 
-    isSwitchingRef.current = true;
     setIsSwitching(true);
     try {
-      // 自动保存当前会话
-      if (hasUnsavedChangesRef.current && saveCurrentSessionRef.current) {
-        await saveCurrentSessionRef.current();
+      // 1. 自动保存当前会话
+      if (hasUnsavedChanges && saveCurrentSession) {
+        console.log("[useSession] 自动保存当前会话");
+        await saveCurrentSession();
       }
 
-      setCurrentSessionId(sessionId);
-      setHasUnsavedChangesSafe(false);
+      // 2. 尝试从持久化缓存加载
+      const cached = sessionStorage.get(sessionId);
+      if (cached) {
+        // 缓存命中，直接使用缓存数据，跳过重新加载
+        console.log("[useSession] 缓存命中，使用缓存数据", { sessionId });
+        setCurrentSessionId(sessionId);
+        setHasUnsavedChanges(false);
+        setSessionCache((prev) => new Map(prev).set(sessionId, cached));
+        onSessionChange?.(sessionId);
+        return;
+      }
 
+      // 3. 缓存未命中，正常加载并保存到缓存
+      setCurrentSessionId(sessionId);
+      setHasUnsavedChanges(false);
+
+      const sessionData: SessionCacheData = {
+        sessionId,
+        agentId,
+        agentName: "",
+        messages,
+        lastUpdateTime: Date.now(),
+      };
+      setSessionCache((prev) => new Map(prev).set(sessionId, sessionData));
+
+      // 保存到持久化缓存
+      sessionStorage.set(sessionId, sessionData);
+
+      console.log("[useSession] 历史会话加载成功", { sessionId });
       onSessionChange?.(sessionId);
+    } catch (error) {
+      console.error("[useSession] 加载会话失败", error);
+      throw error;
     } finally {
-      isSwitchingRef.current = false;
       setIsSwitching(false);
     }
-  }, [onSessionChange, setHasUnsavedChangesSafe]);
+  }, [agentId, hasUnsavedChanges, isSwitching, saveCurrentSession, onSessionChange]);
 
   return {
+    // 状态
     currentSessionId,
     hasUnsavedChanges,
-    setHasUnsavedChanges: setHasUnsavedChangesSafe,
+    setHasUnsavedChanges,
     isSwitching,
+    sessionCache,
+
+    // 方法
     createNewSession,
     loadSession,
   };

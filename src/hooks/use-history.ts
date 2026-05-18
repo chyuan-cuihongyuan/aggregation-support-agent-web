@@ -20,12 +20,13 @@ export function useHistory({ userId }: UseHistoryOptions) {
   const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
 
   // 按智能体分组的历史记录
   const groupedHistories = useMemo(() => {
     if (viewMode !== "by-agent") return {};
-
-    return groupHistoriesByAgent(histories);
+    const grouped = groupHistoriesByAgent(histories);
+    return Object.fromEntries(grouped);
   }, [histories, viewMode]);
 
   // 加载历史记录
@@ -36,8 +37,7 @@ export function useHistory({ userId }: UseHistoryOptions) {
       const data = await requestJson<ChatHistoryDTO[]>(
         `/api/v1/chat_history/query?userId=${userId}`
       );
-
-      // 迁移旧数据（为没有 sessionId 的记录生成虚拟 ID）
+      // 旧数据迁移：为没有 sessionId 的记录生成虚拟 sessionId
       const migratedData = data.map(migrateLegacyHistory);
       setHistories(migratedData);
     } catch (err) {

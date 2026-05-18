@@ -2,30 +2,25 @@
  * 对话 Hook
  *
  * 管理对话消息、SSE 流式响应
- * 会话管理由 useSession Hook 负责
+ * 会话 ID 由外部（useSession）传入，不再内部创建
  */
 
 import { useState, useCallback, useRef } from "react";
 import { requestSSE } from "@/lib/api";
-import type { Message } from "@/components/chat/message-list";
+import type { Message } from "@/types/api";
+import { historyItemsToMessages } from "@/utils/session-utils";
 
 interface UseChatOptions {
   userId: string;
   agentId: string;
-  /** 从 useSession 传入的会话 ID */
+  /** 当前会话 ID（由 useSession 管理） */
   sessionId?: string | null;
-  /** 标记未保存状态 */
+  /** 标记未保存状态的回调 */
   setHasUnsavedChanges?: (value: boolean) => void;
   onMessageComplete?: (message: Message) => void;
 }
 
-export function useChat({
-  userId,
-  agentId,
-  sessionId,
-  setHasUnsavedChanges,
-  onMessageComplete,
-}: UseChatOptions) {
+export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete }: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const streamingBufferRef = useRef<string>("");
@@ -45,8 +40,16 @@ export function useChat({
   // 发送消息
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!sessionId) return;
+      // 检查 sessionId 是否可用
+      if (!sessionId) {
+        console.warn("[useChat] 无可用的 sessionId，请先创建会话");
+        return;
+      }
 
+      // 标记未保存状态
+      setHasUnsavedChanges?.(true);
+
+      // 添加用户消息
       const userMessage: Message = {
         id: Date.now().toString(),
         role: "user",
@@ -70,7 +73,7 @@ export function useChat({
       setHasUnsavedChanges?.(true);
 
       try {
-        // SSE 流式响应（使用传入的 sessionId，不再每次创建新会话）
+        // SSE 流式响应（使用传入的 sessionId）
         await requestSSE(
           "/api/v1/chat_stream",
           { agentId, userId, sessionId, message: content },
@@ -117,19 +120,7 @@ export function useChat({
 
   // 加载历史对话
   const loadConversation = useCallback((historyItems: Array<{ question: string; answer: string }>) => {
-    const loadedMessages: Message[] = [];
-    historyItems.forEach((item, index) => {
-      loadedMessages.push({
-        id: `history-q-${index}-${Date.now()}`,
-        role: "user",
-        content: item.question,
-      });
-      loadedMessages.push({
-        id: `history-a-${index}-${Date.now()}`,
-        role: "assistant",
-        content: item.answer,
-      });
-    });
+    const loadedMessages = historyItemsToMessages(historyItems);
     setMessages(loadedMessages);
   }, []);
 
