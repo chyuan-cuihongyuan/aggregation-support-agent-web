@@ -54,7 +54,10 @@ export class SessionStorage {
   }
 
   set(sessionId: string, data: SessionCacheData) {
-    if (this.cache.size >= MAX_CACHE_SIZE) {
+    // 先删除已存在的键，确保 LRU 顺序正确
+    if (this.cache.has(sessionId)) {
+      this.cache.delete(sessionId);
+    } else if (this.cache.size >= MAX_CACHE_SIZE) {
       const firstKey = this.cache.keys().next().value;
       if (firstKey) this.cache.delete(firstKey);
     }
@@ -84,4 +87,4 @@ export class SessionStorage {
   }
 }
 
-export const sessionStorage = new SessionStorage();
+export const chatSessionCache = new SessionStorage();
