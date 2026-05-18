@@ -22,13 +22,12 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages }: MessageListProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // 自动滚动到底部
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -46,7 +45,7 @@ export function MessageList({ messages }: MessageListProps) {
   return (
     <ScrollArea className="flex-1">
       <div className="w-full max-w-3xl mx-auto">
-        <div ref={scrollRef} className="space-y-4 p-4">
+        <div className="space-y-4 p-4">
           {messages.map((message) => (
             <MessageBubble
               key={message.id}
@@ -56,6 +55,7 @@ export function MessageList({ messages }: MessageListProps) {
               isStreaming={message.isStreaming}
             />
           ))}
+          <div ref={bottomRef} />
         </div>
       </div>
     </ScrollArea>

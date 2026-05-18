@@ -5,7 +5,7 @@
  */
 
 import { requestJson } from "./api";
-import type { UserInfoDTO, LoginRequest, RegisterRequest } from "@/types/api";
+import type { UserInfoDTO, LoginRequest, RegisterRequest, UpdateUserRequest } from "@/types/api";
 
 /** 获取当前用户信息（从后端验证 Cookie） */
 export async function getCurrentUser(): Promise<UserInfoDTO | null> {
@@ -35,6 +35,14 @@ export async function register(data: RegisterRequest): Promise<UserInfoDTO> {
 /** 登出 */
 export async function logout(): Promise<void> {
   await requestJson<boolean>("/api/v1/auth/logout", { method: "POST" });
+}
+
+/** 更新用户信息 */
+export async function updateUser(data: UpdateUserRequest): Promise<boolean> {
+  return requestJson<boolean>("/api/v1/user/update", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
 }
 
 /** 检查是否已登录 */

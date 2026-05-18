@@ -12,6 +12,7 @@ import type { UserInfoDTO, UserListResponse } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Shield, UserX, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserInfoDTO[]>([]);
@@ -42,9 +43,10 @@ export default function UsersPage() {
         method: "PUT",
         body: JSON.stringify({ status: newStatus }),
       });
+      toast.success(`用户已${newStatus === 1 ? "启用" : "禁用"}`);
       loadUsers(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "操作失败");
+      toast.error(err instanceof Error ? err.message : "操作失败");
     }
   };
 
@@ -55,9 +57,10 @@ export default function UsersPage() {
         method: "PUT",
         body: JSON.stringify({ role: newRole }),
       });
+      toast.success(`用户角色已更新为${newRole === "admin" ? "管理员" : "普通用户"}`);
       loadUsers(page);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "操作失败");
+      toast.error(err instanceof Error ? err.message : "操作失败");
     }
   };
 

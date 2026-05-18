@@ -39,6 +39,7 @@ export default function ChatPage() {
     messages,
     isStreaming,
     sendMessage,
+    stopGeneration,
     sendAiOps,
     histories,
     groupedHistories,
@@ -191,7 +192,7 @@ export default function ChatPage() {
 
           {/* 消息列表或欢迎面板 */}
           {messages.length === 0 ? (
-            <WelcomePanel />
+            <WelcomePanel onQuickAction={handleSendMessage} />
           ) : (
             <MessageList messages={messages} />
           )}
@@ -199,7 +200,9 @@ export default function ChatPage() {
           {/* 输入框 */}
           <ChatInput
             onSend={handleSendMessage}
-            disabled={isStreaming || !currentSessionId}
+            onStop={stopGeneration}
+            disabled={!currentSessionId}
+            isStreaming={isStreaming}
             agents={agents}
             selectedAgentId={selectedAgentId}
             onAgentChange={handleAgentChange}

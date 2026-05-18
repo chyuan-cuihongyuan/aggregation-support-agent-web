@@ -24,6 +24,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const streamingBufferRef = useRef<string>("");
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const processChunk = useCallback((chunk: string, messageId: string) => {
     streamingBufferRef.current += chunk;
@@ -37,6 +38,14 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
     );
   }, []);
 
+  // 停止生成
+  const stopGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  }, []);
+
   // 发送消息
   const sendMessage = useCallback(
     async (content: string) => {
@@ -45,6 +54,9 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
         console.warn("[useChat] 无可用的 sessionId，请先创建会话");
         return;
       }
+
+      // 检查消息是否为空
+      if (!content.trim()) return;
 
       // 标记未保存状态
       setHasUnsavedChanges?.(true);
@@ -69,6 +81,10 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       setIsStreaming(true);
       streamingBufferRef.current = "";
 
+      // 创建新的 AbortController
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
       // 标记有未保存更改
       setHasUnsavedChanges?.(true);
 
@@ -79,35 +95,51 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
           { agentId, userId, sessionId, message: content },
           (chunk) => {
             processChunk(chunk, aiMessageId);
-          }
+          },
+          abortController.signal
         );
 
-        const finalContent = streamingBufferRef.current;
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...msg, content: finalContent, isStreaming: false }
-              : msg
-          )
-        );
+        // 如果不是被取消的，更新最终内容
+        if (!abortController.signal.aborted) {
+          const finalContent = streamingBufferRef.current;
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: finalContent, isStreaming: false }
+                : msg
+            )
+          );
 
-        const finalMessage: Message = {
-          id: aiMessageId,
-          role: "assistant",
-          content: finalContent,
-        };
-        onMessageComplete?.(finalMessage);
+          const finalMessage: Message = {
+            id: aiMessageId,
+            role: "assistant",
+            content: finalContent,
+          };
+          onMessageComplete?.(finalMessage);
+        }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "发送失败";
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
-              : msg
-          )
-        );
+        // 如果是取消操作，不显示错误
+        if (abortController.signal.aborted) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: streamingBufferRef.current + "\n\n[已停止生成]", isStreaming: false }
+                : msg
+            )
+          );
+        } else {
+          const errorMessage = error instanceof Error ? error.message : "发送失败";
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
+                : msg
+            )
+          );
+        }
       } finally {
         setIsStreaming(false);
+        abortControllerRef.current = null;
       }
     },
     [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, processChunk]
@@ -147,6 +179,10 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
     setIsStreaming(true);
     streamingBufferRef.current = "";
 
+    // 创建新的 AbortController
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       await requestSSE(
         "/api/v1/ai_ops",
@@ -157,38 +193,55 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
         },
         (chunk) => {
           processChunk(chunk, aiMessageId);
-        }
+        },
+        abortController.signal
       );
 
-      const finalContent = streamingBufferRef.current;
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId
-            ? { ...msg, content: finalContent, isStreaming: false }
-            : msg
-        )
-      );
+      // 如果不是被取消的，更新最终内容
+      if (!abortController.signal.aborted) {
+        const finalContent = streamingBufferRef.current;
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? { ...msg, content: finalContent, isStreaming: false }
+              : msg
+          )
+        );
 
-      const finalMessage: Message = {
-        id: aiMessageId,
-        role: "assistant",
-        content: finalContent,
-      };
-      onMessageComplete?.(finalMessage);
+        const finalMessage: Message = {
+          id: aiMessageId,
+          role: "assistant",
+          content: finalContent,
+        };
+        onMessageComplete?.(finalMessage);
 
-      return { question: "请分析当前所有活动告警并生成运维报告", answer: finalContent };
+        return { question: "请分析当前所有活动告警并生成运维报告", answer: finalContent };
+      }
+      return null;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "AIOps 分析失败";
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMessageId
-            ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
-            : msg
-        )
-      );
+      // 如果是取消操作，不显示错误
+      if (abortController.signal.aborted) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? { ...msg, content: streamingBufferRef.current + "\n\n[已停止生成]", isStreaming: false }
+              : msg
+          )
+        );
+      } else {
+        const errorMessage = error instanceof Error ? error.message : "AIOps 分析失败";
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
+              : msg
+          )
+        );
+      }
       return null;
     } finally {
       setIsStreaming(false);
+      abortControllerRef.current = null;
     }
   }, [userId, agentId, onMessageComplete, processChunk]);
 
@@ -196,6 +249,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
     messages,
     isStreaming,
     sendMessage,
+    stopGeneration,
     clearMessages,
     loadConversation,
     sendAiOps,

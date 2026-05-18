@@ -231,12 +231,14 @@ export async function readSSEStream(
  * @param path - API 路径
  * @param body - 请求体
  * @param onChunk - 接收数据块回调
+ * @param signal - AbortSignal 用于取消请求
  * @returns Promise，流结束时 resolve
  */
 export async function requestSSE(
   path: string,
   body: unknown,
-  onChunk: (text: string) => void
+  onChunk: (text: string) => void,
+  signal?: AbortSignal
 ): Promise<void> {
   const url = `${API_BASE}${path}`;
 
@@ -246,6 +248,7 @@ export async function requestSSE(
       headers: { "Content-Type": "application/json" },
       credentials: 'include',
       body: JSON.stringify(body),
+      signal,
     });
 
     if (!response.ok) {
@@ -254,6 +257,11 @@ export async function requestSSE(
 
     await readSSEStream(response, onChunk);
   } catch (error) {
+    // 如果是用户主动取消，不抛出错误
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return;
+    }
+
     if (error instanceof ApiError) {
       throw error;
     }

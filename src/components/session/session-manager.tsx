@@ -62,6 +62,7 @@ export function useSessionManager({
     messages,
     isStreaming,
     sendMessage,
+    stopGeneration,
     clearMessages,
     loadConversation,
     sendAiOps,
@@ -125,6 +126,7 @@ export function useSessionManager({
     messages,
     isStreaming,
     sendMessage,
+    stopGeneration,
     sendAiOps,
 
     // 历史

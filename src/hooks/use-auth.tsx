@@ -7,8 +7,8 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { getCurrentUser, login as authLogin, logout as authLogout, register as authRegister } from "@/lib/auth";
-import type { UserInfoDTO, LoginRequest, RegisterRequest } from "@/types/api";
+import { getCurrentUser, login as authLogin, logout as authLogout, register as authRegister, updateUser as authUpdateUser } from "@/lib/auth";
+import type { UserInfoDTO, LoginRequest, RegisterRequest, UpdateUserRequest } from "@/types/api";
 
 interface AuthState {
   user: UserInfoDTO | null;
@@ -17,6 +17,7 @@ interface AuthState {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  updateUser: (data: UpdateUserRequest) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -67,8 +68,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = async (data: UpdateUserRequest): Promise<boolean> => {
+    try {
+      const result = await authUpdateUser(data);
+      // 更新成功后刷新用户信息
+      await refresh();
+      return result;
+    } catch {
+      return false;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -55,13 +55,28 @@ const NAV_GROUPS = [
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading, logout, updateUser } = useAuth();
   const { theme, setTheme } = useTheme();
   const [activeNav, setActiveNav] = useState<NavKey>("profile");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [formData, setFormData] = useState({
+    nickname: "",
+    email: "",
+  });
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
   }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        nickname: user.nickname || "",
+        email: user.email || "",
+      });
+    }
+  }, [user]);
 
   if (authLoading || !user) {
     return <div className="flex h-screen items-center justify-center bg-[var(--surface-bg)] text-[var(--text-muted)]">加载中...</div>;
@@ -124,13 +139,13 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <div className="text-[18px] font-bold text-[var(--text-primary)]">{user.nickname || user.username}</div>
-                    <div className="text-[13px] text-[var(--text-secondary)]">系统管理员 · {user.username}@company.com</div>
+                    <div className="text-[13px] text-[var(--text-secondary)]">系统管理员 · {user.email || `${user.username}@company.com`}</div>
                   </div>
                 </div>
                 {[
-                  { label: "用户名", desc: "用于登录的账号名称", value: user.username },
-                  { label: "显示名称", desc: "在界面上显示的名称", value: user.nickname || user.username },
-                  { label: "邮箱地址", desc: "用于接收通知", value: `${user.username}@company.com` },
+                  { label: "用户名", desc: "用于登录的账号名称", value: user.username, disabled: true },
+                  { label: "显示名称", desc: "在界面上显示的名称", value: formData.nickname, field: "nickname" as const },
+                  { label: "邮箱地址", desc: "用于接收通知", value: formData.email, field: "email" as const },
                 ].map((field) => (
                   <div key={field.label} className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)] dark:border-[#2a2a3a] last:border-b-0">
                     <div>
@@ -138,11 +153,41 @@ export default function SettingsPage() {
                       <div className="text-[12px] text-[var(--text-muted)]">{field.desc}</div>
                     </div>
                     <Input
-                      defaultValue={field.value}
+                      value={field.value}
+                      disabled={field.disabled}
+                      onChange={(e) => {
+                        if (field.field) {
+                          setFormData(prev => ({ ...prev, [field.field!]: e.target.value }));
+                        }
+                      }}
                       className="h-9 min-w-[200px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
                     />
                   </div>
                 ))}
+              </div>
+              <div className="flex items-center gap-4">
+                <Button
+                  className="h-9 px-4 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white rounded-lg text-[13px]"
+                  disabled={isSaving}
+                  onClick={async () => {
+                    setIsSaving(true);
+                    setSaveMessage("");
+                    const success = await updateUser({
+                      nickname: formData.nickname,
+                      email: formData.email,
+                    });
+                    setSaveMessage(success ? "保存成功" : "保存失败");
+                    setIsSaving(false);
+                    setTimeout(() => setSaveMessage(""), 3000);
+                  }}
+                >
+                  {isSaving ? "保存中..." : "保存修改"}
+                </Button>
+                {saveMessage && (
+                  <span className={`text-[13px] ${saveMessage === "保存成功" ? "text-[var(--status-success)]" : "text-[var(--status-error)]"}`}>
+                    {saveMessage}
+                  </span>
+                )}
               </div>
             </>
           )}
@@ -159,6 +204,7 @@ export default function SettingsPage() {
                     desc: "选择界面主题",
                     type: "select" as const,
                     options: [
+                      { value: "system", label: "跟随系统" },
                       { value: "light", label: "浅色模式" },
                       { value: "dark", label: "深色模式" },
                     ],

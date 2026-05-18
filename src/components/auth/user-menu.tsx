@@ -55,7 +55,7 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/chat")}>
+        <DropdownMenuItem onClick={() => router.push("/settings")}>
           <User className="mr-2 h-4 w-4" />
           个人信息
         </DropdownMenuItem>

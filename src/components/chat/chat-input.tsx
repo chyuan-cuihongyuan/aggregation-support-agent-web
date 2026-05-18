@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, KeyboardEvent } from "react";
-import { Send } from "lucide-react";
+import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -24,7 +24,9 @@ export type InputMode = "chat" | "ssh" | "local" | "aiops";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
+  onStop?: () => void;
   disabled?: boolean;
+  isStreaming?: boolean;
   agents: AgentConfig[];
   selectedAgentId: string;
   onAgentChange: (agentId: string) => void;
@@ -43,7 +45,9 @@ const MODES: { key: InputMode; label: string }[] = [
 
 export function ChatInput({
   onSend,
+  onStop,
   disabled,
+  isStreaming,
   agents,
   selectedAgentId,
   onAgentChange,
@@ -78,16 +82,26 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder="输入消息，按 Enter 发送..."
             className="min-h-[52px] max-h-[200px] resize-none border-0 focus-visible:ring-0 rounded-t-2xl px-4 py-3 text-[14px] bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-            disabled={disabled}
+            disabled={disabled || isStreaming}
           />
-          <Button
-            onClick={handleSend}
-            disabled={disabled || !input.trim()}
-            className="shrink-0 rounded-xl h-10 w-10 mr-2 mb-2 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white shadow-none disabled:opacity-40"
-            size="icon"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          {isStreaming ? (
+            <Button
+              onClick={onStop}
+              className="shrink-0 rounded-xl h-10 w-10 mr-2 mb-2 bg-[#ef4444] hover:bg-[#dc2626] text-white shadow-none"
+              size="icon"
+            >
+              <Square className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSend}
+              disabled={disabled || !input.trim()}
+              className="shrink-0 rounded-xl h-10 w-10 mr-2 mb-2 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white shadow-none disabled:opacity-40"
+              size="icon"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         {/* 底部工具栏 */}

@@ -8,18 +8,36 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 import { MessageSquare, Search, Activity, FileUp } from "lucide-react";
 
+interface WelcomePanelProps {
+  onQuickAction?: (message: string) => void;
+}
+
 const QUICK_ACTIONS = [
-  { title: "快速问答", desc: "总结今天的告警情况", icon: MessageSquare, gradient: "from-blue-500/10 to-cyan-500/10 dark:from-blue-500/20 dark:to-cyan-500/20" },
-  { title: "知识检索", desc: "查找运维手册", icon: Search, gradient: "from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20" },
-  { title: "AIOps 分析", desc: "分析活动告警生成报告", icon: Activity, gradient: "from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20" },
-  { title: "文档上传", desc: "上传文档到知识库", icon: FileUp, gradient: "from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20" },
+  { title: "快速问答", desc: "总结今天的告警情况", icon: MessageSquare, gradient: "from-blue-500/10 to-cyan-500/10 dark:from-blue-500/20 dark:to-cyan-500/20", message: "请帮我总结今天的告警情况" },
+  { title: "知识检索", desc: "查找运维手册", icon: Search, gradient: "from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20", action: "knowledge" },
+  { title: "AIOps 分析", desc: "分析活动告警生成报告", icon: Activity, gradient: "from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20", action: "aiops" },
+  { title: "文档上传", desc: "上传文档到知识库", icon: FileUp, gradient: "from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20", action: "upload" },
 ];
 
-export function WelcomePanel() {
+export function WelcomePanel({ onQuickAction }: WelcomePanelProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const displayName = user?.nickname || user?.username || "用户";
+
+  const handleAction = (action: typeof QUICK_ACTIONS[0]) => {
+    if (action.message) {
+      onQuickAction?.(action.message);
+    } else if (action.action === "knowledge") {
+      router.push("/knowledge");
+    } else if (action.action === "aiops") {
+      router.push("/aiops");
+    } else if (action.action === "upload") {
+      router.push("/knowledge");
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
@@ -47,6 +65,7 @@ export function WelcomePanel() {
         {QUICK_ACTIONS.map((action) => (
           <div
             key={action.title}
+            onClick={() => handleAction(action)}
             className={`relative overflow-hidden border border-[var(--chat-border)] rounded-xl px-4 py-3 hover:bg-[var(--surface-card)] dark:hover:bg-[#22222e] transition-all duration-200 cursor-pointer group hover:scale-[1.02] hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20`}
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
