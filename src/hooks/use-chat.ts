@@ -1,23 +1,28 @@
 /**
  * 对话 Hook
  *
- * 管理对话消息、SSE 流式响应和会话创建
+ * 管理对话消息、SSE 流式响应
+ * 会话 ID 由外部（useSession）传入，不再内部创建
  */
 
 import { useState, useCallback, useRef } from "react";
-import { requestJson, requestSSE } from "@/lib/api";
-import type { Message } from "@/components/chat/message-list";
+import { requestSSE } from "@/lib/api";
+import type { Message } from "@/types/api";
+import { historyItemsToMessages } from "@/utils/session-utils";
 
 interface UseChatOptions {
   userId: string;
   agentId: string;
+  /** 当前会话 ID（由 useSession 管理） */
+  sessionId?: string | null;
+  /** 标记未保存状态的回调 */
+  setHasUnsavedChanges?: (value: boolean) => void;
   onMessageComplete?: (message: Message) => void;
 }
 
-export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) {
+export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete }: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [sessionId, setSessionId] = useState<string>("");
   const streamingBufferRef = useRef<string>("");
   const displayedContentRef = useRef<string>("");
   const typewriterTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -76,6 +81,15 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
   // 发送消息
   const sendMessage = useCallback(
     async (content: string) => {
+      // 检查 sessionId 是否可用
+      if (!sessionId) {
+        console.warn("[useChat] 无可用的 sessionId，请先创建会话");
+        return;
+      }
+
+      // 标记未保存状态
+      setHasUnsavedChanges?.(true);
+
       // 添加用户消息
       const userMessage: Message = {
         id: Date.now().toString(),
@@ -100,17 +114,10 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
       pendingChunksRef.current = [];
 
       try {
-        // 创建会话
-        const { sessionId: newSessionId } = await requestJson<{ sessionId: string }>("/api/v1/create_session", {
-          method: "POST",
-          body: JSON.stringify({ agentId, userId }),
-        });
-        setSessionId(newSessionId);
-
-        // SSE 流式响应
+        // SSE 流式响应（使用传入的 sessionId）
         await requestSSE(
           "/api/v1/chat_stream",
-          { agentId, userId, sessionId: newSessionId, message: content },
+          { agentId, userId, sessionId, message: content },
           (chunk) => {
             processChunk(chunk, aiMessageId);
           }
@@ -161,7 +168,7 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
         setIsStreaming(false);
       }
     },
-    [userId, agentId, onMessageComplete, processChunk]
+    [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, processChunk]
   );
 
   // 清空消息
@@ -171,19 +178,7 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
 
   // 加载历史对话
   const loadConversation = useCallback((historyItems: Array<{ question: string; answer: string }>) => {
-    const loadedMessages: Message[] = [];
-    historyItems.forEach((item, index) => {
-      loadedMessages.push({
-        id: `history-q-${index}-${Date.now()}`,
-        role: "user",
-        content: item.question,
-      });
-      loadedMessages.push({
-        id: `history-a-${index}-${Date.now()}`,
-        role: "assistant",
-        content: item.answer,
-      });
-    });
+    const loadedMessages = historyItemsToMessages(historyItems);
     setMessages(loadedMessages);
   }, []);
 
@@ -278,7 +273,6 @@ export function useChat({ userId, agentId, onMessageComplete }: UseChatOptions) 
   return {
     messages,
     isStreaming,
-    sessionId,
     sendMessage,
     clearMessages,
     loadConversation,
