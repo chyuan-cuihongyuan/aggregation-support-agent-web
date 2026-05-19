@@ -7,12 +7,13 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, MessageSquare, Settings, Trash2, BookOpen, Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Search, MessageSquare, Settings, Trash2, BookOpen, Loader2, ChevronDown, ChevronRight, Plug, Circle, CircleCheck, CircleDot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ViewToggle } from "@/components/ui/view-toggle";
 import { useRouter } from "next/navigation";
+import { usePluginStatus } from "@/hooks/use-plugin-status";
 import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
 
 interface ChatSidebarProps {
@@ -134,7 +135,7 @@ export function ChatSidebar({
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--chat-sidebar-bg)] border-r border-[var(--chat-border)]">
       {/* 新建对话 */}
-      <div className="p-4 border-b border-[var(--chat-border)]">
+      <div className="shrink-0 p-4 border-b border-[var(--chat-border)]">
         <Button
           onClick={onNewChat}
           disabled={isSwitching}
@@ -150,7 +151,7 @@ export function ChatSidebar({
       </div>
 
       {/* 搜索框 + 视图切换 */}
-      <div className="px-4 py-3 space-y-2">
+      <div className="shrink-0 px-4 py-3 space-y-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
           <Input
@@ -175,7 +176,7 @@ export function ChatSidebar({
       </div>
 
       {/* 历史记录列表 */}
-      <ScrollArea className="flex-1 px-2">
+      <ScrollArea className="flex-1 min-h-0 px-2">
         <div className="py-1">
           {viewMode === "by-agent" && groupedHistories && Object.keys(groupedHistories).length > 0
             ? // 按智能体分组显示
@@ -230,7 +231,8 @@ export function ChatSidebar({
       </ScrollArea>
 
       {/* 底部导航 */}
-      <div className="border-t border-[var(--chat-border)]">
+      <div className="shrink-0 border-t border-[var(--chat-border)]">
+        <PluginListPanel />
         <div
           className="flex items-center gap-2.5 px-4 py-3 text-[13px] text-[var(--text-secondary)] cursor-pointer hover:bg-[#2a2a38] transition-colors"
           onClick={() => router.push("/knowledge")}
@@ -357,6 +359,140 @@ function DateGroupedView({
           ))}
         </div>
       ))}
+    </div>
+  );
+}
+
+/** 内置插件 ID → 中文名映射 */
+const BUILTIN_PLUGIN_NAMES: Record<string, string> = {
+  knowledge: "知识库",
+  aiops: "AIOps",
+  export: "导出",
+  history: "历史",
+};
+
+/** 插件列表面板 */
+function PluginListPanel() {
+  const { status } = usePluginStatus();
+  const [expanded, setExpanded] = useState(false);
+
+  if (!status) return null;
+
+  // 汇总插件数据
+  const builtIn = Object.entries(status.builtIn).map(([id, s]) => ({
+    id,
+    name: BUILTIN_PLUGIN_NAMES[id] || id,
+    enabled: s.enabled,
+    available: s.available,
+    type: "builtin" as const,
+  }));
+  const mcpServers = (status.mcpServers || []).map((s) => ({
+    id: s.id,
+    name: s.name,
+    enabled: s.enabled,
+    available: s.available,
+    connected: s.connected,
+    type: "mcp" as const,
+  }));
+  const customTools = (status.customTools || []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    enabled: t.enabled,
+    available: t.available,
+    type: "custom" as const,
+  }));
+  const allPlugins = [...builtIn, ...mcpServers, ...customTools];
+  const enabledCount = allPlugins.filter((p) => p.enabled).length;
+
+  return (
+    <div>
+      {/* 标题行 - 点击折叠/展开 */}
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:bg-[#2a2a38] transition-colors select-none"
+        onClick={() => setExpanded(!expanded)}
+      >
+        {expanded ? (
+          <ChevronDown className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+        ) : (
+          <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+        )}
+        <Plug className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+        <span className="text-[13px] text-[var(--text-secondary)]">插件</span>
+        <span className="ml-auto text-[11px] text-[var(--text-muted)] tabular-nums">
+          {enabledCount}/{allPlugins.length}
+        </span>
+      </div>
+
+      {/* 展开的插件列表 */}
+      {expanded && (
+        <div className="px-4 pb-2 space-y-0.5">
+          {builtIn.length > 0 && (
+            <>
+              <div className="text-[11px] text-[var(--text-muted)] py-1 font-medium">内置插件</div>
+              {builtIn.map((p) => (
+                <PluginRow key={p.id} name={p.name} enabled={p.enabled} available={p.available} />
+              ))}
+            </>
+          )}
+          {mcpServers.length > 0 && (
+            <>
+              <div className="text-[11px] text-[var(--text-muted)] py-1 pt-2 font-medium">MCP 服务</div>
+              {mcpServers.map((p) => (
+                <PluginRow key={p.id} name={p.name} enabled={p.enabled} available={p.available} connected={p.connected} />
+              ))}
+            </>
+          )}
+          {customTools.length > 0 && (
+            <>
+              <div className="text-[11px] text-[var(--text-muted)] py-1 pt-2 font-medium">自定义工具</div>
+              {customTools.map((p) => (
+                <PluginRow key={p.id} name={p.name} enabled={p.enabled} available={p.available} />
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 单个插件行 */
+function PluginRow({
+  name,
+  enabled,
+  available,
+  connected,
+}: {
+  name: string;
+  enabled: boolean;
+  available: boolean;
+  connected?: boolean;
+}) {
+  // 状态图标
+  let StatusIcon: typeof CircleCheck;
+  let statusColor: string;
+  if (!available) {
+    StatusIcon = Circle;
+    statusColor = "text-[var(--text-muted)] opacity-40";
+  } else if (connected !== undefined) {
+    // MCP 插件
+    StatusIcon = connected ? CircleCheck : CircleDot;
+    statusColor = connected
+      ? "text-[var(--status-success)]"
+      : "text-[var(--status-warning)]";
+  } else {
+    StatusIcon = enabled ? CircleCheck : Circle;
+    statusColor = enabled
+      ? "text-[var(--status-success)]"
+      : "text-[var(--text-muted)]";
+  }
+
+  return (
+    <div className="flex items-center gap-2 py-1.5 px-1 text-[13px]">
+      <StatusIcon className={`w-3.5 h-3.5 shrink-0 ${statusColor}`} />
+      <span className={`truncate ${enabled ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>
+        {name}
+      </span>
     </div>
   );
 }

@@ -165,7 +165,7 @@ export default function ChatPage() {
       {/* 主内容区 */}
       <div className="relative z-10 grid flex-1 overflow-hidden min-h-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* 左侧边栏 - 桌面端 */}
-        <aside className="hidden lg:block h-full">
+        <aside className="hidden lg:block h-full overflow-hidden">
           <ChatSidebar
             activeSessionId={currentSessionId || undefined}
             histories={histories}

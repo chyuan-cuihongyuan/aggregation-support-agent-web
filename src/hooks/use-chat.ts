@@ -5,7 +5,7 @@
  * 会话 ID 由外部（useSession）传入，不再内部创建
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { requestSSE } from "@/lib/api";
 import type { Message } from "@/types/api";
 import { historyItemsToMessages } from "@/utils/session-utils";
@@ -20,23 +20,109 @@ interface UseChatOptions {
   onMessageComplete?: (message: Message) => void;
 }
 
+/**
+ * 逐字打字渲染器
+ *
+ * 与参考实现 createTypingRenderer 一致：
+ * - 累积全部已接收文本到 buffer
+ * - 使用 requestAnimationFrame 逐步推进可见光标
+ * - 每帧步长 = Math.max(1, Math.ceil(pending / 6))，实现平滑的逐字效果
+ */
+function useTypingRenderer(
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+) {
+  const bufferRef = useRef("");
+  const cursorRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+
+  /** 推进光标，逐字显示 */
+  const advance = useCallback(
+    (messageId: string) => {
+      const buffer = bufferRef.current;
+      const pending = buffer.length - cursorRef.current;
+
+      if (pending <= 0) {
+        rafRef.current = null;
+        return;
+      }
+
+      const step = Math.max(2, Math.ceil(pending / 2));
+      cursorRef.current = Math.min(cursorRef.current + step, buffer.length);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, content: buffer.substring(0, cursorRef.current) }
+            : msg
+        )
+      );
+
+      rafRef.current = requestAnimationFrame(() => advance(messageId));
+    },
+    [setMessages]
+  );
+
+  /** 追加数据并启动动画 */
+  const append = useCallback(
+    (text: string, messageId: string) => {
+      if (!text) return;
+      bufferRef.current += text;
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(() => advance(messageId));
+      }
+    },
+    [advance]
+  );
+
+  /** 完成渲染：立即显示全部剩余文本 */
+  const finish = useCallback(
+    (messageId: string) => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      cursorRef.current = bufferRef.current.length;
+      const fullContent = bufferRef.current;
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, content: fullContent }
+            : msg
+        )
+      );
+      return fullContent;
+    },
+    [setMessages]
+  );
+
+  /** 重置状态，准备下一次流式渲染 */
+  const reset = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    bufferRef.current = "";
+    cursorRef.current = 0;
+  }, []);
+
+  /** 组件卸载时清理 RAF */
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  return { append, finish, reset };
+}
+
 export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete }: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const streamingBufferRef = useRef<string>("");
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const processChunk = useCallback((chunk: string, messageId: string) => {
-    streamingBufferRef.current += chunk;
-    // 直接更新消息内容，实现实时显示
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId
-          ? { ...msg, content: streamingBufferRef.current }
-          : msg
-      )
-    );
-  }, []);
+  const typer = useTypingRenderer(setMessages);
 
   // 停止生成
   const stopGeneration = useCallback(() => {
@@ -44,9 +130,9 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
       setIsStreaming(false);
-      streamingBufferRef.current = "";
+      typer.reset();
     }
-  }, []);
+  }, [typer]);
 
   // 发送消息
   const sendMessage = useCallback(
@@ -81,7 +167,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       setMessages((prev) => [...prev, aiMessage]);
 
       setIsStreaming(true);
-      streamingBufferRef.current = "";
+      typer.reset();
 
       // 创建新的 AbortController
       const abortController = new AbortController();
@@ -96,14 +182,14 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
           "/api/v1/chat_stream",
           { agentId, userId, sessionId, message: content },
           (chunk) => {
-            processChunk(chunk, aiMessageId);
+            typer.append(chunk, aiMessageId);
           },
           abortController.signal
         );
 
-        // 如果不是被取消的，更新最终内容
+        // 如果不是被取消的，立即显示全部剩余内容
         if (!abortController.signal.aborted) {
-          const finalContent = streamingBufferRef.current;
+          const finalContent = typer.finish(aiMessageId);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === aiMessageId
@@ -122,14 +208,16 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       } catch (error) {
         // 如果是取消操作，不显示错误
         if (abortController.signal.aborted) {
+          const stoppedContent = typer.finish(aiMessageId);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === aiMessageId
-                ? { ...msg, content: streamingBufferRef.current + "\n\n[已停止生成]", isStreaming: false }
+                ? { ...msg, content: stoppedContent + "\n\n[已停止生成]", isStreaming: false }
                 : msg
             )
           );
         } else {
+          typer.finish(aiMessageId);
           const errorMessage = error instanceof Error ? error.message : "发送失败";
           setMessages((prev) =>
             prev.map((msg) =>
@@ -144,7 +232,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
         abortControllerRef.current = null;
       }
     },
-    [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, processChunk]
+    [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, typer]
   );
 
   // 清空消息
@@ -179,7 +267,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
     setMessages((prev) => [...prev, aiMessage]);
 
     setIsStreaming(true);
-    streamingBufferRef.current = "";
+    typer.reset();
 
     // 创建新的 AbortController
     const abortController = new AbortController();
@@ -194,14 +282,14 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
           alertDescription: "请分析当前所有活动告警并生成运维报告",
         },
         (chunk) => {
-          processChunk(chunk, aiMessageId);
+          typer.append(chunk, aiMessageId);
         },
         abortController.signal
       );
 
-      // 如果不是被取消的，更新最终内容
+      // 如果不是被取消的，立即显示全部剩余内容
       if (!abortController.signal.aborted) {
-        const finalContent = streamingBufferRef.current;
+        const finalContent = typer.finish(aiMessageId);
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === aiMessageId
@@ -223,14 +311,16 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
     } catch (error) {
       // 如果是取消操作，不显示错误
       if (abortController.signal.aborted) {
+        const stoppedContent = typer.finish(aiMessageId);
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === aiMessageId
-              ? { ...msg, content: streamingBufferRef.current + "\n\n[已停止生成]", isStreaming: false }
+              ? { ...msg, content: stoppedContent + "\n\n[已停止生成]", isStreaming: false }
               : msg
           )
         );
       } else {
+        typer.finish(aiMessageId);
         const errorMessage = error instanceof Error ? error.message : "AIOps 分析失败";
         setMessages((prev) =>
           prev.map((msg) =>
@@ -245,7 +335,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       setIsStreaming(false);
       abortControllerRef.current = null;
     }
-  }, [userId, agentId, onMessageComplete, processChunk]);
+  }, [userId, agentId, onMessageComplete, typer]);
 
   return {
     messages,
