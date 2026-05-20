@@ -12,9 +12,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookOpen, Upload, Search, Plus, FileText, Trash2, Download, ChevronLeft } from "lucide-react";
+import { BookOpen, Upload, Search, Plus, FileText, Trash2, Download, ChevronLeft, Network, ImageIcon, FlaskConical } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requestJson, uploadFile } from "@/lib/api";
-import type { DocumentDTO } from "@/types/api";
+import { GraphViewer } from "@/components/knowledge/graph-viewer";
+import { EntityDetailPanel } from "@/components/knowledge/entity-detail-panel";
+import { ImageUpload } from "@/components/knowledge/image-upload";
+import { CrossModalSearch } from "@/components/knowledge/cross-modal-search";
+import { ImageList } from "@/components/knowledge/image-grid";
+import type { DocumentDTO, ImageDTO, GraphNode, GraphStatistics, SearchTestResult } from "@/types/api";
 
 interface KnowledgeBase {
   id: string;
@@ -38,9 +44,12 @@ export default function KnowledgePage() {
   const { user, loading: authLoading } = useAuth();
   const [activeKb, setActiveKb] = useState<KnowledgeBase>(MOCK_KB[0]);
   const [documents, setDocuments] = useState<DocumentDTO[]>([]);
+  const [images, setImages] = useState<ImageDTO[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ source: string; text: string; score: number }[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState("documents");
+  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [graphStats, setGraphStats] = useState<GraphStatistics | null>(null);
 
   const userId = user?.username || "default";
 
@@ -54,14 +63,37 @@ export default function KnowledgePage() {
     }
   }, [userId]);
 
+  // 加载图片列表
+  const loadImages = useCallback(async () => {
+    try {
+      const data = await requestJson<ImageDTO[]>(`/api/v1/images?userId=${userId}`);
+      setImages(data);
+    } catch {
+      // 静默
+    }
+  }, [userId]);
+
+  // 加载图谱统计
+  const loadGraphStats = useCallback(async () => {
+    try {
+      const data = await requestJson<GraphStatistics>("/api/v1/graph/statistics");
+      setGraphStats(data);
+    } catch {
+      // 静默
+    }
+  }, []);
+
   useEffect(() => {
-    if (user) loadDocuments();
-  }, [user, loadDocuments]);
+    if (user) {
+      loadDocuments();
+      loadImages();
+      loadGraphStats();
+    }
+  }, [user, loadDocuments, loadImages, loadGraphStats]);
 
   // 文件上传
   const handleUpload = async (files: FileList | null) => {
     if (!files?.length) return;
-    setIsUploading(true);
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData();
@@ -72,8 +104,6 @@ export default function KnowledgePage() {
       await loadDocuments();
     } catch {
       // 错误已在 uploadFile 中处理
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -91,7 +121,7 @@ export default function KnowledgePage() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const data = await requestJson<{ query: string; vectorResults: { content: string; score: number; source?: string }[]; bm25Results: { content: string; score: number; source?: string }[]; hybridResults: { content: string; score: number; source?: string }[] }>(
+      const data = await requestJson<SearchTestResult>(
         "/api/v1/documents/search",
         { method: "POST", body: JSON.stringify({ query: searchQuery, topK: 5 }) }
       );
@@ -177,18 +207,12 @@ export default function KnowledgePage() {
               </h1>
               <div className="flex gap-5 mt-3 text-[13px] text-[var(--text-secondary)]">
                 <span><strong className="text-[var(--text-primary)]">{activeKb.count}</strong> 篇文档</span>
-                <span>创建于 2025-01-10</span>
+                {graphStats && (
+                  <span><strong className="text-[var(--text-primary)]">{graphStats.entityCount}</strong> 个实体</span>
+                )}
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="h-9 gap-2 text-[13px] border-[var(--border-default)] dark:border-[#2a2a3a] text-[var(--text-secondary)]"
-                onClick={() => {/* 滚动到检索面板 */}}
-              >
-                <Search className="w-4 h-4" />
-                检索测试
-              </Button>
               <label>
                 <Button className="h-9 gap-2 text-[13px] bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white shadow-none" asChild>
                   <span>
@@ -201,104 +225,172 @@ export default function KnowledgePage() {
             </div>
           </div>
 
-          {/* 上传区域 */}
-          <label className="block border-2 border-dashed border-[var(--border-default)] dark:border-[#2a2a3a] rounded-2xl p-10 text-center mb-6 hover:border-[var(--brand-accent)] hover:bg-red-50/50 dark:hover:bg-[#e63946]/5 transition-colors cursor-pointer">
-            <input type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} accept=".pdf,.docx,.txt,.md,.csv,.xlsx" />
-            <div className="w-14 h-14 bg-[var(--surface-card)] dark:bg-[#22222e] rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Upload className="w-7 h-7 text-[var(--brand-accent)]" />
-            </div>
-            <div className="text-[16px] font-semibold text-[var(--text-primary)] mb-1.5">拖拽文件到此处上传</div>
-            <div className="text-[13px] text-[var(--text-secondary)] mb-4">或点击选择文件，支持批量上传</div>
-            <div className="flex justify-center gap-2">
-              {["PDF", "DOCX", "TXT", "MD", "CSV", "XLSX"].map((f) => (
-                <span key={f} className="text-[11px] px-2.5 py-1 bg-[var(--surface-card)] dark:bg-[#22222e] rounded-md text-[var(--text-secondary)] font-medium">{f}</span>
-              ))}
-            </div>
-          </label>
+          {/* Tab 导航 */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsTrigger value="documents" className="gap-1.5 text-xs">
+                <FileText className="w-3.5 h-3.5" />
+                文档管理
+              </TabsTrigger>
+              <TabsTrigger value="graph" className="gap-1.5 text-xs">
+                <Network className="w-3.5 h-3.5" />
+                知识图谱
+              </TabsTrigger>
+              <TabsTrigger value="images" className="gap-1.5 text-xs">
+                <ImageIcon className="w-3.5 h-3.5" />
+                图片库
+              </TabsTrigger>
+              <TabsTrigger value="search" className="gap-1.5 text-xs">
+                <FlaskConical className="w-3.5 h-3.5" />
+                检索测试
+              </TabsTrigger>
+            </TabsList>
 
-          {/* 文档列表 */}
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">已上传文档</h3>
-            <span className="text-[12px] text-[var(--text-muted)]">共 {documents.length} 篇</span>
-          </div>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3 mb-6">
-            {documents.map((doc) => (
-              <div key={doc.documentId} className="bg-[var(--surface-main)] dark:bg-[#1a1a24] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl p-4 hover:shadow-sm transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
-                    doc.fileName?.endsWith(".pdf") ? "bg-red-50 dark:bg-red-900/20" :
-                    doc.fileName?.endsWith(".docx") ? "bg-blue-50 dark:bg-blue-900/20" :
-                    doc.fileName?.endsWith(".md") ? "bg-green-50 dark:bg-green-900/20" :
-                    "bg-yellow-50 dark:bg-yellow-900/20"
-                  }`}>
-                    {doc.fileName?.endsWith(".pdf") ? "📕" : doc.fileName?.endsWith(".docx") ? "📘" : doc.fileName?.endsWith(".md") ? "📗" : "📙"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{doc.fileName || "文档"}</div>
-                    <div className="text-[11px] text-[var(--text-muted)] mt-0.5">{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "未知大小"}</div>
-                  </div>
+            {/* 文档管理 */}
+            <TabsContent value="documents">
+              {/* 上传区域 */}
+              <label className="block border-2 border-dashed border-[var(--border-default)] dark:border-[#2a2a3a] rounded-2xl p-8 text-center mb-5 hover:border-[var(--brand-accent)] hover:bg-red-50/50 dark:hover:bg-[#e63946]/5 transition-colors cursor-pointer">
+                <input type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} accept=".pdf,.docx,.txt,.md,.csv,.xlsx" />
+                <div className="w-12 h-12 bg-[var(--surface-card)] dark:bg-[#22222e] rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Upload className="w-6 h-6 text-[var(--brand-accent)]" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className={`text-[11px] font-medium flex items-center gap-1 ${
-                    doc.processingStatus === "success" ? "text-[var(--status-success)]" :
-                    doc.processingStatus === "processing" ? "text-[var(--status-warning)]" :
-                    "text-[var(--status-error)]"
-                  }`}>
-                    <span className={`w-[6px] h-[6px] rounded-full ${
-                      doc.processingStatus === "success" ? "bg-[var(--status-success)]" :
-                      doc.processingStatus === "processing" ? "bg-[var(--status-warning)]" :
-                      "bg-[var(--status-error)]"
-                    }`} />
-                    {doc.processingStatus === "success" ? "已向量化" : doc.processingStatus === "processing" ? "处理中" : "失败"}
-                  </span>
-                  <div className="flex gap-1">
-                    <button className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-card)] dark:hover:bg-[#22222e] hover:text-[var(--text-primary)] transition-colors">
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => handleDelete(doc.documentId)} className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-[var(--status-error)] transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {documents.length === 0 && (
-              <div className="col-span-full py-12 text-center text-[14px] text-[var(--text-muted)]">
-                暂无文档，请上传文件
-              </div>
-            )}
-          </div>
+                <div className="text-[14px] font-semibold text-[var(--text-primary)] mb-1">拖拽文件到此处上传</div>
+                <div className="text-[12px] text-[var(--text-secondary)]">支持 PDF、DOCX、TXT、MD、CSV、XLSX</div>
+              </label>
 
-          {/* 检索测试面板 */}
-          <div className="bg-[var(--surface-main)] dark:bg-[#1a1a24] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl p-5">
-            <h3 className="text-[15px] font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
-              <Search className="w-[18px] h-[18px] text-[var(--brand-accent)]" />
-              知识库检索测试
-            </h3>
-            <div className="flex gap-2 mb-4">
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="输入查询内容，测试知识库检索效果..."
-                className="flex-1 h-[42px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-[10px]"
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-              <Button onClick={handleSearch} className="h-[42px] px-5 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white rounded-[10px] shadow-none">
-                检索
-              </Button>
-            </div>
-            {searchResults.length > 0 && (
-              <div className="flex flex-col gap-2.5">
-                {searchResults.map((r, i) => (
-                  <div key={i} className="p-3 bg-[var(--surface-card)] dark:bg-[#22222e] rounded-lg border border-[var(--border-default)] dark:border-[#2a2a3a]">
-                    <div className="text-[11px] text-[var(--text-muted)] mb-1">{r.source}</div>
-                    <div className="text-[13px] text-[var(--text-primary)] leading-relaxed">{r.text}</div>
-                    <div className="text-[11px] text-[var(--status-success)] mt-1 font-medium">相关度: {(r.score * 100).toFixed(1)}%</div>
+              {/* 文档列表 */}
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">已上传文档</h3>
+                <span className="text-[12px] text-[var(--text-muted)]">共 {documents.length} 篇</span>
+              </div>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
+                {documents.map((doc) => (
+                  <div key={doc.documentId} className="bg-[var(--surface-main)] dark:bg-[#1a1a24] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl p-4 hover:shadow-sm transition-shadow">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                        doc.fileName?.endsWith(".pdf") ? "bg-red-50 dark:bg-red-900/20" :
+                        doc.fileName?.endsWith(".docx") ? "bg-blue-50 dark:bg-blue-900/20" :
+                        doc.fileName?.endsWith(".md") ? "bg-green-50 dark:bg-green-900/20" :
+                        "bg-yellow-50 dark:bg-yellow-900/20"
+                      }`}>
+                        {doc.fileName?.endsWith(".pdf") ? "📕" : doc.fileName?.endsWith(".docx") ? "📘" : doc.fileName?.endsWith(".md") ? "📗" : "📙"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{doc.fileName || "文档"}</div>
+                        <div className="text-[11px] text-[var(--text-muted)] mt-0.5">{doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "未知大小"}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[11px] font-medium flex items-center gap-1 ${
+                        doc.processingStatus === "success" ? "text-[var(--status-success)]" :
+                        doc.processingStatus === "processing" ? "text-[var(--status-warning)]" :
+                        "text-[var(--status-error)]"
+                      }`}>
+                        <span className={`w-[6px] h-[6px] rounded-full ${
+                          doc.processingStatus === "success" ? "bg-[var(--status-success)]" :
+                          doc.processingStatus === "processing" ? "bg-[var(--status-warning)]" :
+                          "bg-[var(--status-error)]"
+                        }`} />
+                        {doc.processingStatus === "success" ? "已向量化" : doc.processingStatus === "processing" ? "处理中" : "失败"}
+                      </span>
+                      <div className="flex gap-1">
+                        <button className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-card)] dark:hover:bg-[#22222e] hover:text-[var(--text-primary)] transition-colors">
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(doc.documentId)} className="w-7 h-7 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-[var(--status-error)] transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
+                {documents.length === 0 && (
+                  <div className="col-span-full py-12 text-center text-[14px] text-[var(--text-muted)]">
+                    暂无文档，请上传文件
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </TabsContent>
+
+            {/* 知识图谱 */}
+            <TabsContent value="graph">
+              <div className="flex h-[600px] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl overflow-hidden">
+                <div className="flex-1 p-3">
+                  <GraphViewer
+                    onNodeClick={(node) => setSelectedNode(node)}
+                  />
+                </div>
+                {selectedNode && (
+                  <div className="w-[280px] shrink-0">
+                    <EntityDetailPanel
+                      node={selectedNode}
+                      onClose={() => setSelectedNode(null)}
+                      onNavigateEntity={(entityId) => setSelectedNode({ id: entityId, label: "", type: "" })}
+                    />
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* 图片库 */}
+            <TabsContent value="images">
+              <div className="space-y-4">
+                <div className="max-w-sm">
+                  <ImageUpload userId={userId} onUploadComplete={() => loadImages()} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">已上传图片</h3>
+                  <span className="text-[12px] text-[var(--text-muted)]">共 {images.length} 张</span>
+                </div>
+                <ImageList images={images} />
+              </div>
+            </TabsContent>
+
+            {/* 检索测试 */}
+            <TabsContent value="search">
+              <div className="space-y-5">
+                {/* 传统检索 */}
+                <div className="bg-[var(--surface-main)] dark:bg-[#1a1a24] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl p-5">
+                  <h3 className="text-[15px] font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
+                    <Search className="w-[18px] h-[18px] text-[var(--brand-accent)]" />
+                    多路检索测试
+                  </h3>
+                  <div className="flex gap-2 mb-4">
+                    <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="输入查询内容，测试检索效果..."
+                      className="flex-1 h-[42px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-[10px]"
+                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    />
+                    <Button onClick={handleSearch} className="h-[42px] px-5 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white rounded-[10px] shadow-none">
+                      检索
+                    </Button>
+                  </div>
+                  {searchResults.length > 0 && (
+                    <div className="flex flex-col gap-2.5">
+                      {searchResults.map((r, i) => (
+                        <div key={i} className="p-3 bg-[var(--surface-card)] dark:bg-[#22222e] rounded-lg border border-[var(--border-default)] dark:border-[#2a2a3a]">
+                          <div className="text-[11px] text-[var(--text-muted)] mb-1">{r.source}</div>
+                          <div className="text-[13px] text-[var(--text-primary)] leading-relaxed">{r.text}</div>
+                          <div className="text-[11px] text-[var(--status-success)] mt-1 font-medium">相关度: {(r.score * 100).toFixed(1)}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 跨模态搜索 */}
+                <div className="bg-[var(--surface-main)] dark:bg-[#1a1a24] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl p-5">
+                  <h3 className="text-[15px] font-semibold text-[var(--text-primary)] flex items-center gap-2 mb-4">
+                    <ImageIcon className="w-[18px] h-[18px] text-[var(--brand-accent)]" />
+                    跨模态搜索
+                  </h3>
+                  <CrossModalSearch />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>

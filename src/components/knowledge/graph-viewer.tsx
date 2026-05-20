@@ -116,7 +116,7 @@ export function GraphViewer({ initialData, onNodeClick, width, height }: GraphVi
     } catch {
       // 静默处理
     }
-  }, [searchQuery, convertToGraphData]);
+  }, [searchQuery]);
 
   // 高亮搜索匹配节点
   const handleHighlight = useCallback(() => {

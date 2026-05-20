@@ -1,7 +1,7 @@
 /**
  * 检索测试面板组件
  *
- * 提供向量检索、BM25 检索和混合检索功能
+ * 提供向量检索、BM25 检索、图谱检索和混合检索功能
  */
 
 "use client";
@@ -118,9 +118,10 @@ export function SearchPanel({ onSearch }: SearchPanelProps) {
 
       {results && (
         <Tabs defaultValue="hybrid" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="vector">向量检索</TabsTrigger>
             <TabsTrigger value="bm25">BM25</TabsTrigger>
+            <TabsTrigger value="graph">图谱</TabsTrigger>
             <TabsTrigger value="hybrid">混合</TabsTrigger>
           </TabsList>
           <TabsContent value="vector" className="mt-4">
@@ -128,6 +129,12 @@ export function SearchPanel({ onSearch }: SearchPanelProps) {
           </TabsContent>
           <TabsContent value="bm25" className="mt-4">
             <ResultList items={results.bm25Results} title="BM25 检索结果" />
+          </TabsContent>
+          <TabsContent value="graph" className="mt-4">
+            <ResultList
+              items={results.graphResults || []}
+              title="图谱检索结果"
+            />
           </TabsContent>
           <TabsContent value="hybrid" className="mt-4">
             <ResultList items={results.hybridResults} title="混合检索结果" />
