@@ -123,6 +123,14 @@ export interface SearchResultItem {
   source?: string;
   /** 块索引（可选） */
   chunkIndex?: number;
+  /** 模态类型 */
+  modalityType?: "TEXT" | "IMAGE";
+  /** 图片URL（多模态结果） */
+  imageUrl?: string;
+  /** 实体类型（图谱结果） */
+  entityType?: string;
+  /** 关系类型（图谱结果） */
+  relationType?: string;
 }
 
 /**
@@ -137,6 +145,10 @@ export interface SearchTestResult {
   bm25Results: SearchResultItem[];
   /** 混合检索结果 */
   hybridResults: SearchResultItem[];
+  /** 图谱检索结果 */
+  graphResults?: SearchResultItem[];
+  /** 多模态检索结果 */
+  multimodalResults?: CrossModalSearchResult[];
 }
 
 // ========== 对话历史相关 ==========
@@ -353,4 +365,90 @@ export interface SessionState {
   hasUnsavedChanges: boolean;
   /** 是否正在切换会话 */
   isSwitching: boolean;
+}
+
+// ========== 知识图谱相关 ==========
+
+/** 实体类型 */
+export type EntityType = "CONCEPT" | "PERSON" | "ORGANIZATION" | "TECHNOLOGY" | "PRODUCT" | "EVENT";
+
+/** 关系类型 */
+export type RelationType = "RELATED_TO" | "PART_OF" | "DEPENDS_ON" | "BELONGS_TO" | "USES" | "LOCATED_IN";
+
+/** 图谱实体 */
+export interface GraphEntity {
+  entityId: string;
+  entityName: string;
+  entityType: EntityType;
+  description?: string;
+  properties?: Record<string, unknown>;
+  sourceDocumentId?: string;
+}
+
+/** 图谱关系 */
+export interface GraphRelation {
+  relationId: string;
+  sourceEntityId: string;
+  targetEntityId: string;
+  relationType: RelationType;
+  description?: string;
+  confidence?: number;
+}
+
+/** 图谱统计 */
+export interface GraphStatistics {
+  entityCount: number;
+  relationCount: number;
+  entityTypeDistribution: Record<string, number>;
+  relationTypeDistribution: Record<string, number>;
+}
+
+/** 图谱节点（可视化用） */
+export interface GraphNode {
+  id: string;
+  label: string;
+  type: string;
+  properties?: Record<string, unknown>;
+  score?: number;
+}
+
+/** 图谱边（可视化用） */
+export interface GraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  label: string;
+  type: string;
+  properties?: Record<string, unknown>;
+}
+
+/** 子图数据（可视化用） */
+export interface GraphSubgraph {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+}
+
+// ========== 多模态相关 ==========
+
+/** 图片信息 */
+export interface ImageDTO {
+  imageId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  width?: number;
+  height?: number;
+  description?: string;
+  imageUrl: string;
+  createdAt: string;
+}
+
+/** 跨模态检索结果 */
+export interface CrossModalSearchResult {
+  itemId: string;
+  modalityType: "TEXT" | "IMAGE";
+  content: string;
+  imageUrl?: string;
+  score: number;
+  metadata?: Record<string, unknown>;
 }

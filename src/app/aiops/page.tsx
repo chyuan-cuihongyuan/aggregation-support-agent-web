@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Activity, RefreshCw, ChevronLeft, Search, Terminal, Zap, Loader2 } from "lucide-react";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import { requestJson, requestSSE } from "@/lib/api";
 import type { AlertDTO } from "@/types/api";
 
@@ -297,9 +299,10 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
                       <Search className="w-[18px] h-[18px] text-[#e63946]" />
                       AI 分析结果
                     </h3>
-                    <div className="text-[13px] text-[#8888a0] leading-relaxed whitespace-pre-wrap">
-                      {aiAnalysis}
-                    </div>
+                    <div
+                      className="prose prose-sm prose-invert max-w-none text-[13px] text-[#8888a0] leading-relaxed [&_pre]:bg-[#0d0d15] [&_pre]:text-[#cdd6f4] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-[#2a2a3a] [&_code]:text-[#f0abfc] [&_code]:bg-[#1a1a24] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded"
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(aiAnalysis, { async: false, gfm: true, breaks: true }) as string) }}
+                    />
                   </div>
                 )}
 

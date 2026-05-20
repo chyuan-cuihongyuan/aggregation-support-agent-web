@@ -76,7 +76,9 @@ export async function requestJson<T>(
       return result.data;
     }
 
-    throw new ApiError(result.info || "请求失败", result.code);
+    const errorInfo = result.info || "请求失败";
+    console.warn(`[API] ${path} 失败: code=${result.code}, info=${errorInfo}`);
+    throw new ApiError(errorInfo, result.code);
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
@@ -174,31 +176,49 @@ export async function readSSEStream(
       const { done, value } = await reader.read();
       if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
+      buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
 
-      // 逐行处理，确保每个 data: 行到达即渲染
-      let newlineIdx: number;
-      while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
-        const line = buffer.slice(0, newlineIdx).replace(/\r$/, "");
-        buffer = buffer.slice(newlineIdx + 1);
+      // 按 SSE 事件边界（空行 \n\n）分割处理
+      let eventEndIdx: number;
+      while ((eventEndIdx = buffer.indexOf("\n\n")) !== -1) {
+        const eventBlock = buffer.slice(0, eventEndIdx);
+        buffer = buffer.slice(eventEndIdx + 2);
 
-        if (line.startsWith("data:")) {
-          const data = line.slice(5);
-          if (data.trim() !== "[DONE]") {
-            hasSSEData = true;
-            onChunk(data);
+        // 提取同一事件内的所有 data: 行，用 \n 拼接
+        const dataLines: string[] = [];
+        for (const line of eventBlock.split("\n")) {
+          if (line.startsWith("data:")) {
+            const data = line.slice(5).replace(/^\s/, "");
+            if (data.trim() !== "[DONE]") {
+              dataLines.push(data);
+            }
           }
+        }
+
+        if (dataLines.length > 0) {
+          hasSSEData = true;
+          onChunk(dataLines.join("\n"));
         }
       }
     }
 
     // 处理缓冲区中剩余的数据
     if (buffer.trim()) {
-      if (buffer.startsWith("data:")) {
-        const data = buffer.slice(5).trim();
-        if (data && data !== "[DONE]") {
+      const remaining = buffer.replace(/\r$/, "");
+      if (remaining.startsWith("data:")) {
+        // 单行 data（无结尾空行）
+        const dataLines: string[] = [];
+        for (const line of remaining.split("\n")) {
+          if (line.startsWith("data:")) {
+            const data = line.slice(5).replace(/^\s/, "");
+            if (data && data.trim() !== "[DONE]") {
+              dataLines.push(data);
+            }
+          }
+        }
+        if (dataLines.length > 0) {
           hasSSEData = true;
-          onChunk(data);
+          onChunk(dataLines.join("\n"));
         }
       } else if (!hasSSEData) {
         // 非 SSE 降级：尝试解析 JSON 或纯文本

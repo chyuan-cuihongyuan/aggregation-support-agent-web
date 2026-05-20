@@ -76,7 +76,7 @@ export function ExportActions({ content, messageId }: ExportActionsProps) {
           th { background: #f4f4f4; }
           a { color: #1976d2; }
         </style>
-        ${marked.parse(content, { async: false }) as string}
+        ${marked.parse(content, { async: false, gfm: true, breaks: true }) as string}
       `;
       document.body.appendChild(container);
 
@@ -137,7 +137,7 @@ export function ExportActions({ content, messageId }: ExportActionsProps) {
       ]);
 
       // 解析 Markdown 为简单结构
-      const htmlContent = marked.parse(content, { async: false }) as string;
+      const htmlContent = marked.parse(content, { async: false, gfm: true, breaks: true }) as string;
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = htmlContent;
 

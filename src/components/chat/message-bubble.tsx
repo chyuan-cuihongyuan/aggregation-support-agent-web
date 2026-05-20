@@ -140,7 +140,7 @@ export const MessageBubble = memo(({ id, role, content, isStreaming, timestamp }
           ) : (
             <div
               className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed [&_pre]:bg-[#0d0d15] [&_pre]:text-[#cdd6f4] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-[var(--chat-border)] [&_code]:text-[#f0abfc] [&_code]:bg-[var(--surface-card)] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(content, { async: false }) as string) }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(content, { async: false, gfm: true, breaks: true }) as string) }}
             />
           )}
           {isStreaming && (
