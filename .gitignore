@@ -43,7 +43,6 @@ next-env.d.ts
 # IDE
 .idea/
 .vscode/
-.claude/
 
-# worktrees
-.worktrees/
+# worktrees (保留用于版本控制)
+# .worktrees/

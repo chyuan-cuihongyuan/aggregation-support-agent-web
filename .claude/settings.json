@@ -1,0 +1,58 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Skill(superpowers:*)",
+      "Skill(document-skills:frontend-design)",
+      "Skill(document-skills:webapp-testing)",
+      "Read(src/**/*)",
+      "Edit(src/**/*)",
+      "Write(src/**/*)",
+      "Grep(src/**/*)",
+      "Glob(src/**/*)"
+    ]
+  },
+  "hooks": {
+    "pre-session": [
+      {
+        "command": "echo '=== 🔵 前端开发 Agent 已激活 ==='",
+        "description": "显示前端 Agent 激活提示"
+      },
+      {
+        "command": "test -f package.json && echo '✅ Next.js + React + TypeScript 环境就绪'",
+        "description": "验证前端项目环境"
+      },
+      {
+        "command": "echo '📦 端口: 3000 | 职责: UI组件 + 状态管理 + API集成'",
+        "description": "显示前端 Agent 职责"
+      }
+    ]
+  },
+  "metadata": {
+    "agentName": "前端开发 Agent",
+    "agentType": "frontend",
+    "techStack": ["Next.js 16", "React 19", "TypeScript 5", "Tailwind CSS 4", "shadcn/ui"],
+    "responsibilities": [
+      "UI 组件开发和设计",
+      "前端状态管理",
+      "主题和样式实现",
+      "与后端 API 集成",
+      "前端性能优化"
+    ],
+    "port": 3000,
+    "devCommand": "npm run dev",
+    "buildCommand": "npm run build"
+  },
+  "environment": {
+    "API_BASE_URL": "http://127.0.0.1:8091",
+    "GATEWAY_URL": "http://127.0.0.1:8092",
+    "NEXT_PUBLIC_API_BASE": "http://127.0.0.1:8091"
+  },
+  "collaboration": {
+    "backendAgent": "aggregation-support-agent",
+    "gatewayAgent": "mcp-gateway-agent",
+    "businessAgent": "agent-add-oil"
+  }
+}
