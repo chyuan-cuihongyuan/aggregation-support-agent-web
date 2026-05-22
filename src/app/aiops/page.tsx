@@ -44,12 +44,12 @@ export default function AIOpsPage() {
     if (!authLoading && !user) router.push("/login");
   }, [authLoading, user, router]);
 
-  // 设置默认选中的告警
+  // 设置默认选中的告警 - 修复React Hooks违规问题
   useEffect(() => {
     if (alerts.length > 0 && !activeAlert) {
       setActiveAlert(alerts[0]);
     }
-  }, [alerts, activeAlert]);
+  }, [alerts]); // 移除activeAlert依赖，避免级联渲染
 
   // 刷新告警列表
   const handleRefresh = useCallback(() => {

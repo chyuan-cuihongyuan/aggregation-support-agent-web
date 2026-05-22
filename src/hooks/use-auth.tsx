@@ -35,9 +35,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // 修复React Hooks违规问题 - 避免在useEffect中直接调用setState
   useEffect(() => {
-    refresh().finally(() => setLoading(false));
-  }, [refresh]);
+    let isMounted = true;
+
+    const loadUser = async () => {
+      try {
+        const u = await getCurrentUser();
+        if (isMounted) {
+          setUser(u);
+        }
+      } catch {
+        if (isMounted) {
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // 移除refresh依赖，避免级联渲染
 
   // 监听 API 层的 401 事件，统一处理认证失效
   useEffect(() => {

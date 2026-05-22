@@ -4,8 +4,6 @@
  * 管理对话历史的加载、保存、删除和视图切换
  */
 
-/* eslint-disable react-hooks/set-state-in-effect */
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { requestJson } from "@/lib/api";
 import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
@@ -89,10 +87,27 @@ export function useHistory({ userId }: UseHistoryOptions) {
     }
   }, [userId]);
 
-  // 初始加载
+  // 初始加载 - 修复React Hooks违规问题
   useEffect(() => {
-    loadHistories();
-  }, [loadHistories]);
+    const loadInitialHistories = async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const data = await requestJson<ChatHistoryDTO[]>(
+          `/api/v1/chat_history/query?userId=${userId}`
+        );
+        // 旧数据迁移：为没有 sessionId 的记录生成虚拟 sessionId
+        const migratedData = data.map(migrateLegacyHistory);
+        setHistories(migratedData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "加载失败");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialHistories();
+  }, [userId]); // 只依赖userId，避免级联渲染
 
   return {
     histories,

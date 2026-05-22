@@ -83,13 +83,27 @@ export default function KnowledgePage() {
     }
   }, []);
 
+  // 修复React Hooks违规问题 - 避免在useEffect中直接调用setState
   useEffect(() => {
-    if (user) {
-      loadDocuments();
-      loadImages();
-      loadGraphStats();
-    }
-  }, [user, loadDocuments, loadImages, loadGraphStats]);
+    if (!user) return;
+
+    const loadData = async () => {
+      try {
+        const [docs, imgs, stats] = await Promise.all([
+          requestJson<DocumentDTO[]>(`/api/v1/documents?userId=${userId}`),
+          requestJson<ImageDTO[]>(`/api/v1/images?userId=${userId}`),
+          requestJson<GraphStatistics>("/api/v1/graph/statistics")
+        ]);
+        setDocuments(docs);
+        setImages(imgs);
+        setGraphStats(stats);
+      } catch {
+        // 静默处理错误
+      }
+    };
+
+    loadData();
+  }, [user, userId]); // 只依赖user和userId，避免级联渲染
 
   // 文件上传
   const handleUpload = async (files: FileList | null) => {
