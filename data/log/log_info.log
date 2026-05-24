@@ -1,0 +1,568 @@
+26-05-24.14:40:37.393 [background-preinit] INFO  Version                - HV000001: Hibernate Validator 8.0.2.Final
+26-05-24.14:40:37.476 [main            ] INFO  Application            - Starting Application v1.0 using Java 17.0.15 with PID 93564 (/Users/WorkProject/IdeaProjects/aggregation-support-agent/aggregation-support-agent-app/target/aggregation-support-agent-app.jar started by cuihongyuan in /Users/WorkProject/IdeaProjects/aggregation-support-agent-web)
+26-05-24.14:40:37.477 [main            ] INFO  Application            - The following 1 profile is active: "dev"
+26-05-24.14:40:38.607 [main            ] INFO  RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+26-05-24.14:40:38.610 [main            ] INFO  RepositoryConfigurationDelegate - Bootstrapping Spring Data Neo4j repositories in DEFAULT mode.
+26-05-24.14:40:38.663 [main            ] INFO  RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 44 ms. Found 0 Neo4j repository interfaces.
+26-05-24.14:40:38.668 [main            ] INFO  RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+26-05-24.14:40:38.669 [main            ] INFO  RepositoryConfigurationDelegate - Bootstrapping Spring Data Neo4j repositories in DEFAULT mode.
+26-05-24.14:40:38.673 [main            ] INFO  RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 3 ms. Found 0 Neo4j repository interfaces.
+26-05-24.14:40:38.681 [main            ] INFO  RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+26-05-24.14:40:38.682 [main            ] INFO  RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+26-05-24.14:40:38.690 [main            ] INFO  RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 3 ms. Found 0 Redis repository interfaces.
+26-05-24.14:40:39.982 [main            ] INFO  TomcatWebServer        - Tomcat initialized with port 8091 (http)
+26-05-24.14:40:40.032 [main            ] INFO  Http11NioProtocol      - Initializing ProtocolHandler ["http-nio-8091"]
+26-05-24.14:40:40.044 [main            ] INFO  StandardService        - Starting service [Tomcat]
+26-05-24.14:40:40.047 [main            ] INFO  StandardEngine         - Starting Servlet engine: [Apache Tomcat/10.1.36]
+26-05-24.14:40:40.073 [main            ] INFO  [/]                    - Initializing Spring embedded WebApplicationContext
+26-05-24.14:40:40.073 [main            ] INFO  ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2565 ms
+26-05-24.14:40:40.683 [main            ] INFO  EmbeddingCacheConfig   - 启用嵌入向量缓存: maxSize=10000, expireHours=24
+26-05-24.14:40:40.685 [main            ] INFO  CachedEmbeddingService - 嵌入向量缓存初始化: maxSize=10000, expireHours=24
+26-05-24.14:40:40.691 [main            ] INFO  MilvusClientConfig     - 初始化 Milvus 客户端连接: 49.232.169.33:19530
+26-05-24.14:40:41.275 [main            ] INFO  DocumentParserFactory  - 文档解析器工厂初始化，已注册 5 个解析器
+26-05-24.14:40:41.307 [main            ] INFO  ElasticsearchConfig    - 初始化Elasticsearch客户端: 49.232.169.33:9200
+26-05-24.14:40:41.596 [main            ] INFO  ElasticsearchBM25SearchService - Elasticsearch BM25索引初始化完成: index=rag-documents
+26-05-24.14:40:41.759 [main            ] INFO  ImageStorageConfiguration - 启用本地文件系统存储服务
+26-05-24.14:40:41.776 [main            ] INFO  QueryLogsTools         - QueryLogsTools 初始化完成, mockEnabled=false, lokiBaseUrl=http://49.232.169.33:3100
+26-05-24.14:40:41.778 [main            ] INFO  QueryMetricsTools      - QueryMetricsTools 初始化完成, mockEnabled=false, prometheusBaseUrl=http://49.232.169.33:9090
+26-05-24.14:40:41.873 [main            ] INFO  AsyncExecutorConfig    - 初始化审计异步线程池 auditExecutor: core=4, max=16, queue=2000
+26-05-24.14:40:41.875 [main            ] INFO  AsyncExecutorConfig    - 初始化 RAG 追踪异步线程池 ragTraceExecutor: core=4, max=16, queue=2000
+26-05-24.14:40:41.879 [main            ] INFO  CacheConfig            - Caffeine缓存管理器初始化完成
+26-05-24.14:40:41.896 [main            ] INFO  CacheConfig            - Redis缓存管理器初始化完成
+26-05-24.14:40:42.374 [main            ] INFO  MilvusVectorStoreRepository - Milvus 集合已存在，跳过创建: biz
+26-05-24.14:40:42.450 [main            ] INFO  MilvusVectorStoreRepository - Milvus 集合已加载到内存: biz
+26-05-24.14:40:42.450 [main            ] INFO  MilvusClientConfig     - Milvus 集合初始化完成
+26-05-24.14:40:42.452 [main            ] INFO  Http11NioProtocol      - Starting ProtocolHandler ["http-nio-8091"]
+26-05-24.14:40:42.456 [main            ] INFO  TomcatWebServer        - Tomcat started on port 8091 (http) with context path '/'
+26-05-24.14:40:42.467 [main            ] INFO  Application            - Started Application in 5.71 seconds (process running for 6.291)
+26-05-24.14:40:42.545 [main            ] INFO  AiAgentAutoConfig      - Ai Agent 智能体装配 [{"agent":{"agentDesc":"基于 DeepSeek 模型的智能对话问答助手","agentId":"200004","agentName":"DeepSeek 智能问答"},"appName":"deepseekRagChatAgent","module":{"agents":[{"description":"DeepSeek 智能问答助手，专注于自然、流畅的人机交流","instruction":"你是一个专业、友好的智能对话助手。你的核心使命是与用户进行自然、有意义的交流。\n\n【交流原则】\n1. 始终保持友好、尊重的态度\n2. 使用清晰、简洁的中文表达\n3. 积极倾听用户需求，准确理解问题意图\n4. 回答要具体、有针对性，避免空泛\n5. 遇到不确定的问题时，诚实告知并尝试提供帮助方向\n\n【对话风格】\n- 语气亲切自然，像朋友一样交流\n- 适当使用表情符号增加亲和力（但不要过度）\n- 根据用户的问题调整回答的详细程度\n- 主动询问澄清模糊的问题\n\n【能力范围】\n- 回答各类知识性问题\n- 提供建议和解决方案\n- 协助思考和分析问题\n- 进行创意性讨论\n- 日常闲聊和情感交流\n\n【注意事项】\n- 不提供违法、暴力或不适当的内容\n- 不涉及政治敏感话题\n- 医疗、法律等专业领域建议仅供参考\n- 保护用户隐私，不泄露对话内容\n- 承认自己的局限性，不编造不确定的信息\n\n【交互优化】\n- 对于复杂问题，分步骤解答\n- 必要时提供多个角度的观点\n- 鼓励用户提出后续问题\n- 在对话结束时，询问是否还有其他需要帮助的地方\n\n记住：你的目标是让每次对话都变得有价值、愉快且富有成效。\n","name":"deepseekRagChatAgent","outputKey":"rag_answer","reactMode":true}],"aiApi":{"apiKey":"sk-REDACTED","baseUrl":"https://api.deepseek.com","completionsPath":"/v1/chat/completions","embeddingsPath":"embeddings"},"chatModel":{"model":"deepseek-v4-pro"},"runner":{"agentName":"deepseekRagChatAgent","pluginNameList":["myLogPlugin"]}}},{"agent":{"agentDesc":"多智能体协作的智能运维分析助手，自动分析告警并生成运维报告","agentId":"200002","agentName":"AIOps 智能运维"},"appName":"aiopsAgent","module":{"agentWorkflows":[{"description":"AIOps 分析流水线，先规划分析步骤再执行生成报告","maxIterations":3,"name":"aiops_pipeline","subAgents":["aiops_planner","aiops_executor"],"type":"sequential"}],"agents":[{"description":"AIOps 分析规划器，负责分解问题和制定分析计划","instruction":"你是一个运维分析规划器。根据用户的告警描述，制定详细的分析计划。\n你可以使用以下工具收集信息：\n1. getCurrentDateTime - 获取当前时间\n2. queryPrometheusAlerts - 查询 Prometheus 活动告警\n3. getAvailableLogTopics - 获取可用的日志主题\n4. queryLogs - 查询特定日志\n5. searchInternalDocs - 从知识库检索运维手册\n请按以下步骤分析：\n1. 获取当前时间，确认告警时间窗口\n2. 查询 Prometheus 获取所有活动告警\n3. 根据告警类型查询相关日志\n4. 检索运维手册获取处理方案\n5. 将所有信息整理为结构化的分析计划\n","name":"aiops_planner","outputKey":"plan_result","reactMode":true},{"description":"AIOps 分析执行器，根据规划结果生成运维报告","instruction":"你是一个运维分析报告生成器。根据规划器提供的分析结果 {plan_result}，\n生成一份完整的 Markdown 格式运维报告。\n报告格式要求：\n# 告警分析报告\n## 活跃告警清单\n（表格：告警名称、级别、目标服务、首次触发时间、状态）\n## 告警根因分析\n（每个告警：详情、症状描述、日志证据、根因结论）\n## 处理方案\n（每个告警：已执行排查步骤、处理建议、预期效果）\n## 结论\n（整体评估、关键发现、后续建议、风险评估）\n","name":"aiops_executor","outputKey":"execution_result","reactMode":true}],"aiApi":{"apiKey":"47b14566882e4e5ab68ae079e307667f.gYg6trXMmDAFQBT3","baseUrl":"https://open.bigmodel.cn/api/coding/paas/v4","completionsPath":"/chat/completions","embeddingsPath":"/embeddings"},"chatModel":{"model":"glm-5.1","toolMcpList":[{"local":{"name":"aiopsToolCallbackProvider"}}]},"runner":{"agentName":"aiops_pipeline","pluginNameList":["myLogPlugin"]}}},{"agent":{"agentDesc":"基于文档知识库的智能问答助手，支持多轮对话和语义检索","agentId":"200001","agentName":"RAG 智能问答"},"appName":"ragChatAgent","module":{"agents":[{"description":"RAG 智能问答助手，检索知识库文档回答问题","instruction":"你是一个专业的智能问答助手，可以基于内部知识库文档回答问题。\n当用户提问时，使用 searchInternalDocs 工具检索相关文档，\n然后基于检索到的内容回答用户的问题。\n回答要求：\n1. 基于检索到的文档内容准确回答\n2. 注明信息来源（引用文档名或章节）\n3. 如果检索结果不足以回答问题，诚实告知用户\n4. 回答使用中文\n","name":"ragChatAgent","outputKey":"rag_answer","reactMode":true}],"aiApi":{"apiKey":"47b14566882e4e5ab68ae079e307667f.gYg6trXMmDAFQBT3","baseUrl":"https://open.bigmodel.cn/api/coding/paas/v4","completionsPath":"/chat/completions","embeddingsPath":"/embeddings"},"chatModel":{"model":"glm-5.1","toolMcpList":[{"local":{"name":"ragToolCallbackProvider"}}]},"runner":{"agentName":"ragChatAgent","pluginNameList":["myLogPlugin"]}}},{"agent":{"agentDesc":"专注于自然交流的通用对话助手，提供友好、专业的对话体验","agentId":"100003","agentName":"智能对话助手"},"appName":"chatAgent","module":{"agents":[{"description":"智能对话助手，专注于自然、流畅的人机交流","instruction":"你是一个专业、友好的智能对话助手。你的核心使命是与用户进行自然、有意义的交流。\n\n【交流原则】\n1. 始终保持友好、尊重的态度\n2. 使用清晰、简洁的中文表达\n3. 积极倾听用户需求，准确理解问题意图\n4. 回答要具体、有针对性，避免空泛\n5. 遇到不确定的问题时，诚实告知并尝试提供帮助方向\n\n【对话风格】\n- 语气亲切自然，像朋友一样交流\n- 适当使用表情符号增加亲和力（但不要过度）\n- 根据用户的问题调整回答的详细程度\n- 主动询问澄清模糊的问题\n\n【能力范围】\n- 回答各类知识性问题\n- 提供建议和解决方案\n- 协助思考和分析问题\n- 进行创意性讨论\n- 日常闲聊和情感交流\n\n【注意事项】\n- 不提供违法、暴力或不适当的内容\n- 不涉及政治敏感话题\n- 医疗、法律等专业领域建议仅供参考\n- 保护用户隐私，不泄露对话内容\n- 承认自己的局限性，不编造不确定的信息\n\n【交互优化】\n- 对于复杂问题，分步骤解答\n- 必要时提供多个角度的观点\n- 鼓励用户提出后续问题\n- 在对话结束时，询问是否还有其他需要帮助的地方\n\n记住：你的目标是让每次对话都变得有价值、愉快且富有成效。\n","name":"conversationAgent","outputKey":"chat_response","reactMode":true}],"aiApi":{"apiKey":"47b14566882e4e5ab68ae079e307667f.gYg6trXMmDAFQBT3","baseUrl":"https://open.bigmodel.cn/api/coding/paas/v4","completionsPath":"/chat/completions","embeddingsPath":"/embeddings"},"chatModel":{"model":"glm-5.1","toolMcpList":[]},"runner":{"agentName":"conversationAgent","pluginNameList":["myLogPlugin"]}}}]
+26-05-24.14:40:42.546 [main            ] INFO  AiApiNode              - Ai Agent 装配操作 - AiApiNode
+26-05-24.14:40:42.684 [main            ] INFO  ChatModelNode          - Ai Agent 装配操作 - ChatModelNode
+26-05-24.14:40:42.694 [main            ] INFO  AgentNode              - Ai Agent 装配操作 - AgentNode
+26-05-24.14:40:42.729 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:40:42.729 [main            ] INFO  RunnerNode             - Ai Agent 装配操作 - RunnerNode
+26-05-24.14:40:42.731 [main            ] INFO  PluginManager          - Plugin 'logging_plugin' registered.
+26-05-24.14:40:42.732 [main            ] INFO  AbstractArmorySupport  - 成功注册Bean: 200004
+26-05-24.14:40:42.732 [main            ] INFO  AiApiNode              - Ai Agent 装配操作 - AiApiNode
+26-05-24.14:40:42.734 [main            ] INFO  ChatModelNode          - Ai Agent 装配操作 - ChatModelNode
+26-05-24.14:40:42.734 [main            ] INFO  LocalToolMcpCreateService - tool local mcp initialize aiopsToolCallbackProvider
+26-05-24.14:40:42.739 [main            ] INFO  AgentNode              - Ai Agent 装配操作 - AgentNode
+26-05-24.14:40:42.739 [main            ] INFO  AgentNode              - Agent [aiops_planner] ReAct mode enabled, injecting ReAct prompt prefix. Original instruction length: 326
+26-05-24.14:40:42.739 [main            ] INFO  AgentNode              - Agent [aiops_executor] ReAct mode enabled, injecting ReAct prompt prefix. Original instruction length: 218
+26-05-24.14:40:42.739 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:40:42.740 [main            ] INFO  SequentialAgentNode    - Ai Agent 装配操作 - SequentialAgentNode
+26-05-24.14:40:42.741 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:40:42.741 [main            ] INFO  RunnerNode             - Ai Agent 装配操作 - RunnerNode
+26-05-24.14:40:42.741 [main            ] INFO  PluginManager          - Plugin 'logging_plugin' registered.
+26-05-24.14:40:42.741 [main            ] INFO  AbstractArmorySupport  - 成功注册Bean: 200002
+26-05-24.14:40:42.741 [main            ] INFO  AiApiNode              - Ai Agent 装配操作 - AiApiNode
+26-05-24.14:40:42.742 [main            ] INFO  ChatModelNode          - Ai Agent 装配操作 - ChatModelNode
+26-05-24.14:40:42.743 [main            ] INFO  LocalToolMcpCreateService - tool local mcp initialize ragToolCallbackProvider
+26-05-24.14:40:42.743 [main            ] INFO  AgentNode              - Ai Agent 装配操作 - AgentNode
+26-05-24.14:40:42.743 [main            ] INFO  AgentNode              - Agent [ragChatAgent] ReAct mode enabled, injecting ReAct prompt prefix. Original instruction length: 167
+26-05-24.14:40:42.744 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:40:42.744 [main            ] INFO  RunnerNode             - Ai Agent 装配操作 - RunnerNode
+26-05-24.14:40:42.744 [main            ] INFO  PluginManager          - Plugin 'logging_plugin' registered.
+26-05-24.14:40:42.744 [main            ] INFO  AbstractArmorySupport  - 成功注册Bean: 200001
+26-05-24.14:40:42.744 [main            ] INFO  AiApiNode              - Ai Agent 装配操作 - AiApiNode
+26-05-24.14:40:42.745 [main            ] INFO  ChatModelNode          - Ai Agent 装配操作 - ChatModelNode
+26-05-24.14:40:42.746 [main            ] INFO  AgentNode              - Ai Agent 装配操作 - AgentNode
+26-05-24.14:40:42.746 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:40:42.746 [main            ] INFO  RunnerNode             - Ai Agent 装配操作 - RunnerNode
+26-05-24.14:40:42.746 [main            ] INFO  PluginManager          - Plugin 'logging_plugin' registered.
+26-05-24.14:40:42.746 [main            ] INFO  AbstractArmorySupport  - 成功注册Bean: 100003
+26-05-24.14:40:58.560 [http-nio-8091-exec-1] INFO  [/]                    - Initializing Spring DispatcherServlet 'dispatcherServlet'
+26-05-24.14:40:58.561 [http-nio-8091-exec-1] INFO  DispatcherServlet      - Initializing Servlet 'dispatcherServlet'
+26-05-24.14:40:58.562 [http-nio-8091-exec-1] INFO  DispatcherServlet      - Completed initialization in 1 ms
+26-05-24.14:44:59.524 [background-preinit] INFO  Version                - HV000001: Hibernate Validator 8.0.2.Final
+26-05-24.14:44:59.572 [main            ] INFO  Application            - Starting Application v1.0 using Java 17.0.15 with PID 3628 (/Users/WorkProject/IdeaProjects/mcp-gateway-agent/mcp-gateway-agent-app/target/ai-agent-scaffold-lite-app.jar started by cuihongyuan in /Users/WorkProject/IdeaProjects/aggregation-support-agent-web)
+26-05-24.14:44:59.572 [main            ] INFO  Application            - The following 1 profile is active: "dev"
+26-05-24.14:45:00.605 [main            ] WARN  PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.ai.mcp.client.common.autoconfigure.annotations.McpClientAnnotationScannerAutoConfiguration' of type [org.springframework.ai.mcp.client.common.autoconfigure.annotations.McpClientAnnotationScannerAutoConfiguration] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [clientAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+26-05-24.14:45:00.826 [main            ] WARN  PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'clientAnnotatedBeans' of type [org.springframework.ai.mcp.client.common.autoconfigure.annotations.McpClientAnnotationScannerAutoConfiguration$ClientMcpAnnotatedBeans] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [clientAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+26-05-24.14:45:00.830 [main            ] WARN  PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'spring.ai.mcp.client.annotation-scanner-org.springframework.ai.mcp.client.common.autoconfigure.annotations.McpClientAnnotationScannerProperties' of type [org.springframework.ai.mcp.client.common.autoconfigure.annotations.McpClientAnnotationScannerProperties] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [clientAnnotatedMethodBeanPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+26-05-24.14:45:00.960 [main            ] INFO  TomcatWebServer        - Tomcat initialized with port 8099 (http)
+26-05-24.14:45:00.969 [main            ] INFO  Http11NioProtocol      - Initializing ProtocolHandler ["http-nio-8099"]
+26-05-24.14:45:00.969 [main            ] INFO  StandardService        - Starting service [Tomcat]
+26-05-24.14:45:00.969 [main            ] INFO  StandardEngine         - Starting Servlet engine: [Apache Tomcat/10.1.36]
+26-05-24.14:45:00.987 [main            ] INFO  [/]                    - Initializing Spring embedded WebApplicationContext
+26-05-24.14:45:00.987 [main            ] INFO  ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1393 ms
+26-05-24.14:45:01.621 [main            ] INFO  SessionManagementService - 会话管理服务已启动，会话超时时间: 30 分钟
+26-05-24.14:45:02.161 [main            ] WARN  SyncMcpSamplingProvider - No sampling methods found
+26-05-24.14:45:02.164 [main            ] WARN  SyncMcpElicitationProvider - No elicitation methods found
+26-05-24.14:45:02.384 [main            ] ERROR DnsServerAddressStreamProviders - Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'. Use DEBUG level to see the full stack: java.lang.UnsatisfiedLinkError: failed to load the required native library
+26-05-24.14:45:02.389 [main            ] INFO  Http11NioProtocol      - Starting ProtocolHandler ["http-nio-8099"]
+26-05-24.14:45:02.398 [main            ] INFO  TomcatWebServer        - Tomcat started on port 8099 (http) with context path '/'
+26-05-24.14:45:02.410 [main            ] INFO  Application            - Started Application in 3.162 seconds (process running for 3.532)
+26-05-24.14:45:02.528 [main            ] INFO  AiAgentAutoConfig      - Ai Agent 智能体装�?[{"agent":{"agentDesc":"MCP 网关对话理解与流程编排智能体，负责理解用户意图并调用业务 Skills 完成任务","agentId":"300001","agentName":"网关业务智能体"},"appName":"gatewayBusinessAgent","module":{"agents":[{"description":"网关业务智能体，理解用户意图并调用对应工具完成任务","instruction":"你是一个加油站订单客服助手，能够帮助用户处理订单退款和开票相关业务。你通过 MCP 网关连接到业务后端系统，拥有以下能力：\n\n【核心能力】\n1. 订单查询：查询订单详情和订单状态\n2. 退款处理：提交退款申请、执行退款操作\n3. 开票处理：查询开票信息、提交开票申请\n\n【退款业务流程】\n退款分为\"申请退款\"和\"执行退款\"两个步骤：\n\n第一步：查询订单状态\n- 调用 agent_order_status 查询订单当前状态\n- 检查 odStatus 是否为\"0\"（支付成功），只有支付成功的订单才能退款\n- 检查 odRfdAplSts（退款申请状态）：\n  - 0=审核通过（已退款）、1=申请中（等待审核）、2=未申请、3=审核拒绝\n\n第二步：申请退款\n- 如果 odRfdAplSts 为\"2\"（未申请），可以调用 agent_order_refund_apply 提交退款申请\n- 需要提供 orderId（订单ID）和 reason（退款原因）\n- 提交后退款申请状态变为\"1\"（申请中），需要等待管理员审核\n\n第三步：执行退款（仅审核通过后可操作）\n- 如果退款已审核通过（odRfdAplSts 为\"0\"），可以调用 agent_order_refund_execute 执行退款\n- 退款执行成功后，订单状态变为\"5\"（已退款）\n- 注意：此步骤通常由审核人员操作，如用户要求执行退款，请确认用户身份\n\n【退款注意事项】\n- 订单状态不为\"0\"（支付成功）时不能退款\n- 退款申请提交后需要等待审核\n- 已退款的订单（odStatus=\"5\"）不能再次退款\n- 不同渠道的退款由系统自动路由到对应的服务处理\n\n【开票业务流程】\n开票需要先判断开票方（odInvoicingParty），不同开票方流程不同：\n\n开票方说明：\n- 0=油站开票：由油站自行开具发票\n- 1=CP线上开票：由CP方在线开具发票\n- 2=CP线下开票：由CP方线下开具发票\n\n第一步：查询订单开票信息\n- 调用 agent_order_query 获取订单详情，确认 odInvoicingParty（开票方）\n- 调用 agent_invoice_query 查询CP开票信息（FlowOrderInvoice表，适用于 odInvoicingParty=1/2）\n- 调用 agent_invoice_info_query 查询高德发票信息（FlowInvoiceInfo表，适用于特定渠道）\n\n第二步：根据开票方判断流程\n- odInvoicingParty=0（油站开票）：告知用户联系油站方开票\n- odInvoicingParty=1（CP线上开票）：可以在线提交开票信息\n- odInvoicingParty=2（CP线下开票）：告知用户联系CP方线下开票\n\n第三步：提交开票信息（仅 CP 线上开票时）\n- 如果 odInvoicingParty=1，且尚未提交开票信息，可调用 agent_invoice_submit 提交\n- type=\"orderInvoice\" 提交CP开票信息（需要公司名称、信用代码等）\n- type=\"gaodeInvoice\" 提交高德发票信息（需要发票抬头、类型等）\n- 已提交过开票信息时，接口会返回\"请勿重复提交\"\n\n【开票注意事项】\n- 先查询是否已开过发票，避免重复提交\n- 开票方为\"油站开票\"时，需要引导用户联系油站\n- 开票方为\"CP线下开票\"时，需要引导用户联系CP方\n\n【交互规范】\n1. 用户询问退款/开票时，先查询订单信息，了解当前状态\n2. 用简洁友好的语言向用户解释当前状态和可执行的操作\n3. 调用工具前说明\"我帮您查询一下\"或\"正在为您处理\"\n4. 如果操作失败，告知用户失败原因和建议的后续操作\n5. 涉及金额、状态等关键信息时，务必准确呈现\n6. 普通对话直接回答，业务请求按流程处理\n","name":"businessAgent","outputKey":"business_response"}],"aiApi":{"apiKey":"changeme","baseUrl":"https://apis.itedus.cn","completionsPath":"v1/chat/completions","embeddingsPath":"v1/embeddings","provider":"openai"},"chatModel":{"model":"gpt-4.1","toolMcpList":[],"toolSkillsList":[]},"runner":{"agentName":"businessAgent","pluginNameList":["myLogPlugin"]}}},{"agent":{"agentDesc":"单一智能体","agentId":"100003","agentName":"单一智能体"},"appName":"testAgent03","module":{"agents":[{"description":"draw.io 图表生成助手","instruction":"你是一个专业的 draw.io 图表生成助手。\n请根据用户的描述生成相应的 draw.io XML 数据。\n要求：\n1. 输出内容必须且只能是 draw.io 的 XML 代码。\n2. 不要使用 Markdown 代码块（如 ```xml ... ```）。\n3. 不要包含任何解释、前言或结束语。\n4. 确保 XML 结构完整，可以直接被 draw.io 组件加载。\n5. 图表布局要美观、清晰，确保连线不要交叉。\n","name":"onlyAgent"}],"aiApi":{"apiKey":"changeme","baseUrl":"https://apis.itedus.cn","completionsPath":"v1/chat/completions","embeddingsPath":"v1/embeddings","provider":"openai"},"chatModel":{"model":"gpt-4.1","toolMcpList":[{"local":{"name":"myToolCallbackProvider"}}],"toolSkillsList":[]},"runner":{"agentName":"onlyAgent","pluginNameList":["myTestPlugin","myLogPlugin"]}}}]
+26-05-24.14:45:02.529 [main            ] INFO  AiApiNode              - Ai Agent 装配操作 - AiApiNode
+26-05-24.14:45:02.533 [main            ] INFO  ChatModelNode          - Ai Agent 装配操作 - ChatModelNode
+26-05-24.14:45:02.533 [main            ] INFO  AgentNode              - Ai Agent 装配操作 - AgentNode
+26-05-24.14:45:02.654 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:45:02.654 [main            ] INFO  RunnerNode             - Ai Agent 装配操作 - RunnerNode
+26-05-24.14:45:02.660 [main            ] INFO  PluginManager          - Plugin 'logging_plugin' registered.
+26-05-24.14:45:02.663 [main            ] INFO  AbstractArmorySupport  - 成功注册Bean: 300001
+26-05-24.14:45:02.663 [main            ] INFO  AiApiNode              - Ai Agent 装配操作 - AiApiNode
+26-05-24.14:45:02.666 [main            ] INFO  ChatModelNode          - Ai Agent 装配操作 - ChatModelNode
+26-05-24.14:45:02.667 [main            ] INFO  LocalToolMcpCreateService - tool local mcp initialize myToolCallbackProvider
+26-05-24.14:45:02.670 [main            ] INFO  AgentNode              - Ai Agent 装配操作 - AgentNode
+26-05-24.14:45:02.671 [main            ] INFO  AgentWorkflowNode      - Ai Agent 装配操作 - AgentWorkflowNode
+26-05-24.14:45:02.671 [main            ] INFO  RunnerNode             - Ai Agent 装配操作 - RunnerNode
+26-05-24.14:45:02.671 [main            ] INFO  PluginManager          - Plugin 'MyTestPlugin' registered.
+26-05-24.14:45:02.671 [main            ] INFO  PluginManager          - Plugin 'logging_plugin' registered.
+26-05-24.14:45:02.671 [main            ] INFO  AbstractArmorySupport  - 成功注册Bean: 100003
+26-05-24.14:45:53.166 [http-nio-8099-exec-1] INFO  [/]                    - Initializing Spring DispatcherServlet 'dispatcherServlet'
+26-05-24.14:45:53.497 [http-nio-8099-exec-1] INFO  DispatcherServlet      - Initializing Servlet 'dispatcherServlet'
+26-05-24.14:45:53.513 [http-nio-8099-exec-1] INFO  DispatcherServlet      - Completed initialization in 14 ms
+26-05-24.14:45:54.083 [http-nio-8099-exec-1] WARN  DefaultHandlerExceptionResolver - Resolved [org.springframework.web.bind.MethodArgumentNotValidException: Validation failed for argument [0] in public cn.chyuan.ai.api.response.Response<cn.chyuan.ai.api.dto.ChatResponseDTO> cn.chyuan.ai.trigger.http.AgentServiceController.chat(cn.chyuan.ai.api.dto.ChatRequestDTO) with 2 errors: [Field error in object 'chatRequestDTO' on field 'message': rejected value [null]; codes [NotBlank.chatRequestDTO.message,NotBlank.message,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [chatRequestDTO.message,message]; arguments []; default message [message]]; default message [消息内容不能为空]] [Field error in object 'chatRequestDTO' on field 'userId': rejected value [null]; codes [NotBlank.chatRequestDTO.userId,NotBlank.userId,NotBlank.java.lang.String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [chatRequestDTO.userId,userId]; arguments []; default message [userId]]; default message [用户ID不能为空]] ]
+26-05-24.14:50:08.359 [http-nio-8091-exec-7] INFO  HikariDataSource       - HikariPool-1 - Starting...
+26-05-24.14:50:09.519 [http-nio-8091-exec-7] INFO  HikariPool             - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@6518e8e3
+26-05-24.14:50:09.534 [http-nio-8091-exec-7] INFO  HikariDataSource       - HikariPool-1 - Start completed.
+26-05-24.14:50:09.929 [http-nio-8091-exec-7] INFO  AuthService            - 用户登录成功: admin
+26-05-24.14:50:09.936 [http-nio-8091-exec-7] ERROR AuthController         - 登录异常: admin
+io.jsonwebtoken.lang.UnknownClassException: Unable to load class named [io.jsonwebtoken.impl.DefaultJwtBuilder] from the thread context, current, or system/application ClassLoaders.  All heuristics have been exhausted.  Class could not be found.  Have you remembered to include the jjwt-impl.jar in your runtime classpath?
+	at io.jsonwebtoken.lang.Classes.forName(Classes.java:93)
+	at io.jsonwebtoken.lang.Classes.newInstance(Classes.java:137)
+	at io.jsonwebtoken.Jwts.builder(Jwts.java:144)
+	at cn.chyuan.ai.domain.auth.service.TokenService.doGenerateToken(TokenService.java:46)
+	at cn.chyuan.ai.domain.auth.service.TokenService.generateToken(TokenService.java:38)
+	at cn.chyuan.ai.trigger.http.AuthController.login(AuthController.java:57)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:257)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at cn.chyuan.ai.trigger.filter.JwtAuthFilter.doFilterInternal(JwtAuthFilter.java:54)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1743)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-24.14:50:10.668 [audit-async-1   ] WARN  AuditLogService        - 审计日志写入失败：userId=0, action=LOGIN, result=FAILURE, err=
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+### The error may exist in class path resource [mybatis/mapper/audit_log_mapper.xml]
+### The error may involve cn.chyuan.ai.infrastructure.persistent.mapper.AuditLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO audit_log (user_id, username, action, resource_type, resource_id, result, trace_id, detail,                                ip_address, user_agent, create_time)         VALUES (?, ?, ?, ?, ?, ?, ?, ?,                 ?, ?, ?)
+### Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+; bad SQL grammar []
+26-05-24.14:53:04.509 [http-nio-8091-exec-2] INFO  AuthService            - 用户登录成功: admin
+26-05-24.14:53:04.517 [http-nio-8091-exec-2] ERROR AuthController         - 登录异常: admin
+io.jsonwebtoken.lang.UnknownClassException: Unable to load class named [io.jsonwebtoken.impl.DefaultJwtBuilder] from the thread context, current, or system/application ClassLoaders.  All heuristics have been exhausted.  Class could not be found.  Have you remembered to include the jjwt-impl.jar in your runtime classpath?
+	at io.jsonwebtoken.lang.Classes.forName(Classes.java:93)
+	at io.jsonwebtoken.lang.Classes.newInstance(Classes.java:137)
+	at io.jsonwebtoken.Jwts.builder(Jwts.java:144)
+	at cn.chyuan.ai.domain.auth.service.TokenService.doGenerateToken(TokenService.java:46)
+	at cn.chyuan.ai.domain.auth.service.TokenService.generateToken(TokenService.java:38)
+	at cn.chyuan.ai.trigger.http.AuthController.login(AuthController.java:57)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:257)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at cn.chyuan.ai.trigger.filter.JwtAuthFilter.doFilterInternal(JwtAuthFilter.java:54)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1743)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-24.14:53:04.610 [audit-async-2   ] WARN  AuditLogService        - 审计日志写入失败：userId=0, action=LOGIN, result=FAILURE, err=
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+### The error may exist in class path resource [mybatis/mapper/audit_log_mapper.xml]
+### The error may involve cn.chyuan.ai.infrastructure.persistent.mapper.AuditLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO audit_log (user_id, username, action, resource_type, resource_id, result, trace_id, detail,                                ip_address, user_agent, create_time)         VALUES (?, ?, ?, ?, ?, ?, ?, ?,                 ?, ?, ?)
+### Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+; bad SQL grammar []
+26-05-24.14:53:24.383 [http-nio-8091-exec-3] WARN  AuthController         - 登录失败: admin - 用户名或密码错误
+26-05-24.14:53:24.440 [audit-async-3   ] WARN  AuditLogService        - 审计日志写入失败：userId=0, action=LOGIN, result=FAILURE, err=
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+### The error may exist in class path resource [mybatis/mapper/audit_log_mapper.xml]
+### The error may involve cn.chyuan.ai.infrastructure.persistent.mapper.AuditLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO audit_log (user_id, username, action, resource_type, resource_id, result, trace_id, detail,                                ip_address, user_agent, create_time)         VALUES (?, ?, ?, ?, ?, ?, ?, ?,                 ?, ?, ?)
+### Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+; bad SQL grammar []
+26-05-24.14:53:31.551 [http-nio-8091-exec-5] ERROR AuthController         - 注册异常: testuser
+org.springframework.transaction.TransactionSystemException: Could not open a new Neo4j session: The client is unauthorized due to authentication failure.
+	at org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager.doBegin(Neo4jTransactionManager.java:317)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.startTransaction(AbstractPlatformTransactionManager.java:532)
+	at org.springframework.transaction.support.AbstractPlatformTransactionManager.getTransaction(AbstractPlatformTransactionManager.java:405)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.createTransactionIfNecessary(TransactionAspectSupport.java:639)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:374)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:727)
+	at cn.chyuan.ai.domain.auth.service.AuthService$$SpringCGLIB$$0.register(<generated>)
+	at cn.chyuan.ai.trigger.http.AuthController.register(AuthController.java:100)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:257)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at cn.chyuan.ai.trigger.filter.JwtAuthFilter.doFilterInternal(JwtAuthFilter.java:54)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1743)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.neo4j.driver.exceptions.AuthenticationException: The client is unauthorized due to authentication failure.
+	at org.neo4j.driver.internal.util.Futures.blockingGet(Futures.java:64)
+	at org.neo4j.driver.internal.InternalSession.beginTransaction(InternalSession.java:95)
+	at org.neo4j.driver.internal.InternalSession.beginTransaction(InternalSession.java:91)
+	at org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager.doBegin(Neo4jTransactionManager.java:308)
+	... 67 common frames omitted
+	Suppressed: org.neo4j.driver.internal.util.ErrorUtil$InternalExceptionCause: null
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.mapToNeo4jException(ErrorMapper.java:222)
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.mapBoltFailureException(ErrorMapper.java:125)
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.map(ErrorMapper.java:79)
+		at org.neo4j.driver.internal.adaptedbolt.ErrorMapper.mapAndTrow(ErrorMapper.java:66)
+		at java.base/java.util.concurrent.CompletableFuture.uniExceptionally(CompletableFuture.java:990)
+		at java.base/java.util.concurrent.CompletableFuture$UniExceptionally.tryFire(CompletableFuture.java:974)
+		at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+		at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+		at org.neo4j.driver.internal.bolt.pooledimpl.PooledBoltConnectionProvider.lambda$connect$16(PooledBoltConnectionProvider.java:368)
+		at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:863)
+		at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:841)
+		at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+		at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+		at org.neo4j.driver.internal.bolt.basicimpl.handlers.LogonResponseHandler.lambda$onFailure$0(LogonResponseHandler.java:52)
+		at io.netty.util.concurrent.DefaultPromise.notifyListener0(DefaultPromise.java:590)
+		at io.netty.util.concurrent.DefaultPromise.notifyListenersNow(DefaultPromise.java:557)
+		at io.netty.util.concurrent.DefaultPromise.notifyListeners(DefaultPromise.java:492)
+		at io.netty.util.concurrent.DefaultPromise.addListener(DefaultPromise.java:185)
+		at io.netty.channel.DefaultChannelPromise.addListener(DefaultChannelPromise.java:95)
+		at io.netty.channel.DefaultChannelPromise.addListener(DefaultChannelPromise.java:30)
+		at org.neo4j.driver.internal.bolt.basicimpl.handlers.LogonResponseHandler.onFailure(LogonResponseHandler.java:52)
+		at org.neo4j.driver.internal.bolt.basicimpl.async.inbound.InboundMessageDispatcher.handleFailureMessage(InboundMessageDispatcher.java:108)
+		at org.neo4j.driver.internal.bolt.basicimpl.messaging.common.CommonMessageReader.unpackFailureMessage(CommonMessageReader.java:80)
+		at org.neo4j.driver.internal.bolt.basicimpl.messaging.common.CommonMessageReader.read(CommonMessageReader.java:53)
+		at org.neo4j.driver.internal.bolt.basicimpl.async.inbound.InboundMessageHandler.channelRead0(InboundMessageHandler.java:81)
+		at org.neo4j.driver.internal.bolt.basicimpl.async.inbound.InboundMessageHandler.channelRead0(InboundMessageHandler.java:34)
+		at io.netty.channel.SimpleChannelInboundHandler.channelRead(SimpleChannelInboundHandler.java:99)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+		at org.neo4j.driver.internal.bolt.basicimpl.async.inbound.MessageDecoder.channelRead(MessageDecoder.java:40)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+		at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+		at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1357)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+		at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+		at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:868)
+		at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:796)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:732)
+		at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:658)
+		at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+		at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998)
+		at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+		at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+		... 1 common frames omitted
+26-05-24.14:53:31.604 [audit-async-4   ] WARN  AuditLogService        - 审计日志写入失败：userId=0, action=REGISTER, result=FAILURE, err=
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+### The error may exist in class path resource [mybatis/mapper/audit_log_mapper.xml]
+### The error may involve cn.chyuan.ai.infrastructure.persistent.mapper.AuditLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO audit_log (user_id, username, action, resource_type, resource_id, result, trace_id, detail,                                ip_address, user_agent, create_time)         VALUES (?, ?, ?, ?, ?, ?, ?, ?,                 ?, ?, ?)
+### Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+; bad SQL grammar []
+26-05-24.17:50:11.384 [HikariPool-1 housekeeper] WARN  HikariPool             - HikariPool-1 - Retrograde clock change detected (housekeeper delta=29s847ms), soft-evicting connections from pool.
+26-05-24.20:36:52.247 [http-nio-8091-exec-8] INFO  AuthService            - 用户登录成功: admin
+26-05-24.20:36:52.281 [http-nio-8091-exec-8] ERROR AuthController         - 登录异常: admin
+io.jsonwebtoken.lang.UnknownClassException: Unable to load class named [io.jsonwebtoken.impl.DefaultJwtBuilder] from the thread context, current, or system/application ClassLoaders.  All heuristics have been exhausted.  Class could not be found.  Have you remembered to include the jjwt-impl.jar in your runtime classpath?
+	at io.jsonwebtoken.lang.Classes.forName(Classes.java:93)
+	at io.jsonwebtoken.lang.Classes.newInstance(Classes.java:137)
+	at io.jsonwebtoken.Jwts.builder(Jwts.java:144)
+	at cn.chyuan.ai.domain.auth.service.TokenService.doGenerateToken(TokenService.java:46)
+	at cn.chyuan.ai.domain.auth.service.TokenService.generateToken(TokenService.java:38)
+	at cn.chyuan.ai.trigger.http.AuthController.login(AuthController.java:57)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:257)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at cn.chyuan.ai.trigger.filter.JwtAuthFilter.doFilterInternal(JwtAuthFilter.java:54)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1743)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-24.20:36:52.628 [audit-async-1   ] WARN  AuditLogService        - 审计日志写入失败：userId=0, action=LOGIN, result=FAILURE, err=
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+### The error may exist in class path resource [mybatis/mapper/audit_log_mapper.xml]
+### The error may involve cn.chyuan.ai.infrastructure.persistent.mapper.AuditLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO audit_log (user_id, username, action, resource_type, resource_id, result, trace_id, detail,                                ip_address, user_agent, create_time)         VALUES (?, ?, ?, ?, ?, ?, ?, ?,                 ?, ?, ?)
+### Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+; bad SQL grammar []
+26-05-24.20:42:24.197 [http-nio-8091-exec-9] INFO  AuthService            - 用户登录成功: admin
+26-05-24.20:42:24.207 [http-nio-8091-exec-9] ERROR AuthController         - 登录异常: admin
+io.jsonwebtoken.lang.UnknownClassException: Unable to load class named [io.jsonwebtoken.impl.DefaultJwtBuilder] from the thread context, current, or system/application ClassLoaders.  All heuristics have been exhausted.  Class could not be found.  Have you remembered to include the jjwt-impl.jar in your runtime classpath?
+	at io.jsonwebtoken.lang.Classes.forName(Classes.java:93)
+	at io.jsonwebtoken.lang.Classes.newInstance(Classes.java:137)
+	at io.jsonwebtoken.Jwts.builder(Jwts.java:144)
+	at cn.chyuan.ai.domain.auth.service.TokenService.doGenerateToken(TokenService.java:46)
+	at cn.chyuan.ai.domain.auth.service.TokenService.generateToken(TokenService.java:38)
+	at cn.chyuan.ai.trigger.http.AuthController.login(AuthController.java:57)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:257)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at cn.chyuan.ai.trigger.filter.JwtAuthFilter.doFilterInternal(JwtAuthFilter.java:54)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1743)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-24.20:42:24.231 [audit-async-2   ] WARN  AuditLogService        - 审计日志写入失败：userId=0, action=LOGIN, result=FAILURE, err=
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+### The error may exist in class path resource [mybatis/mapper/audit_log_mapper.xml]
+### The error may involve cn.chyuan.ai.infrastructure.persistent.mapper.AuditLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO audit_log (user_id, username, action, resource_type, resource_id, result, trace_id, detail,                                ip_address, user_agent, create_time)         VALUES (?, ?, ?, ?, ?, ?, ?, ?,                 ?, ?, ?)
+### Cause: java.sql.SQLSyntaxErrorException: Table 'chyuan_frame_archetype.audit_log' doesn't exist
+; bad SQL grammar []

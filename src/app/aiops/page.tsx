@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useAlerts } from "@/hooks/use-alerts";
@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Activity, RefreshCw, ChevronLeft, Search, Terminal, Zap, Loader2 } from "lucide-react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { requestJson, requestSSE } from "@/lib/api";
+import { requestSSE } from "@/lib/api";
 import type { AlertDTO } from "@/types/api";
 
 export default function AIOpsPage() {
@@ -27,7 +27,7 @@ export default function AIOpsPage() {
     alerts,
     counts,
     isLoading,
-    error,
+    // error,
     severity,
     loadAlerts,
     acknowledgeAlert,
@@ -39,29 +39,47 @@ export default function AIOpsPage() {
   const [aiAnalysis, setAiAnalysis] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [question, setQuestion] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
   }, [authLoading, user, router]);
 
-  // 设置默认选中的告警 - 修复React Hooks违规问题
+  // 设置默认选中的告警 - 使用 useRef 避免级联渲染
+  const defaultAlertSetRef = useRef(false);
   useEffect(() => {
-    if (alerts.length > 0 && !activeAlert) {
+    if (alerts.length > 0 && !defaultAlertSetRef.current) {
+      defaultAlertSetRef.current = true;
       setActiveAlert(alerts[0]);
     }
-  }, [alerts]); // 移除activeAlert依赖，避免级联渲染
+  }, [alerts]);
 
   // 刷新告警列表
   const handleRefresh = useCallback(() => {
     loadAlerts();
   }, [loadAlerts]);
 
+  // 停止分析
+  const handleStopAnalysis = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsAnalyzing(false);
+    }
+  }, []);
+
   // AI分析告警
   const handleAiAnalysis = useCallback(async (alertId?: string) => {
     if (!activeAlert && !alertId) return;
 
+    // 取消之前的请求
+    handleStopAnalysis();
+
     setIsAnalyzing(true);
     setAiAnalysis("");
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     try {
       const targetAlert = alertId
@@ -87,22 +105,36 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
           alertDescription,
         },
         (chunk) => {
-          setAiAnalysis(prev => prev + chunk);
-        }
+          if (!abortController.signal.aborted) {
+            setAiAnalysis(prev => prev + chunk);
+          }
+        },
+        abortController.signal
       );
     } catch (err) {
-      setAiAnalysis(`分析失败: ${err instanceof Error ? err.message : "未知错误"}`);
+      if (!abortController.signal.aborted) {
+        setAiAnalysis(`分析失败: ${err instanceof Error ? err.message : "未知错误"}`);
+      }
     } finally {
-      setIsAnalyzing(false);
+      if (!abortController.signal.aborted) {
+        setIsAnalyzing(false);
+      }
+      abortControllerRef.current = null;
     }
-  }, [activeAlert, alerts, user]);
+  }, [activeAlert, alerts, user, handleStopAnalysis]);
 
   // 提交问题
   const handleAskQuestion = useCallback(async () => {
     if (!question.trim() || !activeAlert) return;
 
+    // 取消之前的请求
+    handleStopAnalysis();
+
     setIsAnalyzing(true);
     setAiAnalysis("");
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     try {
       const alertContext = `告警信息:
@@ -121,17 +153,27 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
           alertDescription: alertContext,
         },
         (chunk) => {
-          setAiAnalysis(prev => prev + chunk);
-        }
+          if (!abortController.signal.aborted) {
+            setAiAnalysis(prev => prev + chunk);
+          }
+        },
+        abortController.signal
       );
 
-      setQuestion("");
+      if (!abortController.signal.aborted) {
+        setQuestion("");
+      }
     } catch (err) {
-      setAiAnalysis(`分析失败: ${err instanceof Error ? err.message : "未知错误"}`);
+      if (!abortController.signal.aborted) {
+        setAiAnalysis(`分析失败: ${err instanceof Error ? err.message : "未知错误"}`);
+      }
     } finally {
-      setIsAnalyzing(false);
+      if (!abortController.signal.aborted) {
+        setIsAnalyzing(false);
+      }
+      abortControllerRef.current = null;
     }
-  }, [question, activeAlert, user]);
+  }, [question, activeAlert, user, handleStopAnalysis]);
 
   if (authLoading || !user) {
     return <div className="flex h-screen items-center justify-center bg-[#0f0f14] text-[#55556a]">加载中...</div>;
@@ -310,15 +352,19 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
                 <div className="flex gap-3 mb-5">
                   <Button
                     className="h-10 px-4 bg-[#e63946] hover:bg-[#c1121f] text-white rounded-[10px] shadow-none gap-2"
-                    onClick={() => handleAiAnalysis()}
-                    disabled={isAnalyzing}
+                    onClick={() => isAnalyzing ? handleStopAnalysis() : handleAiAnalysis()}
                   >
                     {isAnalyzing ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        停止分析
+                      </>
                     ) : (
-                      <Zap className="w-4 h-4" />
+                      <>
+                        <Zap className="w-4 h-4" />
+                        AI 根因分析
+                      </>
                     )}
-                    AI 根因分析
                   </Button>
                   {activeAlert.status === "active" && (
                     <Button

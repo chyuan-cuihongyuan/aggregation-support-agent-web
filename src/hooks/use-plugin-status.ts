@@ -41,8 +41,13 @@ export function usePluginStatus({
     }
   }, [enabled]);
 
+  // 使用 useRef 避免在 effect 中直接调用 fetchStatus
+  const initialFetchDoneRef = useRef(false);
   useEffect(() => {
-    fetchStatus();
+    if (!initialFetchDoneRef.current) {
+      initialFetchDoneRef.current = true;
+      fetchStatus();
+    }
 
     if (!enabled || unavailableRef.current) return;
 

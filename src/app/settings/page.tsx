@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "next-themes";
@@ -69,15 +69,17 @@ export default function SettingsPage() {
     if (!authLoading && !user) router.push("/login");
   }, [authLoading, user, router]);
 
+  // 使用 useRef 跟踪用户数据是否已初始化
+  const userInitializedRef = useRef(false);
   useEffect(() => {
-    if (user) {
+    if (user && !userInitializedRef.current) {
+      userInitializedRef.current = true;
       setFormData({
         nickname: user.nickname || "",
         email: user.email || "",
       });
     }
   }, [user]);
-
   // 表单验证函数
   const validateForm = (): { valid: boolean; error?: string } => {
     if (!formData.nickname.trim()) {

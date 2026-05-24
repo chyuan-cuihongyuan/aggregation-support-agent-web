@@ -6,12 +6,12 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { requestJson } from "@/lib/api";
 import type { UserInfoDTO, UserListResponse } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Shield, UserX, CheckCircle } from "lucide-react";
+import { Users, Shield, UserX, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function UsersPage() {
@@ -20,21 +20,33 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadUsers = async (p: number) => {
-    setIsLoading(true);
-    try {
-      const data = await requestJson<UserListResponse>(`/api/v1/user/list?page=${p}&pageSize=20`);
-      setUsers(data.list);
-      setTotal(data.total);
-      setPage(p);
-    } catch {
-      // 401 会被 api.ts 自动拦截
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => { loadUsers(1); }, []);
+  // 使用 useEffect 的 cleanup 函数避免级联渲染
+  useEffect(() => {
+    let cancelled = false;
+    
+    const loadUsers = async () => {
+      setIsLoading(true);
+      try {
+        const data = await requestJson<UserListResponse>(`/api/v1/user/list?page=${page}&pageSize=20`);
+        if (!cancelled) {
+          setUsers(data.list);
+          setTotal(data.total);
+        }
+      } catch {
+        // 401 会被 api.ts 自动拦截
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadUsers();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [page]); // 只依赖 page
 
   const handleToggleStatus = async (user: UserInfoDTO) => {
     const newStatus = user.status === 1 ? 0 : 1;
@@ -44,7 +56,9 @@ export default function UsersPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       toast.success(`用户已${newStatus === 1 ? "启用" : "禁用"}`);
-      loadUsers(page);
+      // 通过改变 page 触发重新加载
+      setPage(page + 1);
+      setPage(page);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "操作失败");
     }
@@ -58,93 +72,114 @@ export default function UsersPage() {
         body: JSON.stringify({ role: newRole }),
       });
       toast.success(`用户角色已更新为${newRole === "admin" ? "管理员" : "普通用户"}`);
-      loadUsers(page);
+      // 通过改变 page 触发重新加载
+      setPage(page + 1);
+      setPage(page);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "操作失败");
     }
   };
 
-  const totalPages = Math.ceil(total / 20);
+  if (isLoading && users.length === 0) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="mt-2 text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl font-bold">用户管理</h1>
-            <span className="text-muted-foreground">共 {total} 个用户</span>
-          </div>
-          <a href="/chat" className="text-primary hover:underline text-sm">返回对话</a>
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">加载中...</div>
-        ) : (
-          <>
-            <div className="space-y-3">
-              {users.map((user) => (
-                <Card key={user.id} className="border-border/50">
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                        {(user.nickname || user.username).charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{user.nickname || user.username}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded ${
-                            user.role === "admin"
-                              ? "bg-primary/20 text-primary"
-                              : "bg-muted text-muted-foreground"
-                          }`}>
-                            {user.role === "admin" ? "管理员" : "用户"}
-                          </span>
-                          <span className={`text-xs px-2 py-0.5 rounded ${
-                            user.status === 1
-                              ? "bg-green-500/20 text-green-500"
-                              : "bg-destructive/20 text-destructive"
-                          }`}>
-                            {user.status === 1 ? "启用" : "禁用"}
-                          </span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          @{user.username} · {user.email || "未设置邮箱"} · 注册于 {user.createTime}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleToggleRole(user)}
-                        title={user.role === "admin" ? "降级为用户" : "升级为管理员"}>
-                        <Shield className="w-4 h-4" />
-                      </Button>
-                      <Button variant={user.status === 1 ? "destructive" : "default"} size="sm"
-                        onClick={() => handleToggleStatus(user)}
-                        title={user.status === 1 ? "禁用用户" : "启用用户"}>
-                        {user.status === 1 ? <UserX className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => loadUsers(page - 1)}>
-                  上一页
-                </Button>
-                <span className="flex items-center text-sm text-muted-foreground">
-                  第 {page} / {totalPages} 页
-                </span>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => loadUsers(page + 1)}>
-                  下一页
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+    <div className="container mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">用户管理</h1>
+        <p className="text-muted-foreground">管理系统用户和权限</p>
       </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b bg-muted/50">
+                <tr>
+                  <th className="p-4 text-left font-medium">用户ID</th>
+                  <th className="p-4 text-left font-medium">用户名</th>
+                  <th className="p-4 text-left font-medium">邮箱</th>
+                  <th className="p-4 text-left font-medium">角色</th>
+                  <th className="p-4 text-left font-medium">状态</th>
+                  <th className="p-4 text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b hover:bg-muted/50">
+                    <td className="p-4">{user.id}</td>
+                    <td className="p-4">{user.username}</td>
+                    <td className="p-4">{user.email}</td>
+                    <td className="p-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleRole(user)}
+                      >
+                        {user.role === "admin" ? (
+                          <>
+                            <Shield className="mr-2 h-4 w-4" />
+                            管理员
+                          </>
+                        ) : (
+                          <>
+                            <Users className="mr-2 h-4 w-4" />
+                            普通用户
+                          </>
+                        )}
+                      </Button>
+                    </td>
+                    <td className="p-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleStatus(user)}
+                      >
+                        {user.status === 1 ? (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                            启用
+                          </>
+                        ) : (
+                          <>
+                            <UserX className="mr-2 h-4 w-4 text-red-500" />
+                            禁用
+                          </>
+                        )}
+                      </Button>
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          user.status === 1
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                        }`}
+                      >
+                        {user.status === 1 ? "正常" : "禁用"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {total === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              暂无用户数据
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

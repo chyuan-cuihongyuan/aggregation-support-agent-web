@@ -31,6 +31,10 @@ export class CSRFProtection {
       const data = await response.json();
       this.token = data.token;
 
+      if (!this.token) {
+        throw new Error('Empty token received');
+      }
+
       return this.token;
     } catch (error) {
       console.warn('CSRF token fetch failed, using fallback:', error);
@@ -72,15 +76,15 @@ export class CSRFProtection {
   }
 
   /**
-   * 清除token（登出时使用）
+   * 重置token（用于登出等场景）
    */
-  clearToken(): void {
+  resetToken(): void {
     this.token = null;
   }
 }
 
 /**
- * 数据加密工具
+ * 数据加密工具（简化版）
  */
 export class DataEncryption {
   private algorithm = 'AES-GCM';
@@ -89,26 +93,12 @@ export class DataEncryption {
   /**
    * 生成加密密钥
    */
-  private async generateKey(): Promise<CryptoKey> {
-    return crypto.subtle.generateKey(
-      {
-        name: this.algorithm,
-        length: this.keyLength,
-      },
-      true,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  /**
-   * 从密码生成密钥
-   */
-  private async deriveKey(password: string): Promise<CryptoKey> {
+  async generateKey(password: string): Promise<CryptoKey> {
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
       encoder.encode(password),
-      { name: 'PBKDF2' },
+      'PBKDF2',
       false,
       ['deriveKey']
     );
@@ -122,7 +112,7 @@ export class DataEncryption {
       },
       keyMaterial,
       { name: this.algorithm, length: this.keyLength },
-      true,
+      false,
       ['encrypt', 'decrypt']
     );
   }
@@ -130,183 +120,89 @@ export class DataEncryption {
   /**
    * 加密数据
    */
-  async encrypt(data: string, password?: string): Promise<{ encrypted: string; iv: string }> {
+  async encrypt(data: string, password: string): Promise<string> {
     try {
-      const key = password ? await this.deriveKey(password) : await this.generateKey();
+      const key = await this.generateKey(password);
       const encoder = new TextEncoder();
       const iv = crypto.getRandomValues(new Uint8Array(12));
 
       const encrypted = await crypto.subtle.encrypt(
-        {
-          name: this.algorithm,
-          iv,
-        },
+        { name: this.algorithm, iv },
         key,
         encoder.encode(data)
       );
 
-      return {
-        encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-        iv: btoa(String.fromCharCode(...iv)),
-      };
+      // 组合 IV 和加密数据
+      const combined = new Uint8Array(iv.length + encrypted.byteLength);
+      combined.set(iv);
+      combined.set(new Uint8Array(encrypted), iv.length);
+
+      return btoa(String.fromCharCode(...combined));
     } catch (error) {
-      console.warn('Encryption failed, returning plaintext:', error);
-      return {
-        encrypted: btoa(data),
-        iv: '',
-      };
+      console.error('Encryption failed:', error);
+      throw new Error('Failed to encrypt data');
     }
   }
 
   /**
    * 解密数据
    */
-  async decrypt(encryptedData: string, iv: string, password?: string): Promise<string> {
+  async decrypt(encryptedData: string, password: string): Promise<string> {
     try {
-      const key = password ? await this.deriveKey(password) : await this.generateKey();
-      const decoder = new TextDecoder();
-
-      const encrypted = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
-      const ivArray = Uint8Array.from(atob(iv), (c) => c.charCodeAt(0));
+      const key = await this.generateKey(password);
+      const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+      const iv = combined.slice(0, 12);
+      const encrypted = combined.slice(12);
 
       const decrypted = await crypto.subtle.decrypt(
-        {
-          name: this.algorithm,
-          iv: ivArray,
-        },
+        { name: this.algorithm, iv },
         key,
         encrypted
       );
 
+      const decoder = new TextDecoder();
       return decoder.decode(decrypted);
     } catch (error) {
-      console.warn('Decryption failed:', error);
-      return atob(encryptedData);
+      console.error('Decryption failed:', error);
+      throw new Error('Failed to decrypt data');
     }
   }
 }
 
 /**
- * Content Security Policy生成器
+ * 安全 Headers 生成器
  */
-export class CSPManager {
+export class SecurityHeaders {
   /**
-   * 生成CSP meta标签内容
+   * 生成标准安全 headers
    */
-  static generateCSP(): string {
-    const directives = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: https: blob:",
-      "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.openai.com https://*.claude.ai",
-      "frame-src 'self' https:",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'self'",
-      "upgrade-insecure-requests",
-    ].join('; ');
-
-    return directives;
-  }
-
-  /**
-   * 生成CSP headers（用于Next.js配置）
-   */
-  static generateCSPHeaders(): Record<string, string> {
+  static getStandardHeaders(): HeadersInit {
     return {
-      'Content-Security-Policy': this.generateCSP(),
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
     };
+  }
+
+  /**
+   * 生成 CSP (Content Security Policy) header
+   */
+  static getCSPHeader(): string {
+    return [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https:",
+      "frame-ancestors 'none'",
+    ].join('; ');
   }
 }
 
 // 单例实例
 export const csrfProtection = new CSRFProtection();
 export const dataEncryption = new DataEncryption();
-
-/**
- * 安全headers中间件（用于客户端路由保护）
- */
-export function setSecurityHeaders() {
-  if (typeof document === 'undefined') {
-    return;
-  }
-
-  const csp = CSPManager.generateCSP();
-
-  // 查找或创建meta标签
-  let metaTag = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-
-  if (!metaTag) {
-    metaTag = document.createElement('meta');
-    metaTag.setAttribute('http-equiv', 'Content-Security-Policy');
-    document.head.appendChild(metaTag);
-  }
-
-  metaTag.setAttribute('content', csp);
-}
-
-/**
- * 输入验证和清理
- */
-export class InputSanitizer {
-  /**
-   * 清理用户输入，防止XSS
-   */
-  static sanitize(input: string): string {
-    if (!input) return '';
-
-    // 移除危险字符
-    return input
-      .replace(/[<>]/g, '') // 移除尖括号
-      .replace(/javascript:/gi, '') // 移除javascript:协议
-      .replace(/on\w+\s*=/gi, '') // 移除事件处理器
-      .trim();
-  }
-
-  /**
-   * 验证手机号
-   */
-  static validatePhone(phone: string): boolean {
-    const phoneRegex = /^1[3-9]\d{9}$/;
-    return phoneRegex.test(phone);
-  }
-
-  /**
-   * 验证邮箱
-   */
-  static validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  /**
-   * 验证URL
-   */
-  static validateURL(url: string): boolean {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * 限制字符串长度
-   */
-  static truncate(input: string, maxLength: number): string {
-    if (!input || input.length <= maxLength) {
-      return input;
-    }
-
-    return input.substring(0, maxLength);
-  }
-}

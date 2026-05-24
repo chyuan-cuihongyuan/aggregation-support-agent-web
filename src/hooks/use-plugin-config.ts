@@ -4,7 +4,7 @@
  * 管理插件配置的本地存储和同步
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { requestJson } from "@/lib/api";
 import type { PluginConfig, BuiltInPluginConfig } from "@/types/plugin";
 
@@ -67,26 +67,24 @@ const DEFAULT_BUILT_IN: BuiltInPluginConfig[] = [
   },
 ];
 
-export function usePluginConfig() {
-  const [config, setConfig] = useState<PluginConfig[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 从 localStorage 加载配置
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(PLUGIN_CONFIG_KEY);
-      if (saved) {
-        setConfig(JSON.parse(saved));
-      } else {
-        setConfig(DEFAULT_BUILT_IN);
-      }
-    } catch (error) {
-      console.error("加载插件配置失败:", error);
-      setConfig(DEFAULT_BUILT_IN);
-    } finally {
-      setIsLoading(false);
+/** 从 localStorage 加载配置 */
+function loadConfigFromStorage(): PluginConfig[] {
+  try {
+    const saved = localStorage.getItem(PLUGIN_CONFIG_KEY);
+    if (saved) {
+      return JSON.parse(saved);
     }
-  }, []);
+    return DEFAULT_BUILT_IN;
+  } catch (error) {
+    console.error("加载插件配置失败:", error);
+    return DEFAULT_BUILT_IN;
+  }
+}
+
+export function usePluginConfig() {
+  const [config, setConfig] = useState<PluginConfig[] | null>(
+    typeof window !== 'undefined' ? loadConfigFromStorage() : null
+  );
 
   // 更新配置
   const updateConfig = useCallback((newConfig: PluginConfig[]) => {
@@ -119,7 +117,7 @@ export function usePluginConfig() {
   // 保存插件设置到后端
   const savePluginSettings = useCallback(async (
     pluginId: string,
-    settings: Record<string, any>
+    settings: Record<string, string | number | boolean | string[]>
   ) => {
     try {
       await requestJson(`/api/v1/plugins/${pluginId}/config`, {
@@ -153,7 +151,6 @@ export function usePluginConfig() {
 
   return {
     config,
-    isLoading,
     updateConfig,
     togglePlugin,
     savePluginSettings,

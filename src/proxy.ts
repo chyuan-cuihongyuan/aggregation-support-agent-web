@@ -19,11 +19,19 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
 const VERIFY_TIMEOUT = 5000;
 
 /**
+ * 验证结果类型
+ * - valid: Token有效
+ * - invalid: Token无效（明确返回401或验证失败）
+ * - unavailable: 后端不可用（超时或网络错误）
+ */
+type VerifyResult = "valid" | "invalid" | "unavailable";
+
+/**
  * 验证用户Token是否有效
  * @param token - 认证Token
- * @returns Token是否有效
+ * @returns 验证结果
  */
-async function verifyToken(token: string): Promise<boolean> {
+async function verifyToken(token: string): Promise<VerifyResult> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), VERIFY_TIMEOUT);
@@ -35,25 +43,29 @@ async function verifyToken(token: string): Promise<boolean> {
         "Cookie": `${COOKIE_NAME}=${token}`,
       },
       signal: controller.signal,
-      // 不使用credentials: 'include'，因为我们手动传递Cookie
     });
 
     clearTimeout(timeoutId);
 
-    // 检查响应状态
+    // 明确返回401，Token无效
     if (response.status === 401) {
-      return false;
+      return "invalid";
     }
 
     if (response.ok) {
       const result = await response.json();
-      return result.code === "0000";
+      return result.code === "0000" ? "valid" : "invalid";
     }
 
-    return false;
+    // 其他HTTP错误状态码，视为Token无效
+    return "invalid";
   } catch (error) {
-    // 网络错误、超时或其他错误都认为验证失败
-    return false;
+    // 超时或网络错误，后端不可用
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return "unavailable";
+    }
+    // 网络错误等其他异常，后端不可用
+    return "unavailable";
   }
 }
 
@@ -64,15 +76,19 @@ export async function proxy(request: NextRequest) {
 
   // 已登录用户访问登录/注册页 → 验证后重定向到 /chat
   if ((pathname.startsWith("/login") || pathname.startsWith("/register")) && hasToken) {
-    // 验证Token是否有效
-    const isValid = await verifyToken(token);
-    if (isValid) {
+    const result = await verifyToken(token);
+    if (result === "valid") {
+      // Token有效，重定向到对话页
       return NextResponse.redirect(new URL("/chat", request.url));
     }
-    // Token无效，清除Cookie并继续到登录页
-    const response = NextResponse.next();
-    response.cookies.delete(COOKIE_NAME);
-    return response;
+    if (result === "invalid") {
+      // Token无效，清除Cookie并继续到登录页
+      const response = NextResponse.next();
+      response.cookies.delete(COOKIE_NAME);
+      return response;
+    }
+    // 后端不可用，允许继续访问登录页（降级策略）
+    return NextResponse.next();
   }
 
   // 未登录用户访问受保护路由 → 重定向到 /login
@@ -81,14 +97,19 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // 有Token但需要验证有效性
-    const isValid = await verifyToken(token);
-    if (!isValid) {
+    const result = await verifyToken(token);
+    if (result === "valid") {
+      // Token有效，允许访问
+      return NextResponse.next();
+    }
+    if (result === "invalid") {
       // Token无效，清除Cookie并重定向到登录页
       const response = NextResponse.redirect(new URL("/login", request.url));
       response.cookies.delete(COOKIE_NAME);
       return response;
     }
+    // 后端不可用但用户有Token，允许继续访问（降级策略）
+    return NextResponse.next();
   }
 
   return NextResponse.next();

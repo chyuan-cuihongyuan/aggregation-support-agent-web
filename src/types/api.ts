@@ -232,7 +232,7 @@ export interface AlertDTO {
   /** 告警来源 */
   source?: string;
   /** 告警指标 */
-  metrics?: Record<string, any>;
+  metrics?: Record<string, string | number | boolean>;
   /** 告警标签 */
   labels?: Record<string, string>;
   /** 告警描述 */

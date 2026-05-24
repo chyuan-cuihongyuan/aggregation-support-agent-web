@@ -3,6 +3,11 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from './ui/button';
 
+/** Google Analytics gtag 函数类型 */
+interface GtagWindow extends Window {
+  gtag?: (command: string, eventName: string, params: Record<string, unknown>) => void;
+}
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -32,8 +37,9 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     // 这里可以添加错误上报逻辑
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'exception', {
+    const gtagWindow = window as GtagWindow;
+    if (typeof window !== 'undefined' && gtagWindow.gtag) {
+      gtagWindow.gtag('event', 'exception', {
         description: error.toString(),
         fatal: true,
       });
@@ -115,8 +121,9 @@ export function useErrorHandler() {
     console.error('Error caught by error handler:', error, errorInfo);
 
     // 这里可以添加错误上报逻辑
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'exception', {
+    const gtagWindow = window as GtagWindow;
+    if (typeof window !== 'undefined' && gtagWindow.gtag) {
+      gtagWindow.gtag('event', 'exception', {
         description: error.toString(),
         fatal: false,
       });

@@ -118,6 +118,14 @@ export function uploadFile<T>(
 
     // 监听请求完成
     xhr.addEventListener("load", () => {
+      if (xhr.status === 401) {
+        // 401 认证失效，触发全局事件
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        }
+        reject(new ApiError('登录已过期，请重新登录', 'A0004'));
+        return;
+      }
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const result: ApiResponse<T> = JSON.parse(xhr.responseText);
@@ -149,19 +157,32 @@ export function uploadFile<T>(
 // ========== SSE 流式读取 ==========
 
 /**
+ * SSE 流读取选项
+ */
+interface ReadSSEOptions {
+  /** 接收数据块回调 */
+  onChunk: (text: string) => void;
+  /** 接收 RAG 来源信息回调（可选） */
+  onSources?: (sources: unknown) => void;
+}
+
+/**
  * 读取 SSE 流，兼容非 SSE 格式（JSON / 纯文本）响应
  *
  * - SSE 格式：逐行解析 `data:` 行，到达即回调，确保实时渲染
+ * - 命名事件：支持 `event: sources` 等命名事件
  * - JSON 格式：提取 data / answer / content 字段后整块回调
  * - 纯文本：整块回调
- *
- * @param response - fetch 响应对象
- * @param onChunk - 接收数据块回调
  */
 export async function readSSEStream(
   response: Response,
-  onChunk: (text: string) => void
+  onChunkOrOptions: ((text: string) => void) | ReadSSEOptions
 ): Promise<void> {
+  // 兼容旧的回调方式和新的选项方式
+  const options: ReadSSEOptions = typeof onChunkOrOptions === 'function'
+    ? { onChunk: onChunkOrOptions }
+    : onChunkOrOptions;
+
   if (!response.body) {
     throw new ApiError("响应体为空");
   }
@@ -170,6 +191,7 @@ export async function readSSEStream(
   const decoder = new TextDecoder();
   let buffer = "";
   let hasSSEData = false;
+  let currentEventType = "message"; // 默认事件类型
 
   try {
     while (true) {
@@ -184,10 +206,13 @@ export async function readSSEStream(
         const eventBlock = buffer.slice(0, eventEndIdx);
         buffer = buffer.slice(eventEndIdx + 2);
 
-        // 提取同一事件内的所有 data: 行，用 \n 拼接
+        // 提取事件类型和数据行
         const dataLines: string[] = [];
         for (const line of eventBlock.split("\n")) {
-          if (line.startsWith("data:")) {
+          if (line.startsWith("event:")) {
+            // 解析命名事件类型
+            currentEventType = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
             const data = line.slice(5).replace(/^\s/, "");
             if (data.trim() !== "[DONE]") {
               dataLines.push(data);
@@ -196,8 +221,25 @@ export async function readSSEStream(
         }
 
         if (dataLines.length > 0) {
-          hasSSEData = true;
-          onChunk(dataLines.join("\n"));
+          const combinedData = dataLines.join("\n");
+
+          // 根据事件类型分发
+          if (currentEventType === "sources" && options.onSources) {
+            // RAG 来源事件
+            try {
+              const sourcesData = JSON.parse(combinedData);
+              options.onSources(sourcesData);
+            } catch {
+              options.onSources(combinedData);
+            }
+          } else {
+            // 普通数据事件
+            hasSSEData = true;
+            options.onChunk(combinedData);
+          }
+
+          // 重置事件类型
+          currentEventType = "message";
         }
       }
     }
@@ -205,11 +247,14 @@ export async function readSSEStream(
     // 处理缓冲区中剩余的数据
     if (buffer.trim()) {
       const remaining = buffer.replace(/\r$/, "");
-      if (remaining.startsWith("data:")) {
-        // 单行 data（无结尾空行）
+      if (remaining.startsWith("data:") || remaining.startsWith("event:")) {
+        // 单行 data/event（无结尾空行）
         const dataLines: string[] = [];
+        let lastEventType = "message";
         for (const line of remaining.split("\n")) {
-          if (line.startsWith("data:")) {
+          if (line.startsWith("event:")) {
+            lastEventType = line.slice(6).trim();
+          } else if (line.startsWith("data:")) {
             const data = line.slice(5).replace(/^\s/, "");
             if (data && data.trim() !== "[DONE]") {
               dataLines.push(data);
@@ -217,8 +262,18 @@ export async function readSSEStream(
           }
         }
         if (dataLines.length > 0) {
-          hasSSEData = true;
-          onChunk(dataLines.join("\n"));
+          const combinedData = dataLines.join("\n");
+          if (lastEventType === "sources" && options.onSources) {
+            try {
+              const sourcesData = JSON.parse(combinedData);
+              options.onSources(sourcesData);
+            } catch {
+              options.onSources(combinedData);
+            }
+          } else {
+            hasSSEData = true;
+            options.onChunk(combinedData);
+          }
         }
       } else if (!hasSSEData) {
         // 非 SSE 降级：尝试解析 JSON 或纯文本
@@ -228,10 +283,10 @@ export async function readSSEStream(
             json.data?.answer ?? json.data?.content ?? json.data?.message ??
             json.data ?? json.answer ?? json.content ?? json.message ?? "";
           if (content) {
-            onChunk(typeof content === "string" ? content : JSON.stringify(content));
+            options.onChunk(typeof content === "string" ? content : JSON.stringify(content));
           }
         } catch {
-          onChunk(buffer.trim());
+          options.onChunk(buffer.trim());
         }
       }
     }
@@ -264,6 +319,14 @@ export async function requestSSE(
       body: JSON.stringify(body),
       signal,
     });
+
+    if (response.status === 401) {
+      // 401 认证失效，触发全局事件
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      }
+      throw new ApiError('登录已过期，请重新登录', 'A0004');
+    }
 
     if (!response.ok) {
       throw new ApiError(`HTTP ${response.status}: ${response.statusText}`);

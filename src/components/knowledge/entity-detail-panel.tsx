@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { X, ExternalLink, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,24 +35,33 @@ export function EntityDetailPanel({ node, onClose, onNavigateEntity }: EntityDet
   const [subgraph, setSubgraph] = useState<GraphSubgraph | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 加载实体详情和子图
+  // 加载实体详情和子图 - 使用 useCallback 避免 effect 中直接 setState
+  const loadEntityData = useCallback(async (nodeId: string) => {
+    setLoading(true);
+    try {
+      const [entityData, subgraphData] = await Promise.all([
+        requestJson<GraphEntity>(`/api/v1/graph/entities/${nodeId}`).catch(() => null),
+        requestJson<GraphSubgraph>(`/api/v1/graph/subgraph/${nodeId}?depth=1`).catch(() => null),
+      ]);
+      setEntity(entityData);
+      setSubgraph(subgraphData);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 使用 useRef 避免在 effect 中直接调用异步函数，并保留取消机制
+  const nodeRef = useRef<GraphNode | null>(null);
   useEffect(() => {
     if (!node) return;
+    if (nodeRef.current?.id === node.id) return;
+    nodeRef.current = node;
     let cancelled = false;
-    setLoading(true);
-    Promise.all([
-      requestJson<GraphEntity>(`/api/v1/graph/entities/${node.id}`).catch(() => null),
-      requestJson<GraphSubgraph>(`/api/v1/graph/subgraph/${node.id}?depth=1`).catch(() => null),
-    ])
-      .then(([entityData, subgraphData]) => {
-        if (!cancelled) {
-          setEntity(entityData);
-          setSubgraph(subgraphData);
-        }
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
+    loadEntityData(node.id).then(() => {
+      if (cancelled) return;
+    });
     return () => { cancelled = true; };
-  }, [node]);
+  }, [node, loadEntityData]);
 
   if (!node) return null;
 

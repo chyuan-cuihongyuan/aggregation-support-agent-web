@@ -19,7 +19,7 @@ export interface BasePluginConfig {
 export interface BuiltInPluginConfig extends BasePluginConfig {
   type: "builtin";
   configurable: boolean;
-  settings?: Record<string, any>;
+  settings?: Record<string, string | number | boolean | string[]>;
 }
 
 /** MCP 工具 */

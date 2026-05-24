@@ -5,13 +5,41 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  // 迁移自 .eslintignore 的忽略规则
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Dependencies
+    "node_modules/**",
+    
+    // Production build
     ".next/**",
     "out/**",
     "build/**",
-    "next-env.d.ts",
+    "dist/**",
+    
+    // Git worktrees (development artifacts)
+    ".worktrees/**",
+    
+    // Environment files
+    ".env.local",
+    ".env.*.local",
+    
+    // IDE
+    ".vscode/**",
+    ".idea/**",
+    "*.swp",
+    "*.swo",
+    
+    // OS
+    ".DS_Store",
+    "Thumbs.db",
+    
+    // Testing
+    "coverage/**",
+    ".nyc_output/**",
+    
+    // Misc
+    "*.log",
+    "*.tsbuildinfo",
   ]),
 ]);
 

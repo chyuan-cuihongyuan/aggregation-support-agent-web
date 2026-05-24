@@ -24,7 +24,7 @@ interface BuiltInConfigDialogProps {
   plugin: BuiltInPluginConfig;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (settings: Record<string, any>) => void;
+  onSave: (settings: Record<string, string | number | boolean | string[]>) => void;
 }
 
 export function BuiltInConfigDialog({
@@ -33,14 +33,14 @@ export function BuiltInConfigDialog({
   onOpenChange,
   onSave,
 }: BuiltInConfigDialogProps) {
-  const [settings, setSettings] = useState<Record<string, any>>(plugin.settings || {});
+  const [settings, setSettings] = useState<Record<string, string | number | boolean | string[]>>(plugin.settings || {});
 
   const handleSave = () => {
     onSave(settings);
     onOpenChange(false);
   };
 
-  const renderSettingField = (key: string, value: any) => {
+  const renderSettingField = (key: string, value: string | number | boolean | string[]) => {
     if (typeof value === "boolean") {
       return (
         <div key={key} className="flex items-center justify-between">

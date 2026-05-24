@@ -1,6 +1,7 @@
 /**
  * 性能监控工具
  * 集成Web Vitals和性能指标收集
+ * 已适配 web-vitals 5.x API
  */
 
 export type Metric = {
@@ -26,17 +27,18 @@ function getRating(score: number, thresholds: { good: number; poor: number }): M
 
 /**
  * 收集Web Vitals指标
+ * 适配 web-vitals 5.x API：使用 onCLS/onFCP/onINP/onLCP/onTTFB
  */
 export async function collectWebVitals(): Promise<Metric[]> {
   const metrics: Metric[] = [];
 
   try {
     // 动态导入web-vitals
-    const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
+    const { onCLS, onFCP, onINP, onLCP, onTTFB } = await import('web-vitals');
 
     // CLS (Cumulative Layout Shift) - 布局稳定性
     const clsPromise = new Promise<void>((resolve) => {
-      getCLS((metric) => {
+      onCLS((metric) => {
         metrics.push({
           name: 'CLS',
           value: metric.value,
@@ -46,13 +48,13 @@ export async function collectWebVitals(): Promise<Metric[]> {
       });
     });
 
-    // FID (First Input Delay) - 交互响应性
-    const fidPromise = new Promise<void>((resolve) => {
-      getFID((metric) => {
+    // INP (Interaction to Next Paint) - 交互响应性（替代 FID）
+    const inpPromise = new Promise<void>((resolve) => {
+      onINP((metric) => {
         metrics.push({
-          name: 'FID',
+          name: 'INP',
           value: metric.value,
-          rating: getRating(metric.value, { good: 100, poor: 300 }),
+          rating: getRating(metric.value, { good: 200, poor: 500 }),
         });
         resolve();
       });
@@ -60,7 +62,7 @@ export async function collectWebVitals(): Promise<Metric[]> {
 
     // FCP (First Contentful Paint) - 首次内容绘制
     const fcpPromise = new Promise<void>((resolve) => {
-      getFCP((metric) => {
+      onFCP((metric) => {
         metrics.push({
           name: 'FCP',
           value: metric.value,
@@ -72,7 +74,7 @@ export async function collectWebVitals(): Promise<Metric[]> {
 
     // LCP (Largest Contentful Paint) - 最大内容绘制
     const lcpPromise = new Promise<void>((resolve) => {
-      getLCP((metric) => {
+      onLCP((metric) => {
         metrics.push({
           name: 'LCP',
           value: metric.value,
@@ -84,7 +86,7 @@ export async function collectWebVitals(): Promise<Metric[]> {
 
     // TTFB (Time to First Byte) - 首字节时间
     const ttfbPromise = new Promise<void>((resolve) => {
-      getTTFB((metric) => {
+      onTTFB((metric) => {
         metrics.push({
           name: 'TTFB',
           value: metric.value,
@@ -95,7 +97,7 @@ export async function collectWebVitals(): Promise<Metric[]> {
     });
 
     // 等待所有指标收集完成
-    await Promise.all([clsPromise, fidPromise, fcpPromise, lcpPromise, ttfbPromise]);
+    await Promise.all([clsPromise, inpPromise, fcpPromise, lcpPromise, ttfbPromise]);
 
   } catch (error) {
     console.warn('Failed to collect web vitals:', error);
@@ -115,8 +117,14 @@ export function collectCustomMetrics(): Metric[] {
   }
 
   // 内存使用情况
-  if ('memory' in performance) {
-    const memory = (performance as any).memory;
+  interface MemoryInfo {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  }
+  const performanceWithMemory = performance as Performance & { memory?: MemoryInfo };
+  if (performanceWithMemory.memory) {
+    const memory = performanceWithMemory.memory;
     const usedMB = memory.usedJSHeapSize / (1024 * 1024);
     const totalMB = memory.totalJSHeapSize / (1024 * 1024);
 
@@ -128,8 +136,14 @@ export function collectCustomMetrics(): Metric[] {
   }
 
   // 网络信息
-  if ('connection' in navigator) {
-    const connection = (navigator as any).connection;
+  interface NetworkInformation {
+    effectiveType?: string;
+    downlink?: number;
+    rtt?: number;
+  }
+  const navigatorWithConnection = navigator as Navigator & { connection?: NetworkInformation };
+  if (navigatorWithConnection.connection) {
+    const connection = navigatorWithConnection.connection;
     if (connection) {
       metrics.push({
         name: 'Network Type',
@@ -152,7 +166,7 @@ export async function generatePerformanceReport(): Promise<PerformanceReport> {
   return {
     metrics: [...webVitals, ...customMetrics],
     timestamp: Date.now(),
-    url: window.location.href,
+    url: typeof window !== 'undefined' ? window.location.href : '',
   };
 }
 

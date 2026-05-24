@@ -44,6 +44,14 @@ const RELATION_COLORS: Record<string, string> = {
   LOCATED_IN: "#06b6d4",
 };
 
+/** ForceGraph 节点类型 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ForceGraphNode = any;
+
+/** ForceGraph 连接类型 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ForceGraphLink = any;
+
 interface GraphData {
   nodes: { id: string; label: string; type: string; val: number; score?: number }[];
   links: { source: string; target: string; label: string; type: string }[];
@@ -139,7 +147,7 @@ export function GraphViewer({ initialData, onNodeClick, width, height }: GraphVi
 
   // 节点渲染
   const nodeCanvasObject = useCallback(
-    (node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    (node: ForceGraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
       const label = node.label;
       const fontSize = Math.max(12 / globalScale, 2);
       ctx.font = `${fontSize}px Sans-Serif`;
@@ -230,7 +238,7 @@ export function GraphViewer({ initialData, onNodeClick, width, height }: GraphVi
             width={dimensions.w}
             height={dimensions.h || 500}
             nodeCanvasObject={nodeCanvasObject}
-            nodePointerAreaPaint={(node: any, color: string, ctx: CanvasRenderingContext2D) => {
+            nodePointerAreaPaint={(node: ForceGraphNode, color: string, ctx: CanvasRenderingContext2D) => {
               const fontSize = 12;
               ctx.font = `${fontSize}px Sans-Serif`;
               const textWidth = ctx.measureText(node.label).width;
@@ -242,11 +250,11 @@ export function GraphViewer({ initialData, onNodeClick, width, height }: GraphVi
                 fontSize * 2
               );
             }}
-            linkColor={(link: any) => RELATION_COLORS[link.type] || "#94a3b8"}
+            linkColor={(link: ForceGraphLink) => RELATION_COLORS[link.type] || "#94a3b8"}
             linkWidth={1}
             linkDirectionalArrowLength={4}
             linkDirectionalArrowRelPos={1}
-            onNodeClick={(node: any) => {
+            onNodeClick={(node: ForceGraphNode) => {
               if (onNodeClick) {
                 onNodeClick({
                   id: node.id,

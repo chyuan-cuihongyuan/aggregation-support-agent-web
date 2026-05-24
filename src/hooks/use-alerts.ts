@@ -4,7 +4,7 @@
  * 管理告警数据的加载、过滤和状态更新
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { requestJson } from "@/lib/api";
 import type { AlertDTO, AlertListResponse } from "@/types/api";
 
@@ -80,9 +80,11 @@ export function useAlerts({ autoLoad = true, defaultSeverity = "all" }: UseAlert
     loadAlerts(newSeverity);
   }, [loadAlerts]);
 
-  // 初始加载
+  // 初始加载 - 使用 useRef 避免重复加载
+  const initialLoadDoneRef = useRef(false);
   useEffect(() => {
-    if (autoLoad) {
+    if (autoLoad && !initialLoadDoneRef.current) {
+      initialLoadDoneRef.current = true;
       loadAlerts();
     }
   }, [autoLoad, loadAlerts]);

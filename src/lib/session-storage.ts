@@ -11,9 +11,21 @@ interface CacheEntry {
 
 export class SessionStorage {
   private cache: Map<string, CacheEntry> = new Map();
+  private initialized = false;
 
   constructor() {
-    this.loadFromLocalStorage();
+    // 延迟初始化，避免 SSR 问题
+    if (typeof window !== "undefined") {
+      this.loadFromLocalStorage();
+      this.initialized = true;
+    }
+  }
+
+  private ensureInitialized() {
+    if (!this.initialized && typeof window !== "undefined") {
+      this.loadFromLocalStorage();
+      this.initialized = true;
+    }
   }
 
   private loadFromLocalStorage() {
@@ -54,6 +66,7 @@ export class SessionStorage {
   }
 
   set(sessionId: string, data: SessionCacheData) {
+    this.ensureInitialized();
     // 先删除已存在的键，确保 LRU 顺序正确
     if (this.cache.has(sessionId)) {
       this.cache.delete(sessionId);
@@ -66,6 +79,7 @@ export class SessionStorage {
   }
 
   get(sessionId: string): SessionCacheData | null {
+    this.ensureInitialized();
     const entry = this.cache.get(sessionId);
     if (!entry) return null;
     if (Date.now() - entry.timestamp > CACHE_TTL) {

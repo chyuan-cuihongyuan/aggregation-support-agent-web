@@ -73,7 +73,7 @@ export default function ChatPage() {
   // 未登录则跳转
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [authLoading, user, router]);
 

@@ -95,15 +95,22 @@ export function useSessionManager({
         answer: h.answer,
       }));
 
-      await loadSession(history.sessionId, historyItemsToMessages(historyItems));
+      // 转换一次，避免重复转换
+      const messages = historyItemsToMessages(historyItems);
+      
+      // 加载会话缓存
+      await loadSession(history.sessionId, messages);
+      // 加载消息到对话显示
       loadConversation(historyItems);
     },
     [histories, loadSession, loadConversation]
   );
 
-  // 初始化时创建新会话（仅在 agentId 非空时）
+  // 初始化时创建新会话（仅在 agentId 非空且用户已登录时）
+  const initializedRef = useRef(false);
   useEffect(() => {
-    if (!currentSessionId && !isSwitching && agentId) {
+    if (!currentSessionId && !isSwitching && agentId && !initializedRef.current) {
+      initializedRef.current = true;
       createNewSession(false);
     }
   }, [currentSessionId, isSwitching, createNewSession, agentId]);
