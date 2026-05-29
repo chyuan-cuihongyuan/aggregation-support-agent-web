@@ -28,13 +28,18 @@ export function isBackendUnavailable(message: string): boolean {
  * API 错误类
  */
 export class ApiError extends Error {
+  /** HTTP 状态码 */
+  public httpStatus?: number;
+
   constructor(
     message: string,
     public code?: string,
-    public isUnavailable: boolean = false
+    public isUnavailable: boolean = false,
+    httpStatus?: number
   ) {
     super(message);
     this.name = "ApiError";
+    this.httpStatus = httpStatus;
   }
 }
 
@@ -67,7 +72,19 @@ export async function requestJson<T>(
         // 通知 AuthProvider 认证失效，由其统一处理跳转
         window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
-      throw new ApiError('登录已过期，请重新登录', 'A0004');
+      throw new ApiError('登录已过期，请重新登录', 'A0004', false, 401);
+    }
+
+    // 非 2xx 响应，尝试解析错误信息
+    if (!response.ok) {
+      let errorMessage = `请求失败: HTTP ${response.status}`;
+      try {
+        const errorResult = await response.json();
+        errorMessage = errorResult.info || errorMessage;
+      } catch {
+        // 非 JSON 响应，使用默认错误信息
+      }
+      throw new ApiError(errorMessage, undefined, false, response.status);
     }
 
     const result: ApiResponse<T> = await response.json();
@@ -78,7 +95,7 @@ export async function requestJson<T>(
 
     const errorInfo = result.info || "请求失败";
     console.warn(`[API] ${path} 失败: code=${result.code}, info=${errorInfo}`);
-    throw new ApiError(errorInfo, result.code);
+    throw new ApiError(errorInfo, result.code, false, response.status);
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
@@ -123,7 +140,7 @@ export function uploadFile<T>(
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
-        reject(new ApiError('登录已过期，请重新登录', 'A0004'));
+        reject(new ApiError('登录已过期，请重新登录', 'A0004', false, 401));
         return;
       }
       if (xhr.status >= 200 && xhr.status < 300) {
@@ -132,13 +149,31 @@ export function uploadFile<T>(
           if (result.code === SUCCESS_CODE) {
             resolve(result.data);
           } else {
-            reject(new ApiError(result.info || "上传失败", result.code));
+            reject(new ApiError(result.info || "上传失败", result.code, false, xhr.status));
           }
         } catch {
-          reject(new ApiError("解析响应失败"));
+          // 非 JSON 响应兜底：尝试从纯文本中提取有用信息
+          const responseText = xhr.responseText?.trim();
+          if (responseText) {
+            reject(new ApiError(`上传失败: ${responseText}`, undefined, false, xhr.status));
+          } else {
+            reject(new ApiError("解析响应失败", undefined, false, xhr.status));
+          }
         }
       } else {
-        reject(new ApiError(`上传失败: HTTP ${xhr.status}`));
+        // 非 2xx 响应，尝试解析错误信息
+        let errorMessage = `上传失败: HTTP ${xhr.status}`;
+        try {
+          const errorResult = JSON.parse(xhr.responseText);
+          errorMessage = errorResult.info || errorResult.message || errorMessage;
+        } catch {
+          // 非 JSON 响应，使用默认错误信息
+          const responseText = xhr.responseText?.trim();
+          if (responseText) {
+            errorMessage = `上传失败: ${responseText}`;
+          }
+        }
+        reject(new ApiError(errorMessage, undefined, false, xhr.status));
       }
     });
 
@@ -306,7 +341,7 @@ export async function readSSEStream(
 export async function requestSSE(
   path: string,
   body: unknown,
-  onChunk: (text: string) => void,
+  onChunkOrOptions: ((text: string) => void) | ReadSSEOptions,
   signal?: AbortSignal
 ): Promise<void> {
   const url = `${API_BASE}${path}`;
@@ -325,14 +360,14 @@ export async function requestSSE(
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
-      throw new ApiError('登录已过期，请重新登录', 'A0004');
+      throw new ApiError('登录已过期，请重新登录', 'A0004', false, 401);
     }
 
     if (!response.ok) {
-      throw new ApiError(`HTTP ${response.status}: ${response.statusText}`);
+      throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, undefined, false, response.status);
     }
 
-    await readSSEStream(response, onChunk);
+    await readSSEStream(response, onChunkOrOptions);
   } catch (error) {
     // 如果是用户主动取消，不抛出错误
     if (error instanceof DOMException && error.name === 'AbortError') {

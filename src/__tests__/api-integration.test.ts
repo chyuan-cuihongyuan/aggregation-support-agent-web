@@ -166,6 +166,26 @@ describe("API 集成测试", () => {
         expect(receivedChunks).toEqual(["你好", "世界"]);
       });
 
+      it("应该通过 requestSSE 透传 sources 命名事件", async () => {
+        const chunks = [
+          "event: sources\n",
+          'data: [{"documentId":"doc-1"}]\n\n',
+          "data: 回答内容\n\n",
+        ];
+        mockFetch.mockResolvedValueOnce(createSSEResponse(chunks));
+
+        const receivedChunks: string[] = [];
+        const receivedSources: unknown[] = [];
+
+        await requestSSE("/api/v1/chat", { message: "test" }, {
+          onChunk: (text) => receivedChunks.push(text),
+          onSources: (sources) => receivedSources.push(sources),
+        });
+
+        expect(receivedChunks).toEqual(["回答内容"]);
+        expect(receivedSources).toEqual([[{ documentId: "doc-1" }]]);
+      });
+
       it("应该在 SSE 401 响应时触发认证失效事件", async () => {
         // 模拟 401 响应
         const mock401Response = {

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
+    "test:e2e": "playwright test",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
@@ -49,6 +50,7 @@
     "web-vitals": "^5.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^16.1.0",
