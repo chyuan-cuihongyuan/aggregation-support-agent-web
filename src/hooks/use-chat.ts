@@ -11,13 +11,14 @@ import type { Message } from "@/types/api";
 import { historyItemsToMessages } from "@/utils/session-utils";
 
 interface UseChatOptions {
-  userId: string;
   agentId: string;
   /** 当前会话 ID（由 useSession 管理） */
   sessionId?: string | null;
   /** 标记未保存状态的回调 */
   setHasUnsavedChanges?: (value: boolean) => void;
   onMessageComplete?: (message: Message) => void;
+  /** 权限拒绝回调（会话不存在或无权访问） */
+  onPermissionDenied?: () => void;
 }
 
 /**
@@ -124,7 +125,7 @@ function useTypingRenderer(
   return { append, finish, reset };
 }
 
-export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete }: UseChatOptions) {
+export function useChat({ agentId, sessionId, setHasUnsavedChanges, onMessageComplete, onPermissionDenied }: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -191,7 +192,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
         // SSE 流式响应（使用传入的 sessionId）
         await requestSSE(
           "/api/v1/chat_stream",
-          { agentId, userId, sessionId, message: content },
+          { agentId, sessionId, message: content },
           (chunk) => {
             typer.append(chunk, aiMessageId);
           },
@@ -229,21 +230,33 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
           );
         } else {
           typer.finish(aiMessageId);
-          const errorMessage = error instanceof Error ? error.message : "发送失败";
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === aiMessageId
-                ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
-                : msg
-            )
-          );
+          // 权限拒绝：会话不存在或无权访问
+          if (error instanceof Error && "code" in error && (error as { code?: string }).code === "A0005") {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? { ...msg, content: "会话不存在或无权访问，正在创建新会话...", isStreaming: false }
+                  : msg
+              )
+            );
+            onPermissionDenied?.();
+          } else {
+            const errorMessage = error instanceof Error ? error.message : "发送失败";
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
+                  : msg
+              )
+            );
+          }
         }
       } finally {
         setIsStreaming(false);
         abortControllerRef.current = null;
       }
     },
-    [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, typer]
+    [agentId, sessionId, setHasUnsavedChanges, onMessageComplete, onPermissionDenied, typer]
   );
 
   // 清空消息
@@ -289,7 +302,6 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
         "/api/v1/ai_ops",
         {
           agentId: effectiveAgentId,
-          userId,
           alertDescription: "请分析当前所有活动告警并生成运维报告",
         },
         (chunk) => {
@@ -346,7 +358,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       setIsStreaming(false);
       abortControllerRef.current = null;
     }
-  }, [userId, agentId, onMessageComplete, typer]);
+  }, [agentId, onMessageComplete, typer]);
 
   return {
     messages,

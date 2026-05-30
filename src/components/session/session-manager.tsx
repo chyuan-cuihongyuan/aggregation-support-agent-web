@@ -16,8 +16,6 @@ import { historyItemsToMessages } from "@/utils/session-utils";
 import type { ChatHistoryDTO, Message } from "@/types/api";
 
 interface UseSessionManagerOptions {
-  /** 用户 ID */
-  userId: string;
   /** 智能体 ID */
   agentId: string;
   /** 智能体名称 */
@@ -27,7 +25,6 @@ interface UseSessionManagerOptions {
 }
 
 export function useSessionManager({
-  userId,
   agentId,
   agentName,
   onMessageComplete,
@@ -42,7 +39,7 @@ export function useSessionManager({
     saveHistory,
     deleteHistory,
     clearAllHistories,
-  } = useHistory({ userId });
+  } = useHistory();
 
   // ---- 会话管理 ----
   const {
@@ -53,7 +50,6 @@ export function useSessionManager({
     createNewSession,
     loadSession,
   } = useSession({
-    userId,
     agentId,
   });
 
@@ -67,11 +63,13 @@ export function useSessionManager({
     loadConversation,
     sendAiOps,
   } = useChat({
-    userId,
     agentId,
     sessionId: currentSessionId,
     setHasUnsavedChanges,
     onMessageComplete,
+    onPermissionDenied: () => {
+      createNewSession(false);
+    },
   });
 
   // 追踪上一次 agentId，用于检测智能体切换

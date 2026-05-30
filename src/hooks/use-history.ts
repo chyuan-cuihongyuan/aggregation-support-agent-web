@@ -6,14 +6,10 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { requestJson } from "@/lib/api";
-import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
+import type { ChatHistoryDTO, HistoryViewMode, SaveChatHistoryRequest } from "@/types/api";
 import { groupHistoriesByAgent, migrateLegacyHistory } from "@/utils/session-utils";
 
-interface UseHistoryOptions {
-  userId: string;
-}
-
-export function useHistory({ userId }: UseHistoryOptions) {
+export function useHistory() {
   const [histories, setHistories] = useState<ChatHistoryDTO[]>([]);
   const [viewMode, setViewMode] = useState<HistoryViewMode>("by-agent");
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +28,7 @@ export function useHistory({ userId }: UseHistoryOptions) {
     setError("");
     try {
       const data = await requestJson<ChatHistoryDTO[]>(
-        `/api/v1/chat_history/query?userId=${userId}`
+        "/api/v1/chat_history/query"
       );
       // 旧数据迁移：为没有 sessionId 的记录生成虚拟 sessionId
       const migratedData = data.map(migrateLegacyHistory);
@@ -42,11 +38,11 @@ export function useHistory({ userId }: UseHistoryOptions) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   // 保存对话历史
   const saveHistory = useCallback(
-    async (history: Omit<ChatHistoryDTO, "id" | "createTime">) => {
+    async (history: SaveChatHistoryRequest) => {
       try {
         await requestJson("/api/v1/chat_history/save", {
           method: "POST",
@@ -64,7 +60,7 @@ export function useHistory({ userId }: UseHistoryOptions) {
   const deleteHistory = useCallback(
     async (historyId: string) => {
       try {
-        await requestJson(`/api/v1/chat_history/delete?userId=${userId}&id=${historyId}`, {
+        await requestJson(`/api/v1/chat_history/delete?id=${historyId}`, {
           method: "POST",
         });
         await loadHistories();
@@ -72,20 +68,20 @@ export function useHistory({ userId }: UseHistoryOptions) {
         setError(err instanceof Error ? err.message : "删除失败");
       }
     },
-    [loadHistories, userId]
+    [loadHistories]
   );
 
   // 清空所有历史记录
   const clearAllHistories = useCallback(async () => {
     try {
-      await requestJson(`/api/v1/chat_history/delete?userId=${userId}`, {
+      await requestJson("/api/v1/chat_history/delete", {
         method: "POST",
       });
       setHistories([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "清空失败");
     }
-  }, [userId]);
+  }, []);
 
   // 初始加载 - 使用 useRef 避免重复加载
   const initialLoadDoneRef = useRef(false);
@@ -94,7 +90,7 @@ export function useHistory({ userId }: UseHistoryOptions) {
       initialLoadDoneRef.current = true;
       loadHistories();
     }
-  }, [userId, loadHistories]);
+  }, [loadHistories]);
 
   return {
     histories,

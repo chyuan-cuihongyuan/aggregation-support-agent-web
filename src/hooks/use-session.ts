@@ -12,8 +12,6 @@ import { generateTempSessionId } from "@/utils/session-utils";
 import type { SessionCacheData, Message } from "@/types/api";
 
 interface UseSessionOptions {
-  /** 用户 ID */
-  userId: string;
   /** 智能体 ID */
   agentId: string;
   /** 会话变更回调 */
@@ -23,7 +21,6 @@ interface UseSessionOptions {
 }
 
 export function useSession({
-  userId,
   agentId,
   onSessionChange,
   saveCurrentSession,
@@ -58,10 +55,10 @@ export function useSession({
         await saveCurrentSession();
       }
 
-      console.log("[useSession] 创建新会话", { agentId, userId });
+      console.log("[useSession] 创建新会话", { agentId });
       const { sessionId } = await requestJson<{ sessionId: string }>(
         "/api/v1/create_session",
-        { method: "POST", body: JSON.stringify({ agentId, userId }) }
+        { method: "POST", body: JSON.stringify({ agentId }) }
       );
 
       setCurrentSessionId(sessionId);
@@ -87,7 +84,7 @@ export function useSession({
       isSwitchingRef.current = false;
       setIsSwitching(false);
     }
-  }, [userId, agentId, saveCurrentSession, onSessionChange, setHasUnsavedChangesSafe]);
+  }, [agentId, saveCurrentSession, onSessionChange, setHasUnsavedChangesSafe]);
 
   /** 加载历史会话 */
   const loadSession = useCallback(async (sessionId: string, messages: Message[]) => {

@@ -226,6 +226,7 @@ export async function readSSEStream(
   const decoder = new TextDecoder();
   let buffer = "";
   let hasSSEData = false;
+  let sawDone = false;
   let currentEventType = "message"; // 默认事件类型
 
   try {
@@ -249,7 +250,9 @@ export async function readSSEStream(
             currentEventType = line.slice(6).trim();
           } else if (line.startsWith("data:")) {
             const data = line.slice(5).replace(/^\s/, "");
-            if (data.trim() !== "[DONE]") {
+            if (data.trim() === "[DONE]") {
+              sawDone = true;
+            } else {
               dataLines.push(data);
             }
           }
@@ -324,6 +327,11 @@ export async function readSSEStream(
           options.onChunk(buffer.trim());
         }
       }
+    }
+    // 检测异常终止：流结束但既没有 [DONE] 也没有收到任何数据
+    // 通常意味着后端调用了 emitter.completeWithError()
+    if (!sawDone && !hasSSEData) {
+      throw new ApiError("会话不存在或无权访问", "A0005", false);
     }
   } finally {
     reader.releaseLock();
