@@ -27,8 +27,6 @@ export interface ApiResponse<T> {
 export interface ChatRequest {
   /** 智能体 ID */
   agentId: string;
-  /** 用户 ID */
-  userId: string;
   /** 会话 ID */
   sessionId: string;
   /** 用户消息内容 */
@@ -53,8 +51,6 @@ export interface AgentConfig {
 export interface CreateSessionRequest {
   /** 智能体 ID */
   agentId: string;
-  /** 用户 ID */
-  userId: string;
 }
 
 /**
@@ -181,8 +177,6 @@ export interface ChatHistoryDTO {
  * 保存对话历史请求
  */
 export interface SaveChatHistoryRequest {
-  /** 用户 ID */
-  userId: string;
   /** 智能体 ID */
   agentId: string;
   /** 智能体名称 */
@@ -203,8 +197,6 @@ export interface SaveChatHistoryRequest {
 export interface AiOpsRequest {
   /** 智能体 ID */
   agentId: string;
-  /** 用户 ID */
-  userId: string;
   /** 会话 ID（可选） */
   sessionId?: string;
   /** 告警描述 */
@@ -451,4 +443,60 @@ export interface CrossModalSearchResult {
   imageUrl?: string;
   score: number;
   metadata?: Record<string, unknown>;
+}
+
+// ========== RAG 追踪相关（管理员） ==========
+
+/** RAG 来源信息 */
+export interface RagTraceSourceVO {
+  documentId: string;
+  documentName: string;
+  chunkId: string;
+  chunkIndex: number;
+  score: number;
+  retrievalType: "vector" | "bm25" | "hybrid" | "rerank";
+  snippet: string;
+}
+
+/** RAG 追踪记录 */
+export interface RagTraceEntity {
+  id: number;
+  traceId: string;
+  tenantId: string;
+  ownerUserId: string;
+  sessionId: string | null;
+  agentId: string | null;
+  queryText: string;
+  rewriteText: string;
+  retrievalTopk: number;
+  sources: RagTraceSourceVO[];
+  answerScore: number | null;
+  hallucinationScore: number | null;
+  createTime: string;
+}
+
+/** RAG 追踪统计 */
+export interface RagTraceStatVO {
+  groupKey: string;
+  total: number;
+  avgTopk: number;
+}
+
+/** RAG 追踪列表响应 */
+export interface RagTraceListResponse {
+  list: RagTraceEntity[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+/** RAG 追踪查询参数 */
+export interface RagTraceQueryParams {
+  tenantId?: string;
+  userId?: string;
+  agentId?: string;
+  startTime?: string;
+  endTime?: string;
+  page?: number;
+  pageSize?: number;
 }
