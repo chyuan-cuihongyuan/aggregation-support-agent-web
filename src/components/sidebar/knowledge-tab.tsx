@@ -16,25 +16,21 @@ import { SearchPanel } from "@/components/knowledge/search-panel";
 import { uploadFile, requestJson } from "@/lib/api";
 import type { DocumentDTO, SearchTestResult } from "@/types/api";
 
-interface KnowledgeTabProps {
-  userId: string;
-}
-
-export function KnowledgeTab({ userId }: KnowledgeTabProps) {
+export function KnowledgeTab() {
   const [documents, setDocuments] = useState<DocumentDTO[]>([]);
   const [activeTab, setActiveTab] = useState("upload");
 
   const loadDocuments = useCallback(async () => {
     try {
       const data = await requestJson<DocumentDTO[]>(
-        `/api/v1/documents?userId=${encodeURIComponent(userId)}`
+        "/api/v1/documents"
       );
       setDocuments(data ?? []);
     } catch (error) {
       console.error("加载文档列表失败:", error);
       setDocuments([]);
     }
-  }, [userId]);
+  }, []);
 
   // 初始加载文档列表
   useEffect(() => {
@@ -49,7 +45,6 @@ export function KnowledgeTab({ userId }: KnowledgeTabProps) {
       const formData = new FormData();
       // 直接发送原始文件（支持 PDF/Word/HTML 等二进制格式）
       formData.append("file", file);
-      formData.append("userId", userId);
 
       await uploadFile("/api/v1/upload", formData, onProgress);
       // 上传成功后刷新文档列表
@@ -62,7 +57,7 @@ export function KnowledgeTab({ userId }: KnowledgeTabProps) {
   const handleDeleteDocument = async (documentId: string) => {
     try {
       await requestJson<void>(
-        `/api/v1/documents/${documentId}?userId=${encodeURIComponent(userId)}`,
+        `/api/v1/documents/${documentId}`,
         { method: "DELETE" }
       );
       // 删除成功后重新加载文档列表

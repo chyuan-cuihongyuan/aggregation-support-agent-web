@@ -33,8 +33,6 @@ export default function ChatPage() {
   const [inputMode, setInputMode] = useState<InputMode>("chat");
   const [pendingQuestion, setPendingQuestion] = useState("");
 
-  const userId = user?.username || "default";
-
   const {
     currentSessionId,
     messages,
@@ -51,14 +49,12 @@ export default function ChatPage() {
     handleNewChat,
     handleLoadHistory,
   } = useSessionManager({
-    userId,
     agentId: selectedAgentId,
     agentName: selectedAgentName,
     onMessageComplete: async (message) => {
       // 消息完成回调：保存对话历史
       if (pendingQuestion && message.role === "assistant") {
         await saveHistory({
-          userId,
           agentId: selectedAgentId,
           agentName: selectedAgentName,
           sessionId: currentSessionId || "",
@@ -116,7 +112,6 @@ export default function ChatPage() {
     const result = await sendAiOps(selectedAgentId);
     if (result) {
       await saveHistory({
-        userId,
         agentId: selectedAgentId,
         agentName: `${selectedAgentName} (AIOps)`,
         sessionId: currentSessionId || "",

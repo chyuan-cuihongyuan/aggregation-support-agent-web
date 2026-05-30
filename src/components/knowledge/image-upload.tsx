@@ -14,11 +14,10 @@ import { uploadFile } from "@/lib/api";
 
 interface ImageUploadProps {
   onUploadComplete?: (imageId: string) => void;
-  userId: string;
   disabled?: boolean;
 }
 
-export function ImageUpload({ onUploadComplete, userId, disabled }: ImageUploadProps) {
+export function ImageUpload({ onUploadComplete, disabled }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -53,7 +52,6 @@ export function ImageUpload({ onUploadComplete, userId, disabled }: ImageUploadP
       try {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("userId", userId);
 
         const result = await uploadFile<{ imageId: string }>(
           "/api/v1/images/upload",
@@ -69,7 +67,7 @@ export function ImageUpload({ onUploadComplete, userId, disabled }: ImageUploadP
         setUploadProgress(0);
       }
     },
-    [userId, onUploadComplete]
+    [onUploadComplete]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {

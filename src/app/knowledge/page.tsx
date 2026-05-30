@@ -51,27 +51,25 @@ export default function KnowledgePage() {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [graphStats, setGraphStats] = useState<GraphStatistics | null>(null);
 
-  const userId = user?.username || "default";
-
   // 加载文档列表
   const loadDocuments = useCallback(async () => {
     try {
-      const data = await requestJson<DocumentDTO[]>(`/api/v1/documents?userId=${userId}`);
+      const data = await requestJson<DocumentDTO[]>("/api/v1/documents");
       setDocuments(data);
     } catch {
       // 静默
     }
-  }, [userId]);
+  }, []);
 
   // 加载图片列表
   const loadImages = useCallback(async () => {
     try {
-      const data = await requestJson<ImageDTO[]>(`/api/v1/images?userId=${userId}`);
+      const data = await requestJson<ImageDTO[]>("/api/v1/images");
       setImages(data);
     } catch {
       // 静默
     }
-  }, [userId]);
+  }, []);
 
   // 加载图谱统计
   const loadGraphStats = useCallback(async () => {
@@ -90,8 +88,8 @@ export default function KnowledgePage() {
     const loadData = async () => {
       try {
         const [docs, imgs, stats] = await Promise.all([
-          requestJson<DocumentDTO[]>(`/api/v1/documents?userId=${userId}`),
-          requestJson<ImageDTO[]>(`/api/v1/images?userId=${userId}`),
+          requestJson<DocumentDTO[]>("/api/v1/documents"),
+          requestJson<ImageDTO[]>("/api/v1/images"),
           requestJson<GraphStatistics>("/api/v1/graph/statistics")
         ]);
         setDocuments(docs);
@@ -103,7 +101,7 @@ export default function KnowledgePage() {
     };
 
     loadData();
-  }, [user, userId]); // 只依赖user和userId，避免级联渲染
+  }, [user]);
 
   // 文件上传
   const handleUpload = async (files: FileList | null) => {
@@ -112,7 +110,6 @@ export default function KnowledgePage() {
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("userId", userId);
         await uploadFile("/api/v1/upload", formData);
       }
       await loadDocuments();
@@ -124,7 +121,7 @@ export default function KnowledgePage() {
   // 删除文档
   const handleDelete = async (docId: string) => {
     try {
-      await requestJson(`/api/v1/documents/${docId}?userId=${userId}`, { method: "DELETE" });
+      await requestJson(`/api/v1/documents/${docId}`, { method: "DELETE" });
       await loadDocuments();
     } catch {
       // 静默
@@ -350,7 +347,7 @@ export default function KnowledgePage() {
             <TabsContent value="images">
               <div className="space-y-4">
                 <div className="max-w-sm">
-                  <ImageUpload userId={userId} onUploadComplete={() => loadImages()} />
+                  <ImageUpload onUploadComplete={() => loadImages()} />
                 </div>
                 <div className="flex items-center justify-between">
                   <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">已上传图片</h3>
