@@ -199,8 +199,6 @@ interface ReadSSEOptions {
   onChunk: (text: string) => void;
   /** 接收会话元信息回调（可选） */
   onSession?: (session: unknown) => void;
-  /** 接收 RAG 来源信息回调（可选） */
-  onSources?: (sources: unknown) => void;
 }
 
 /**
@@ -260,24 +258,19 @@ export async function readSSEStream(
         if (dataLines.length > 0) {
           const combinedData = dataLines.join("\n");
 
-          // 根据事件类型分发
-          if (currentEventType === "session" && options.onSession) {
-            try {
-              const sessionData = JSON.parse(combinedData);
-              options.onSession(sessionData);
-            } catch {
-              options.onSession(combinedData);
+          // 根据事件类型分发：命名事件仅在有对应处理器时才触发，否则静默忽略
+          if (currentEventType === "session") {
+            if (options.onSession) {
+              try {
+                const sessionData = JSON.parse(combinedData);
+                options.onSession(sessionData);
+              } catch {
+                options.onSession(combinedData);
+              }
             }
-          } else if (currentEventType === "sources" && options.onSources) {
-            // RAG 来源事件
-            try {
-              const sourcesData = JSON.parse(combinedData);
-              options.onSources(sourcesData);
-            } catch {
-              options.onSources(combinedData);
-            }
-          } else {
-            // 普通数据事件
+            // 无 onSession 回调时静默忽略，不混入消息内容
+          } else if (currentEventType !== "sources") {
+            // 普通消息事件
             hasSSEData = true;
             options.onChunk(combinedData);
           }
@@ -307,21 +300,16 @@ export async function readSSEStream(
         }
         if (dataLines.length > 0) {
           const combinedData = dataLines.join("\n");
-          if (lastEventType === "session" && options.onSession) {
-            try {
-              const sessionData = JSON.parse(combinedData);
-              options.onSession(sessionData);
-            } catch {
-              options.onSession(combinedData);
+          if (lastEventType === "session") {
+            if (options.onSession) {
+              try {
+                const sessionData = JSON.parse(combinedData);
+                options.onSession(sessionData);
+              } catch {
+                options.onSession(combinedData);
+              }
             }
-          } else if (lastEventType === "sources" && options.onSources) {
-            try {
-              const sourcesData = JSON.parse(combinedData);
-              options.onSources(sourcesData);
-            } catch {
-              options.onSources(combinedData);
-            }
-          } else {
+          } else if (lastEventType !== "sources") {
             hasSSEData = true;
             options.onChunk(combinedData);
           }
