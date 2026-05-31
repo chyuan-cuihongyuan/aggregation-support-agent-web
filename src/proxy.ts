@@ -1,5 +1,5 @@
 /**
- * Next.js 中间件（路由守卫）
+ * Next.js Proxy（路由守卫）
  *
  * 保护需要认证的路由，未登录用户重定向到登录页
  * 已登录用户访问登录/注册页时重定向到对话页
@@ -69,7 +69,7 @@ async function verifyToken(token: string): Promise<VerifyResult> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const hasToken = !!token;

@@ -131,7 +131,10 @@ describe("useChat Hook", () => {
           sessionId: "session-1",
           message: "你好",
         }),
-        expect.any(Function),
+        expect.objectContaining({
+          onChunk: expect.any(Function),
+          onSession: expect.any(Function),
+        }),
         expect.any(AbortSignal)
       );
     });
@@ -139,9 +142,9 @@ describe("useChat Hook", () => {
     it("应该在 SSE 流完成后更新 AI 消息内容", async () => {
       // 模拟 SSE 接收到数据后通过 onChunk 回调传递
       mockRequestSSE.mockImplementationOnce(
-        async (_path: string, _body: unknown, onChunk: (text: string) => void) => {
-          onChunk("你好");
-          onChunk("世界");
+        async (_path: string, _body: unknown, options: { onChunk: (text: string) => void }) => {
+          options.onChunk("你好");
+          options.onChunk("世界");
         }
       );
 
@@ -191,8 +194,8 @@ describe("useChat Hook", () => {
     it("应该在消息完成后调用 onMessageComplete 回调", async () => {
       const onMessageComplete = jest.fn();
       mockRequestSSE.mockImplementationOnce(
-        async (_path: string, _body: unknown, onChunk: (text: string) => void) => {
-          onChunk("测试回答");
+        async (_path: string, _body: unknown, options: { onChunk: (text: string) => void }) => {
+          options.onChunk("测试回答");
         }
       );
 
@@ -209,7 +212,41 @@ describe("useChat Hook", () => {
         expect.objectContaining({
           role: "assistant",
           content: expect.any(String),
+        }),
+        "session-1",
+        "你好"
+      );
+    });
+
+    it("应该采纳后端确认的真实 sessionId", async () => {
+      const onSessionId = jest.fn();
+      const onMessageComplete = jest.fn();
+      mockRequestSSE.mockImplementationOnce(
+        async (_path: string, _body: unknown, options: { onChunk: (text: string) => void; onSession: (session: unknown) => void }) => {
+          options.onSession({ sessionId: "real-session-1" });
+          options.onChunk("测试回答");
+        }
+      );
+
+      const { result } = renderHook(() =>
+        useChat({
+          ...defaultOptions,
+          sessionId: "temp_123",
+          onSessionId,
+          onMessageComplete,
         })
+      );
+
+      await act(async () => {
+        await result.current.sendMessage("你好");
+        flushRAF();
+      });
+
+      expect(onSessionId).toHaveBeenCalledWith("real-session-1");
+      expect(onMessageComplete).toHaveBeenCalledWith(
+        expect.objectContaining({ role: "assistant" }),
+        "real-session-1",
+        "你好"
       );
     });
   });
@@ -218,9 +255,8 @@ describe("useChat Hook", () => {
   describe("stopGeneration", () => {
     it("应该在流式输出中停止生成", async () => {
       // 创建一个不会自动完成的 SSE 请求
-      let resolveSSE: () => void = () => {};
       mockRequestSSE.mockImplementationOnce(
-        () => new Promise<void>((resolve) => { resolveSSE = resolve; })
+        () => new Promise<void>(() => {})
       );
 
       const { result } = renderHook(() => useChat(defaultOptions));

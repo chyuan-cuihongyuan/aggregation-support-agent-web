@@ -17,7 +17,9 @@ interface UseChatOptions {
   sessionId?: string | null;
   /** 标记未保存状态的回调 */
   setHasUnsavedChanges?: (value: boolean) => void;
-  onMessageComplete?: (message: Message) => void;
+  /** 后端确认真实会话 ID 时回调 */
+  onSessionId?: (sessionId: string) => void;
+  onMessageComplete?: (message: Message, sessionId?: string, question?: string) => void;
 }
 
 /**
@@ -124,7 +126,7 @@ function useTypingRenderer(
   return { append, finish, reset };
 }
 
-export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete }: UseChatOptions) {
+export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSessionId, onMessageComplete }: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -186,14 +188,25 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
       // 创建新的 AbortController
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
+      let effectiveSessionId = sessionId;
 
       try {
         // SSE 流式响应（使用传入的 sessionId）
         await requestSSE(
           "/api/v1/chat_stream",
           { agentId, userId, sessionId, message: content },
-          (chunk) => {
-            typer.append(chunk, aiMessageId);
+          {
+            onChunk: (chunk) => {
+              typer.append(chunk, aiMessageId);
+            },
+            onSession: (session) => {
+              const nextSessionId =
+                typeof session === "string" ? session : (session as { sessionId?: string })?.sessionId;
+              if (nextSessionId) {
+                effectiveSessionId = nextSessionId;
+                onSessionId?.(nextSessionId);
+              }
+            },
           },
           abortController.signal
         );
@@ -214,7 +227,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
             role: "assistant",
             content: finalContent,
           };
-          onMessageComplete?.(finalMessage);
+          onMessageComplete?.(finalMessage, effectiveSessionId || undefined, content);
         }
       } catch (error) {
         // 如果是取消操作，不显示错误
@@ -243,7 +256,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onMe
         abortControllerRef.current = null;
       }
     },
-    [userId, agentId, sessionId, setHasUnsavedChanges, onMessageComplete, typer]
+    [userId, agentId, sessionId, setHasUnsavedChanges, onSessionId, onMessageComplete, typer]
   );
 
   // 清空消息

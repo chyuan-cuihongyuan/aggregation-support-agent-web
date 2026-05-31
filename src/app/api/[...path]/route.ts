@@ -3,6 +3,7 @@
  *
  * 拦截所有未匹配具体 API 路由的 /api/* 请求，
  * 显式转发 Cookie 到后端，解决 Next.js rewrite 不转发 Cookie 导致 401 的问题。
+ * 不转发浏览器 Origin；这是服务端代理到后端的内部请求，透传 Origin 会触发后端 CORS 拒绝。
  *
  * 已有具体路由的接口（如 chat_stream、ai_ops）优先匹配，不受此影响。
  */

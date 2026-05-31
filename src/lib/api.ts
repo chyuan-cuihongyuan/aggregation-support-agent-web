@@ -197,6 +197,8 @@ export function uploadFile<T>(
 interface ReadSSEOptions {
   /** 接收数据块回调 */
   onChunk: (text: string) => void;
+  /** 接收会话元信息回调（可选） */
+  onSession?: (session: unknown) => void;
   /** 接收 RAG 来源信息回调（可选） */
   onSources?: (sources: unknown) => void;
 }
@@ -259,7 +261,14 @@ export async function readSSEStream(
           const combinedData = dataLines.join("\n");
 
           // 根据事件类型分发
-          if (currentEventType === "sources" && options.onSources) {
+          if (currentEventType === "session" && options.onSession) {
+            try {
+              const sessionData = JSON.parse(combinedData);
+              options.onSession(sessionData);
+            } catch {
+              options.onSession(combinedData);
+            }
+          } else if (currentEventType === "sources" && options.onSources) {
             // RAG 来源事件
             try {
               const sourcesData = JSON.parse(combinedData);
@@ -298,7 +307,14 @@ export async function readSSEStream(
         }
         if (dataLines.length > 0) {
           const combinedData = dataLines.join("\n");
-          if (lastEventType === "sources" && options.onSources) {
+          if (lastEventType === "session" && options.onSession) {
+            try {
+              const sessionData = JSON.parse(combinedData);
+              options.onSession(sessionData);
+            } catch {
+              options.onSession(combinedData);
+            }
+          } else if (lastEventType === "sources" && options.onSources) {
             try {
               const sourcesData = JSON.parse(combinedData);
               options.onSources(sourcesData);

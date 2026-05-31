@@ -31,7 +31,6 @@ export default function ChatPage() {
   const [selectedAgentName, setSelectedAgentName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inputMode, setInputMode] = useState<InputMode>("chat");
-  const [pendingQuestion, setPendingQuestion] = useState("");
 
   const userId = user?.username || "default";
 
@@ -54,18 +53,17 @@ export default function ChatPage() {
     userId,
     agentId: selectedAgentId,
     agentName: selectedAgentName,
-    onMessageComplete: async (message) => {
+    onMessageComplete: async (message, completedSessionId, question) => {
       // 消息完成回调：保存对话历史
-      if (pendingQuestion && message.role === "assistant") {
+      if (question && message.role === "assistant") {
         await saveHistory({
           userId,
           agentId: selectedAgentId,
           agentName: selectedAgentName,
-          sessionId: currentSessionId || "",
-          question: pendingQuestion,
+          sessionId: completedSessionId || currentSessionId || "",
+          question,
           answer: message.content,
         });
-        setPendingQuestion("");
       }
     },
   });
@@ -103,7 +101,6 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async (content: string) => {
-    setPendingQuestion(content);
     await sendMessage(content);
   };
 
@@ -125,6 +122,8 @@ export default function ChatPage() {
       });
     }
   };
+
+  const sessionTitle = messages.find((message) => message.role === "user")?.content || "新对话";
 
   if (authLoading || !user) {
     return (
@@ -186,7 +185,7 @@ export default function ChatPage() {
 
           {/* 会话标题 */}
           <SessionHeader
-            title={messages.length > 0 ? (pendingQuestion || "新对话") : "新对话"}
+            title={messages.length > 0 ? sessionTitle : "新对话"}
             modelInfo={`${selectedAgentName || "AI 智能助手"} · 会话 #${currentSessionId?.slice(0, 8) || "新"}`}
             onNewChat={handleNewChat}
           />

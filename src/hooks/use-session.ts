@@ -6,7 +6,6 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { requestJson } from "@/lib/api";
 import { chatSessionCache } from "@/lib/session-storage";
 import { generateTempSessionId } from "@/utils/session-utils";
 import type { SessionCacheData, Message } from "@/types/api";
@@ -42,6 +41,12 @@ export function useSession({
     setHasUnsavedChanges(value);
   }, []);
 
+  /** 采纳后端返回的真实会话 ID（用于替换本地临时会话） */
+  const adoptSessionId = useCallback((sessionId: string) => {
+    setCurrentSessionId(sessionId);
+    onSessionChange?.(sessionId);
+  }, [onSessionChange]);
+
   /** 创建新会话 */
   const createNewSession = useCallback(async (shouldSaveCurrent = true) => {
     if (isSwitchingRef.current) {
@@ -58,18 +63,14 @@ export function useSession({
         await saveCurrentSession();
       }
 
-      console.log("[useSession] 创建新会话", { agentId, userId });
-      const { sessionId } = await requestJson<{ sessionId: string }>(
-        "/api/v1/create_session",
-        { method: "POST", body: JSON.stringify({ agentId, userId }) }
-      );
+      const sessionId = generateTempSessionId();
 
       setCurrentSessionId(sessionId);
       setHasUnsavedChangesSafe(false);
       setSessionCache(new Map());
       chatSessionCache.clear();
 
-      console.log("[useSession] 新会话创建成功", { sessionId });
+      console.log("[useSession] 新会话已初始化", { agentId, userId, sessionId });
       onSessionChange?.(sessionId);
       return sessionId;
     } catch (error) {
@@ -149,5 +150,6 @@ export function useSession({
     sessionCache,
     createNewSession,
     loadSession,
+    adoptSessionId,
   };
 }

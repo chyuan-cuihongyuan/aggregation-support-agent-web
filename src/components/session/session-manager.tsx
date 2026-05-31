@@ -23,13 +23,12 @@ interface UseSessionManagerOptions {
   /** 智能体名称 */
   agentName: string;
   /** 消息完成回调（由页面层处理保存逻辑） */
-  onMessageComplete?: (message: Message) => void;
+  onMessageComplete?: (message: Message, sessionId?: string, question?: string) => void;
 }
 
 export function useSessionManager({
   userId,
   agentId,
-  agentName,
   onMessageComplete,
 }: UseSessionManagerOptions) {
   // ---- 历史记录管理 ----
@@ -47,11 +46,11 @@ export function useSessionManager({
   // ---- 会话管理 ----
   const {
     currentSessionId,
-    hasUnsavedChanges,
     setHasUnsavedChanges,
     isSwitching,
     createNewSession,
     loadSession,
+    adoptSessionId,
   } = useSession({
     userId,
     agentId,
@@ -71,6 +70,7 @@ export function useSessionManager({
     agentId,
     sessionId: currentSessionId,
     setHasUnsavedChanges,
+    onSessionId: adoptSessionId,
     onMessageComplete,
   });
 

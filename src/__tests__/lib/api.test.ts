@@ -456,15 +456,15 @@ describe("API 客户端单元测试", () => {
     it("应该在网络错误时抛出后端不可用错误", async () => {
       mockFetch.mockRejectedValueOnce(new Error("NetworkError"));
 
-      await expect(
-        requestSSE("/api/v1/chat", { message: "test" }, jest.fn())
-      ).rejects.toThrow(ApiError);
-
+      let caughtError: unknown;
       try {
         await requestSSE("/api/v1/chat", { message: "test" }, jest.fn());
       } catch (error) {
-        expect((error as ApiError).isUnavailable).toBe(true);
+        caughtError = error;
       }
+
+      expect(caughtError).toBeInstanceOf(ApiError);
+      expect((caughtError as ApiError).isUnavailable).toBe(true);
     });
   });
 
@@ -487,6 +487,25 @@ describe("API 客户端单元测试", () => {
       });
 
       expect(receivedSources).toHaveLength(1);
+      expect(receivedChunks).toEqual(["普通消息"]);
+    });
+
+    it("应该解析 session 命名事件并正确分发", async () => {
+      const response = createSSEResponse([
+        "event: session\n",
+        'data: {"sessionId":"real-session-1"}\n\n',
+        "data: 普通消息\n\n",
+      ]);
+
+      const receivedChunks: string[] = [];
+      const receivedSessions: unknown[] = [];
+
+      await readSSEStream(response, {
+        onChunk: (text) => receivedChunks.push(text),
+        onSession: (session) => receivedSessions.push(session),
+      });
+
+      expect(receivedSessions).toEqual([{ sessionId: "real-session-1" }]);
       expect(receivedChunks).toEqual(["普通消息"]);
     });
 
