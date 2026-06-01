@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,16 +55,76 @@ export function ChatInput({
   onModeChange,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
+  const [inputHistory, setInputHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+  const draftInputRef = useRef("");
+  const isComposingRef = useRef(false);
 
   const handleSend = () => {
     const trimmed = input.trim();
     if (trimmed && !disabled) {
       onSend(trimmed);
+      setInputHistory((history) => {
+        if (history[history.length - 1] === trimmed) {
+          return history;
+        }
+        return [...history, trimmed].slice(-50);
+      });
+      setHistoryIndex(null);
+      draftInputRef.current = "";
       setInput("");
     }
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const isImeComposing = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    const nativeEvent = e.nativeEvent as KeyboardEvent & { keyCode?: number };
+    return isComposingRef.current || nativeEvent.isComposing || nativeEvent.keyCode === 229;
+  };
+
+  const handleInputChange = (value: string) => {
+    setInput(value);
+    if (historyIndex !== null) {
+      setHistoryIndex(null);
+    }
+    draftInputRef.current = value;
+  };
+
+  const handleKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (isImeComposing(e)) {
+      return;
+    }
+    if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      const textarea = e.currentTarget;
+      const isAtFirstLine = !input.slice(0, textarea.selectionStart).includes("\n");
+      const isAtLastLine = !input.slice(textarea.selectionEnd).includes("\n");
+
+      if (e.key === "ArrowUp" && isAtFirstLine && inputHistory.length > 0) {
+        e.preventDefault();
+        const nextIndex = historyIndex === null
+          ? inputHistory.length - 1
+          : Math.max(0, historyIndex - 1);
+        if (historyIndex === null) {
+          draftInputRef.current = input;
+        }
+        setHistoryIndex(nextIndex);
+        setInput(inputHistory[nextIndex]);
+        return;
+      }
+
+      if (e.key === "ArrowDown" && isAtLastLine && historyIndex !== null) {
+        e.preventDefault();
+        const nextIndex = historyIndex + 1;
+        if (nextIndex >= inputHistory.length) {
+          setHistoryIndex(null);
+          setInput(draftInputRef.current);
+          draftInputRef.current = "";
+        } else {
+          setHistoryIndex(nextIndex);
+          setInput(inputHistory[nextIndex]);
+        }
+        return;
+      }
+    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -78,8 +138,14 @@ export function ChatInput({
         <div className="flex items-end">
           <Textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onCompositionStart={() => {
+              isComposingRef.current = true;
+            }}
+            onCompositionEnd={() => {
+              isComposingRef.current = false;
+            }}
             placeholder="输入消息，按 Enter 发送..."
             className="min-h-[52px] max-h-[200px] resize-none border-0 focus-visible:ring-0 rounded-t-2xl px-4 py-3 text-[14px] bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
             disabled={disabled || isStreaming}

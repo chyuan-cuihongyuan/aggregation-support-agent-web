@@ -199,6 +199,8 @@ interface ReadSSEOptions {
   onChunk: (text: string) => void;
   /** 接收会话元信息回调（可选） */
   onSession?: (session: unknown) => void;
+  /** 接收 RAG 来源证据回调（可选） */
+  onSources?: (sources: unknown) => void;
 }
 
 /**
@@ -269,7 +271,15 @@ export async function readSSEStream(
               }
             }
             // 无 onSession 回调时静默忽略，不混入消息内容
-          } else if (currentEventType !== "sources") {
+          } else if (currentEventType === "sources") {
+            if (options.onSources) {
+              try {
+                options.onSources(JSON.parse(combinedData));
+              } catch {
+                options.onSources(combinedData);
+              }
+            }
+          } else {
             // 普通消息事件
             hasSSEData = true;
             options.onChunk(combinedData);
@@ -309,7 +319,15 @@ export async function readSSEStream(
                 options.onSession(combinedData);
               }
             }
-          } else if (lastEventType !== "sources") {
+          } else if (lastEventType === "sources") {
+            if (options.onSources) {
+              try {
+                options.onSources(JSON.parse(combinedData));
+              } catch {
+                options.onSources(combinedData);
+              }
+            }
+          } else {
             hasSSEData = true;
             options.onChunk(combinedData);
           }

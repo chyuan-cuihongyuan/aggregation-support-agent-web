@@ -92,7 +92,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // 未登录用户访问受保护路由 → 重定向到 /login
-  if (pathname.startsWith("/chat") || pathname.startsWith("/knowledge") || pathname.startsWith("/settings") || pathname.startsWith("/aiops")) {
+  if (pathname.startsWith("/chat") || pathname.startsWith("/knowledge") || pathname.startsWith("/settings") || pathname.startsWith("/aiops") || pathname.startsWith("/admin")) {
     if (!hasToken) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
@@ -108,13 +108,13 @@ export async function proxy(request: NextRequest) {
       response.cookies.delete(COOKIE_NAME);
       return response;
     }
-    // 后端不可用但用户有Token，允许继续访问（降级策略）
-    return NextResponse.next();
+    // 后端不可用时不能确认 Token 有效性，受保护页面按未认证处理
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/chat/:path*", "/knowledge/:path*", "/settings/:path*", "/aiops/:path*", "/login", "/register"],
+  matcher: ["/chat/:path*", "/knowledge/:path*", "/settings/:path*", "/aiops/:path*", "/admin/:path*", "/login", "/register"],
 };
