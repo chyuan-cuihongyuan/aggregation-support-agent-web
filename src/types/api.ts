@@ -73,6 +73,10 @@ export interface CreateSessionResponse {
 export interface DocumentDTO {
   /** 文档 ID */
   documentId: string;
+  /** 所属知识库 ID */
+  knowledgeBaseId?: string;
+  /** 所属知识库名称 */
+  knowledgeBaseName?: string;
   /** 文件名 */
   fileName: string;
   /** 文件扩展名 */
@@ -99,6 +103,32 @@ export interface DocumentDTO {
   updateTime: string;
 }
 
+/**
+ * 知识库分类
+ */
+export interface KnowledgeBaseDTO {
+  knowledgeBaseId: string;
+  tenantId?: string;
+  ownerUserId?: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  documentCount?: number;
+  createTime?: string;
+  updateTime?: string;
+}
+
+/**
+ * 上传响应
+ */
+export interface UploadResponseDTO {
+  documentId: string;
+  chunkCount?: number;
+  status: "success" | "processing" | "failed";
+  message?: string;
+}
+
 // ========== 检索相关 ==========
 
 /**
@@ -121,6 +151,10 @@ export interface SearchResultItem {
   score: number;
   /** 来源文档（可选） */
   source?: string;
+  /** 所属知识库 ID */
+  knowledgeBaseId?: string;
+  /** 所属知识库名称 */
+  knowledgeBaseName?: string;
   /** 块索引（可选） */
   chunkIndex?: number;
   /** 模态类型 */
