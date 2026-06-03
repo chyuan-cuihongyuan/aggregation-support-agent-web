@@ -281,11 +281,11 @@ export default function KnowledgePage() {
   /** 知识库切换时重新加载文档 */
   useEffect(() => {
     if (!user) return;
-    if (!activeKbId) {
-      setDocuments([]);
-      return;
-    }
     const loadDocsForKb = async () => {
+      if (!activeKbId) {
+        setDocuments([]);
+        return;
+      }
       try {
         const data = await requestJson<DocumentDTO[]>(
           `/api/v1/documents?knowledgeBaseId=${activeKbId}`
