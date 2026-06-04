@@ -148,12 +148,11 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
     async (content: string) => {
       // 检查 sessionId 是否可用
       if (!sessionId) {
-        console.warn("[useChat] 无可用的 sessionId，请先创建会话");
         // 显示错误消息而不是静默失败
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
-          content: "⚠️ 会话未就绪，请稍后再试或点击「新对话」创建会话",
+          content: "会话未就绪，请稍后再试或点击「新对话」创建会话",
         };
         setMessages((prev) => [...prev, errorMessage]);
         return;

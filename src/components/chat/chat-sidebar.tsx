@@ -126,12 +126,6 @@ export function ChatSidebar({
   // 按日期分组的结果
   const dateGroups = groupByDate(filtered);
 
-  // 视图切换选项
-  const viewOptions = [
-    { value: "by-agent", label: "按智能体" },
-    { value: "all", label: "全部" },
-  ];
-
   return (
     <div className="flex flex-col h-full min-h-0 bg-[var(--chat-sidebar-bg)] border-r border-[var(--chat-border)]">
       {/* 新建对话 */}
@@ -248,117 +242,6 @@ export function ChatSidebar({
           设置
         </div>
       </div>
-    </div>
-  );
-}
-
-/** 按智能体分组视图 */
-function GroupedAgentView({
-  grouped,
-  activeSessionId,
-  collapsedGroups,
-  onToggleGroup,
-  onLoad,
-  onDelete,
-  search,
-}: {
-  grouped: Record<string, ChatHistoryDTO[]>;
-  activeSessionId?: string;
-  collapsedGroups: Set<string>;
-  onToggleGroup: (key: string) => void;
-  onLoad: (history: ChatHistoryDTO) => void;
-  onDelete?: (id: string) => void;
-  search: string;
-}) {
-  // 如果有搜索关键词，过滤分组
-  const filteredGrouped: Record<string, ChatHistoryDTO[]> = {};
-  if (search) {
-    Object.entries(grouped).forEach(([agentName, items]) => {
-      const filtered = items.filter((h) =>
-        (h.question || "").toLowerCase().includes(search.toLowerCase())
-      );
-      if (filtered.length > 0) {
-        filteredGrouped[agentName] = filtered;
-      }
-    });
-  }
-
-  const displayGrouped = search ? filteredGrouped : grouped;
-
-  return (
-    <div className="space-y-1">
-      {Object.entries(displayGrouped).map(([agentName, items]) => {
-        const isCollapsed = collapsedGroups.has(agentName);
-        return (
-          <div key={agentName}>
-            <div
-              className="flex items-center gap-1.5 px-3 py-2 cursor-pointer hover:bg-[#2a2a38] rounded-lg"
-              onClick={() => onToggleGroup(agentName)}
-            >
-              {isCollapsed ? (
-                <ChevronRight className="w-3 h-3 text-[var(--text-muted)]" />
-              ) : (
-                <ChevronDown className="w-3 h-3 text-[var(--text-muted)]" />
-              )}
-              <span className="text-[12px] font-semibold text-[var(--text-muted)] truncate">
-                {agentName}
-              </span>
-              <span className="text-[11px] text-[var(--text-muted)] ml-auto">
-                {items.length}
-              </span>
-            </div>
-            {!isCollapsed && (
-              <div className="ml-2">
-                {items.map((item) => (
-                  <HistoryItem
-                    key={item.id}
-                    item={item}
-                    isActive={item.sessionId === activeSessionId}
-                    onLoad={onLoad}
-                    onDelete={onDelete}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/** 按日期分组视图 */
-function DateGroupedView({
-  histories,
-  activeSessionId,
-  onLoad,
-  onDelete,
-}: {
-  histories: ChatHistoryDTO[];
-  activeSessionId?: string;
-  onLoad: (history: ChatHistoryDTO) => void;
-  onDelete?: (id: string) => void;
-}) {
-  const groups = groupByDate(histories);
-
-  return (
-    <div>
-      {groups.map((group) => (
-        <div key={group.label}>
-          <div className="px-3 py-2 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">
-            {group.label}
-          </div>
-          {group.items.map((item) => (
-            <HistoryItem
-              key={item.id}
-              item={item}
-              isActive={item.sessionId === activeSessionId}
-              onLoad={onLoad}
-              onDelete={onDelete}
-            />
-          ))}
-        </div>
-      ))}
     </div>
   );
 }

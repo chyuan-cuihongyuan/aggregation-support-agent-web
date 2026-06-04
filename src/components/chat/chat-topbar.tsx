@@ -6,7 +6,7 @@
 
 "use client";
 
-import { BookOpen, Monitor, Sun, Moon, Terminal } from "lucide-react";
+import { BookOpen, Menu, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { UserMenu } from "@/components/auth/user-menu";
 import { usePluginStatus } from "@/hooks/use-plugin-status";
@@ -38,7 +37,6 @@ export function ChatTopbar({
   onMenuClick,
 }: ChatTopbarProps) {
   const router = useRouter();
-  const { user } = useAuth();
   const { status: pluginStatus } = usePluginStatus();
 
   // 计算已启用插件数
@@ -57,6 +55,16 @@ export function ChatTopbar({
     <header className="h-14 border-b border-[var(--chat-border)] bg-[var(--surface-main)] flex flex-wrap items-center justify-between px-5 shrink-0 gap-3">
       {/* 左侧 */}
       <div className="flex flex-wrap items-center gap-4 min-w-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)] lg:hidden"
+          onClick={onMenuClick}
+          title="打开菜单"
+        >
+          <Menu className="w-[18px] h-[18px]" />
+        </Button>
+
         {/* Logo */}
         <div className="flex items-center gap-2.5 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--brand-gradient-start)] to-[var(--brand-gradient-end)] flex items-center justify-center">
@@ -124,9 +132,7 @@ export function ChatTopbar({
 
         <ThemeToggle />
 
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--brand-gradient-start)] to-[var(--brand-gradient-end)] flex items-center justify-center text-white text-[12px] font-semibold cursor-pointer ml-1 flex-shrink-0">
-          {user?.username?.charAt(0).toUpperCase() || "U"}
-        </div>
+        <UserMenu />
       </div>
     </header>
   );

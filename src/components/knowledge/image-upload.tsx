@@ -8,6 +8,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { ImageIcon, X } from "lucide-react";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { uploadFile } from "@/lib/api";
@@ -109,11 +110,16 @@ export function ImageUpload({ onUploadComplete, userId, disabled }: ImageUploadP
         <Card className="relative overflow-hidden">
           <CardContent className="p-2">
             <div className="relative group">
-              <img
-                src={preview}
-                alt="预览"
-                className="w-full h-40 object-cover rounded-md"
-              />
+              <div className="relative w-full h-40 overflow-hidden rounded-md">
+                <Image
+                  src={preview}
+                  alt="预览"
+                  fill
+                  sizes="100vw"
+                  unoptimized
+                  className="object-cover"
+                />
+              </div>
               {!isUploading && (
                 <button
                   onClick={clearPreview}

@@ -13,15 +13,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { UserInfoDTO } from "@/types/api";
-
-/** 功能特性 */
-const FEATURES = [
-  { title: "多模型对话", description: "统一接入多个 AI 智能体" },
-  { title: "知识库管理", description: "文档上传，智能检索" },
-  { title: "AIOps 分析", description: "智能告警分析，运维报告" },
-  { title: "SSH 远程执行", description: "安全连接，自动化运维" },
-];
 
 function LoginForm() {
   const router = useRouter();

@@ -41,6 +41,11 @@ function ToolResultCard({ toolName, command, result }: { toolName: string; comma
           <Terminal className="w-3 h-3" />
           工具调用 · {toolName}
         </span>
+        {command && (
+          <span className="truncate text-[11px] text-[var(--text-muted)] font-mono">
+            {command}
+          </span>
+        )}
       </div>
 
       {/* 结果内容 */}

@@ -7,6 +7,7 @@
 "use client";
 
 import { ImageIcon } from "lucide-react";
+import Image from "next/image";
 import type { ImageDTO, CrossModalSearchResult } from "@/types/api";
 
 interface ImageGridProps {
@@ -35,9 +36,12 @@ export function ImageGrid({ images, onImageClick }: ImageGridProps) {
           className="relative group rounded-lg overflow-hidden border bg-muted/20 aspect-square"
         >
           {image.imageUrl ? (
-            <img
+            <Image
               src={image.imageUrl}
               alt={image.content || "搜索结果"}
+              fill
+              sizes="(min-width: 640px) 33vw, 50vw"
+              unoptimized
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
             />
           ) : (
@@ -76,12 +80,15 @@ export function ImageList({ images }: ImageListProps) {
       {images.map((img) => (
         <div
           key={img.imageId}
-          className="relative group rounded-lg overflow-hidden border bg-muted/20"
+          className="relative group rounded-lg overflow-hidden border bg-muted/20 aspect-square"
         >
-          <img
+          <Image
             src={img.imageUrl}
             alt={img.fileName}
-            className="w-full aspect-square object-cover"
+            fill
+            sizes="33vw"
+            unoptimized
+            className="object-cover"
           />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1.5">
             <p className="text-xs text-white truncate">{img.fileName}</p>

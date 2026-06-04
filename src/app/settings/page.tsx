@@ -21,7 +21,7 @@ import {
   User, Lock, Settings as SettingsIcon, Layers, Wrench, Terminal,
   Bell, Activity, FileText, ChevronLeft, Save, LogOut, KeyRound,
   Server, Mail, ShieldCheck, Plug, Globe2, Code2, CircleCheck,
-  CircleOff, CircleDot, Info,
+  CircleOff, CircleDot, Info, Monitor,
 } from "lucide-react";
 import {
   loadAppSettings,
@@ -392,11 +392,13 @@ function NumberInput({
   value,
   min,
   max,
+  step,
   onChange,
 }: {
   value: number;
   min?: number;
   max?: number;
+  step?: number;
   onChange: (value: number) => void;
 }) {
   return (
@@ -404,6 +406,7 @@ function NumberInput({
       type="number"
       min={min}
       max={max}
+      step={step}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
       className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
@@ -574,6 +577,7 @@ function AiConfigSection({
             value={settings.temperature}
             min={0}
             max={1}
+            step={0.1}
             onChange={(value) => onChange({ temperature: value })}
           />
         </SettingRow>

@@ -22,7 +22,6 @@ interface UseSessionOptions {
 }
 
 export function useSession({
-  userId,
   agentId,
   onSessionChange,
   saveCurrentSession,
@@ -50,7 +49,6 @@ export function useSession({
   /** 创建新会话 */
   const createNewSession = useCallback(async (shouldSaveCurrent = true) => {
     if (isSwitchingRef.current) {
-      console.warn("[useSession] 正在切换会话，忽略创建请求");
       return null;
     }
 
@@ -59,7 +57,6 @@ export function useSession({
     try {
       // 自动保存当前会话
       if (shouldSaveCurrent && hasUnsavedChangesRef.current && saveCurrentSession) {
-        console.log("[useSession] 自动保存当前会话");
         await saveCurrentSession();
       }
 
@@ -70,30 +67,26 @@ export function useSession({
       setSessionCache(new Map());
       chatSessionCache.clear();
 
-      console.log("[useSession] 新会话已初始化", { agentId, userId, sessionId });
       onSessionChange?.(sessionId);
       return sessionId;
-    } catch (error) {
-      console.error("[useSession] 创建会话失败", error);
+    } catch {
       const tempSessionId = generateTempSessionId();
       setCurrentSessionId(tempSessionId);
       setHasUnsavedChangesSafe(false);
       setSessionCache(new Map());
       chatSessionCache.clear();
 
-      console.warn("[useSession] 使用临时会话 ID", { tempSessionId });
       onSessionChange?.(tempSessionId);
       return tempSessionId;
     } finally {
       isSwitchingRef.current = false;
       setIsSwitching(false);
     }
-  }, [userId, agentId, saveCurrentSession, onSessionChange, setHasUnsavedChangesSafe]);
+  }, [saveCurrentSession, onSessionChange, setHasUnsavedChangesSafe]);
 
   /** 加载历史会话 */
   const loadSession = useCallback(async (sessionId: string, messages: Message[]) => {
     if (isSwitchingRef.current) {
-      console.warn("[useSession] 正在切换会话，忽略加载请求");
       return;
     }
 
@@ -102,14 +95,12 @@ export function useSession({
     try {
       // 自动保存当前会话
       if (hasUnsavedChangesRef.current && saveCurrentSession) {
-        console.log("[useSession] 自动保存当前会话");
         await saveCurrentSession();
       }
 
       // 尝试从持久化缓存加载
       const cached = chatSessionCache.get(sessionId);
       if (cached) {
-        console.log("[useSession] 缓存命中", { sessionId });
         setCurrentSessionId(sessionId);
         setHasUnsavedChangesSafe(false);
         setSessionCache((prev) => new Map(prev).set(sessionId, cached));
@@ -131,10 +122,8 @@ export function useSession({
       setSessionCache((prev) => new Map(prev).set(sessionId, sessionData));
       chatSessionCache.set(sessionId, sessionData);
 
-      console.log("[useSession] 历史会话加载成功", { sessionId });
       onSessionChange?.(sessionId);
     } catch (error) {
-      console.error("[useSession] 加载会话失败", error);
       throw error;
     } finally {
       isSwitchingRef.current = false;

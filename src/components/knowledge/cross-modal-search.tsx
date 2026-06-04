@@ -8,6 +8,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Search, Upload, FileText, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -188,7 +189,16 @@ function ImageSearchInput({
         className="w-full h-20 border-dashed"
       >
         {preview ? (
-          <img src={preview} alt="预览" className="h-full object-contain" />
+          <span className="relative block h-full w-full">
+            <Image
+              src={preview}
+              alt="预览"
+              fill
+              sizes="100vw"
+              unoptimized
+              className="object-contain"
+            />
+          </span>
         ) : (
           <div className="flex flex-col items-center gap-1">
             <Upload className="w-4 h-4 text-muted-foreground" />

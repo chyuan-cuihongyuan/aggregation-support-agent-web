@@ -425,12 +425,11 @@ describe("API 集成测试", () => {
     describe("并发保护", () => {
       it("应该防止并发切换会话", async () => {
         // 模拟 isSwitching 状态
-        let isSwitching = false;
-        const switchSession = async (sessionId: string) => {
-          if (isSwitching) {
-            console.warn("正在切换会话，忽略请求");
-            return null;
-          }
+          let isSwitching = false;
+          const switchSession = async (sessionId: string) => {
+            if (isSwitching) {
+              return null;
+            }
           isSwitching = true;
           try {
             // 模拟异步操作

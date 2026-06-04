@@ -42,7 +42,7 @@ export function PluginStatusBar({ onOpenSettings }: PluginStatusBarProps) {
   }
 
   const builtInPlugins = Object.entries(status.builtIn);
-  const enabledBuiltInCount = builtInPlugins.filter(([_, s]) => s.enabled).length;
+  const enabledBuiltInCount = builtInPlugins.filter((entry) => entry[1].enabled).length;
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-2 border-t border-border/50">

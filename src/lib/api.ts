@@ -94,7 +94,6 @@ export async function requestJson<T>(
     }
 
     const errorInfo = result.info || "请求失败";
-    console.warn(`[API] ${path} 失败: code=${result.code}, info=${errorInfo}`);
     throw new ApiError(errorInfo, result.code, false, response.status);
   } catch (error) {
     if (error instanceof ApiError) {

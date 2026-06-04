@@ -115,16 +115,6 @@ export default function KnowledgePage() {
     }
   }, [userId]);
 
-  /** 加载图谱统计 */
-  const loadGraphStats = useCallback(async () => {
-    try {
-      const data = await requestJson<GraphStatistics>("/api/v1/graph/statistics");
-      setGraphStats(data);
-    } catch {
-      // 静默
-    }
-  }, []);
-
   // ========== 知识库操作 ==========
 
   /** 创建知识库 */

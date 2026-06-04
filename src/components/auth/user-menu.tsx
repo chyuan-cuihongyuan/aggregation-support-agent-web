@@ -7,7 +7,7 @@
 "use client";
 
 import { LogOut, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,14 @@ export function UserMenu() {
         <button className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-border/50 bg-background/50 hover:bg-accent/50 transition-colors">
           <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-xs font-bold text-primary-foreground">
             {user.avatar ? (
-              <img src={user.avatar} alt={displayName} className="w-7 h-7 rounded-md" />
+              <Image
+                src={user.avatar}
+                alt={displayName}
+                width={28}
+                height={28}
+                unoptimized
+                className="w-7 h-7 rounded-md object-cover"
+              />
             ) : (
               initials
             )}

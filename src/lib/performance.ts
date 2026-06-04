@@ -99,8 +99,8 @@ export async function collectWebVitals(): Promise<Metric[]> {
     // 等待所有指标收集完成
     await Promise.all([clsPromise, inpPromise, fcpPromise, lcpPromise, ttfbPromise]);
 
-  } catch (error) {
-    console.warn('Failed to collect web vitals:', error);
+  } catch {
+    return metrics;
   }
 
   return metrics;
@@ -175,7 +175,6 @@ export async function generatePerformanceReport(): Promise<PerformanceReport> {
  */
 export function reportPerformance(report: PerformanceReport, endpoint?: string) {
   if (!endpoint) {
-    console.log('Performance Report:', report);
     return;
   }
 
@@ -183,9 +182,7 @@ export function reportPerformance(report: PerformanceReport, endpoint?: string) 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(report),
-  }).catch((error) => {
-    console.warn('Failed to report performance:', error);
-  });
+  }).catch(() => undefined);
 }
 
 /**

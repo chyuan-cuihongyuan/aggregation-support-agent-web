@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ChatInput } from "@/components/chat/chat-input";
+import { APP_SETTINGS_STORAGE_KEY } from "@/lib/app-settings";
 
 const defaultProps = {
   onSend: jest.fn(),
@@ -11,13 +12,16 @@ const defaultProps = {
 describe("ChatInput", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.localStorage.clear();
   });
+
+  const getTextarea = () => screen.getByRole("textbox") as HTMLTextAreaElement;
 
   it("中文输入法组合态下按 Enter 不发送消息", () => {
     const onSend = jest.fn();
     render(<ChatInput {...defaultProps} onSend={onSend} />);
 
-    const textarea = screen.getByPlaceholderText("输入消息，按 Enter 发送...");
+    const textarea = getTextarea();
     fireEvent.change(textarea, { target: { value: "崔洪源" } });
     fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", isComposing: true });
 
@@ -28,7 +32,7 @@ describe("ChatInput", () => {
     const onSend = jest.fn();
     render(<ChatInput {...defaultProps} onSend={onSend} />);
 
-    const textarea = screen.getByPlaceholderText("输入消息，按 Enter 发送...");
+    const textarea = getTextarea();
     fireEvent.change(textarea, { target: { value: "崔洪源" } });
     fireEvent.compositionStart(textarea);
     fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", isComposing: false });
@@ -45,7 +49,7 @@ describe("ChatInput", () => {
     const onSend = jest.fn();
     render(<ChatInput {...defaultProps} onSend={onSend} />);
 
-    const textarea = screen.getByPlaceholderText("输入消息，按 Enter 发送...");
+    const textarea = getTextarea();
     fireEvent.change(textarea, { target: { value: "崔洪源有几段实习经历" } });
     fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", isComposing: false });
 
@@ -55,7 +59,7 @@ describe("ChatInput", () => {
   it("按上下箭头切换已发送输入历史", () => {
     render(<ChatInput {...defaultProps} />);
 
-    const textarea = screen.getByPlaceholderText("输入消息，按 Enter 发送...") as HTMLTextAreaElement;
+    const textarea = getTextarea();
     fireEvent.change(textarea, { target: { value: "第一条问题" } });
     fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", isComposing: false });
     fireEvent.change(textarea, { target: { value: "第二条问题" } });
@@ -77,7 +81,7 @@ describe("ChatInput", () => {
   it("历史切换后按下箭头恢复未发送草稿", () => {
     render(<ChatInput {...defaultProps} />);
 
-    const textarea = screen.getByPlaceholderText("输入消息，按 Enter 发送...") as HTMLTextAreaElement;
+    const textarea = getTextarea();
     fireEvent.change(textarea, { target: { value: "已发送问题" } });
     fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", isComposing: false });
     fireEvent.change(textarea, { target: { value: "未发送草稿" } });
@@ -87,5 +91,23 @@ describe("ChatInput", () => {
 
     fireEvent.keyDown(textarea, { key: "ArrowDown", code: "ArrowDown" });
     expect(textarea.value).toBe("未发送草稿");
+  });
+
+  it("设置为 Ctrl/Command+Enter 后 Enter 不直接发送", () => {
+    const onSend = jest.fn();
+    window.localStorage.setItem(
+      APP_SETTINGS_STORAGE_KEY,
+      JSON.stringify({ general: { sendMode: "ctrl-enter" } })
+    );
+
+    render(<ChatInput {...defaultProps} onSend={onSend} />);
+
+    const textarea = getTextarea();
+    fireEvent.change(textarea, { target: { value: "需要组合键发送" } });
+    fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", isComposing: false });
+    expect(onSend).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(textarea, { key: "Enter", code: "Enter", ctrlKey: true, isComposing: false });
+    expect(onSend).toHaveBeenCalledWith("需要组合键发送");
   });
 });
