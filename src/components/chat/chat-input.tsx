@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AgentConfig } from "@/types/api";
+import {
+  APP_SETTINGS_CHANGED_EVENT,
+  loadAppSettings,
+  type SendMode,
+} from "@/lib/app-settings";
 
 /** 输入模式 */
 export type InputMode = "chat" | "ssh" | "local" | "aiops";
@@ -57,8 +62,24 @@ export function ChatInput({
   const [input, setInput] = useState("");
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+  const [sendMode, setSendMode] = useState<SendMode>("enter");
   const draftInputRef = useRef("");
   const isComposingRef = useRef(false);
+
+  useEffect(() => {
+    const syncSendMode = () => {
+      setSendMode(loadAppSettings().general.sendMode);
+    };
+
+    syncSendMode();
+    window.addEventListener(APP_SETTINGS_CHANGED_EVENT, syncSendMode);
+    window.addEventListener("storage", syncSendMode);
+
+    return () => {
+      window.removeEventListener(APP_SETTINGS_CHANGED_EVENT, syncSendMode);
+      window.removeEventListener("storage", syncSendMode);
+    };
+  }, []);
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -125,7 +146,12 @@ export function ChatInput({
         return;
       }
     }
-    if (e.key === "Enter" && !e.shiftKey) {
+    const shouldSend =
+      sendMode === "enter"
+        ? e.key === "Enter" && !e.shiftKey
+        : e.key === "Enter" && (e.ctrlKey || e.metaKey);
+
+    if (shouldSend) {
       e.preventDefault();
       handleSend();
     }
@@ -146,7 +172,7 @@ export function ChatInput({
             onCompositionEnd={() => {
               isComposingRef.current = false;
             }}
-            placeholder="输入消息，按 Enter 发送..."
+            placeholder="输入消息"
             className="min-h-[52px] max-h-[200px] resize-none border-0 focus-visible:ring-0 rounded-t-2xl px-4 py-3 text-[14px] bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
             disabled={disabled || isStreaming}
           />
@@ -203,12 +229,7 @@ export function ChatInput({
           </Select>
         </div>
 
-        {/* 快捷键提示 */}
         <div className="text-center text-[11px] text-[var(--text-muted)]">
-          <span className="text-[var(--text-muted)]">Ctrl + Enter</span>
-          <span className="mx-1">·</span>
-          <span className="text-[var(--text-muted)]">Shift + Enter</span>
-          <span className="mx-1">·</span>
           <span className="text-[var(--text-muted)]">AI 可能产生不准确的信息，请注意甄别</span>
         </div>
       </div>

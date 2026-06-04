@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { marked } from "marked";
+import { toast } from "sonner";
 
 interface ExportActionsProps {
   content: string;
@@ -24,6 +25,7 @@ interface ExportActionsProps {
 export function ExportActions({ content, messageId }: ExportActionsProps) {
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(content);
+    toast.success("已复制");
   };
 
   const downloadMarkdown = () => {
@@ -34,6 +36,7 @@ export function ExportActions({ content, messageId }: ExportActionsProps) {
     a.download = `message-${messageId}.md`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Markdown 已导出");
   };
 
   const downloadPDF = async () => {
@@ -119,9 +122,12 @@ export function ExportActions({ content, messageId }: ExportActionsProps) {
 
       // 下载
       pdf.save(`message-${messageId}.pdf`);
+      toast.success("PDF 已导出");
     } catch (error) {
-      console.error("PDF 导出失败:", error);
-      alert("PDF 导出失败，请重试");
+      if (process.env.NODE_ENV !== "production") {
+        console.error("PDF export failed:", error);
+      }
+      toast.error("PDF 导出失败，请重试");
     }
   };
 
@@ -251,9 +257,12 @@ export function ExportActions({ content, messageId }: ExportActionsProps) {
       // 生成并下载
       const blob = await Packer.toBlob(doc);
       saveAs(blob, `message-${messageId}.docx`);
+      toast.success("Word 已导出");
     } catch (error) {
-      console.error("Word 导出失败:", error);
-      alert("Word 导出失败，请重试");
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Word export failed:", error);
+      }
+      toast.error("Word 导出失败，请重试");
     }
   };
 
