@@ -179,7 +179,7 @@ export default function KnowledgePage() {
     }
     setIsUploading(true);
     let successCount = 0;
-    let failCount = 0;
+    const failMessages: string[] = [];
     try {
       for (const file of Array.from(files)) {
         try {
@@ -189,7 +189,9 @@ export default function KnowledgePage() {
           await uploadFile<UploadResponseDTO>("/api/v1/upload", formData);
           successCount++;
         } catch (err) {
-          failCount++;
+          const msg = err instanceof Error ? err.message : "未知错误";
+          // 提取后端返回的具体错误信息，展示文件名和原因
+          failMessages.push(`${file.name}: ${msg}`);
           console.error("上传失败:", file.name, err);
         }
       }
@@ -197,8 +199,15 @@ export default function KnowledgePage() {
         toast.success(`成功上传 ${successCount} 个文件到「${activeKb.name}」`);
         await Promise.all([loadDocuments(), loadKnowledgeBases()]);
       }
-      if (failCount > 0) {
-        toast.error(`${failCount} 个文件上传失败`);
+      if (failMessages.length > 0) {
+        // 展示具体的失败原因，帮助用户定位问题
+        const detailedMsg = failMessages.length <= 3
+          ? failMessages.join("\n")
+          : failMessages.slice(0, 3).join("\n") + `\n...及其他 ${failMessages.length - 3} 个文件`;
+        toast.error(`${failMessages.length} 个文件上传失败`, {
+          description: detailedMsg,
+          duration: 8000,
+        });
       }
     } finally {
       setIsUploading(false);
