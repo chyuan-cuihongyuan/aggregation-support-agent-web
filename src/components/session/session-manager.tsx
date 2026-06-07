@@ -24,12 +24,15 @@ interface UseSessionManagerOptions {
   agentName: string;
   /** 消息完成回调（由页面层处理保存逻辑） */
   onMessageComplete?: (message: Message, sessionId?: string, question?: string) => void;
+  /** 智能体切换回调（由页面层处理状态更新） */
+  onAgentChange?: (agentId: string, agentName: string) => void;
 }
 
 export function useSessionManager({
   userId,
   agentId,
   onMessageComplete,
+  onAgentChange,
 }: UseSessionManagerOptions) {
   // ---- 历史记录管理 ----
   const {
@@ -76,6 +79,8 @@ export function useSessionManager({
 
   // 追踪上一次 agentId，用于检测智能体切换
   const prevAgentIdRef = useRef(agentId);
+  // 标志位：加载历史对话触发智能体切换时，跳过自动创建新会话的副作用
+  const skipAgentEffectRef = useRef(false);
 
   // 创建新会话（清空消息）
   const handleNewChat = useCallback(async () => {
@@ -97,13 +102,24 @@ export function useSessionManager({
 
       // 转换一次，避免重复转换
       const messages = historyItemsToMessages(historyItems);
-      
+
+      // 检查历史对话的智能体是否与当前不同，自动切换
+      const needAgentSwitch = history.agentId && history.agentId !== agentId;
+      if (needAgentSwitch && onAgentChange) {
+        // 设置标志位，防止智能体切换 effect 创建新会话并清空消息
+        skipAgentEffectRef.current = true;
+        // 同步更新 prevAgentIdRef，让 effect 检测不到"变化"
+        prevAgentIdRef.current = history.agentId;
+        // 通知父组件切换智能体（这会导致 agentId prop 更新）
+        onAgentChange(history.agentId, history.agentName);
+      }
+
       // 加载会话缓存
       await loadSession(history.sessionId, messages);
       // 加载消息到对话显示
       loadConversation(historyItems);
     },
-    [histories, loadSession, loadConversation]
+    [histories, loadSession, loadConversation, agentId, onAgentChange]
   );
 
   // 初始化时创建新会话（仅在 agentId 非空且用户已登录时）
@@ -115,8 +131,14 @@ export function useSessionManager({
     }
   }, [currentSessionId, isSwitching, createNewSession, agentId]);
 
-  // 智能体切换时创建新会话
+  // 智能体切换时创建新会话（加载历史对话触发的切换除外）
   useEffect(() => {
+    // 加载历史对话触发的智能体切换，跳过创建新会话
+    if (skipAgentEffectRef.current) {
+      skipAgentEffectRef.current = false;
+      prevAgentIdRef.current = agentId;
+      return;
+    }
     if (prevAgentIdRef.current && prevAgentIdRef.current !== agentId) {
       createNewSession(true);
       clearMessages();

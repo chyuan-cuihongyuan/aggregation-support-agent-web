@@ -53,6 +53,11 @@ export default function ChatPage() {
     userId,
     agentId: selectedAgentId,
     agentName: selectedAgentName,
+    // 加载历史对话时自动切换智能体
+    onAgentChange: (agentId: string, agentName: string) => {
+      setSelectedAgentId(agentId);
+      setSelectedAgentName(agentName);
+    },
     onMessageComplete: async (message, completedSessionId, question) => {
       // 消息完成回调：保存对话历史
       if (question && message.role === "assistant") {

@@ -25,10 +25,11 @@ interface UseChatOptions {
 /**
  * 逐字打字渲染器
  *
- * 与参考实现 createTypingRenderer 一致：
  * - 累积全部已接收文本到 buffer
  * - 使用 requestAnimationFrame 逐步推进可见光标
- * - 每帧步长 = Math.max(1, Math.ceil(pending / 6))，实现平滑的逐字效果
+ * - 恒定速度推进：每帧固定步长，无论后端是真流式增量还是一次性整段返回，
+ *   前端都按统一节奏逐字显示
+ * - 仅当积压过多（buffer 远超光标）时按比例加速，避免长响应拖尾过久
  */
 function useTypingRenderer(
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
@@ -49,7 +50,14 @@ function useTypingRenderer(
         return;
       }
 
-      const step = Math.max(2, Math.ceil(pending / 2));
+      // 恒定速度：每帧固定推进 CHARS_PER_FRAME 个字符（约 60fps → ~120 字/秒）。
+      // 仅当积压超过 BACKLOG_THRESHOLD 时按比例追赶，防止一次性整段返回时拖尾过久。
+      const CHARS_PER_FRAME = 2;
+      const BACKLOG_THRESHOLD = 120;
+      const step =
+        pending > BACKLOG_THRESHOLD
+          ? Math.ceil(pending / 30)
+          : CHARS_PER_FRAME;
       cursorRef.current = Math.min(cursorRef.current + step, buffer.length);
 
       setMessages((prev) =>
