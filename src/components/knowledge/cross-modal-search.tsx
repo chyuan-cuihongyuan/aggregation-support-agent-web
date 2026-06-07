@@ -53,6 +53,7 @@ export function CrossModalSearch() {
       try {
         const formData = new FormData();
         formData.append("image", file);
+        formData.append("topK", String(topK));
 
         const results = await uploadFile<CrossModalSearchResult[]>(
           "/api/v1/search/image-to-text",
@@ -66,7 +67,7 @@ export function CrossModalSearch() {
         setIsLoading(false);
       }
     },
-    []
+    [topK]
   );
 
   return (
