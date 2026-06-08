@@ -8,7 +8,9 @@
       "Skill(superpowers:systematic-debugging:*)",
       "Bash(netstat -ano)",
       "Bash(findstr :8091)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git -C \"E:/Chyuan/1.java/project/code/agent-chyuan/agent-add-oil\" status)",
+      "Bash(git *)"
     ]
   }
 }
