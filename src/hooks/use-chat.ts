@@ -214,6 +214,13 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
                 onSessionId?.(nextSessionId);
               }
             },
+            onReset: () => {
+              // author 变化：清空打字机缓冲和当前消息内容，只保留最终 agent 的 markdown 输出
+              typer.reset();
+              setMessages((prev) =>
+                prev.map((msg) => (msg.id === aiMessageId ? { ...msg, content: "" } : msg))
+              );
+            },
           },
           abortController.signal
         );

@@ -200,6 +200,8 @@ interface ReadSSEOptions {
   onSession?: (session: unknown) => void;
   /** 接收 RAG 来源证据回调（可选） */
   onSources?: (sources: unknown) => void;
+  /** 接收 reset 信号（author 变化时触发，清空已累积内容，只保留最终 agent 输出）（可选） */
+  onReset?: () => void;
 }
 
 /**
@@ -278,6 +280,9 @@ export async function readSSEStream(
                 options.onSources(combinedData);
               }
             }
+          } else if (currentEventType === "reset") {
+            // author 变化：清空前端已累积内容，只保留最终 agent 输出
+            options.onReset?.();
           } else {
             // 普通消息事件
             hasSSEData = true;
@@ -326,6 +331,8 @@ export async function readSSEStream(
                 options.onSources(combinedData);
               }
             }
+          } else if (lastEventType === "reset") {
+            options.onReset?.();
           } else {
             hasSSEData = true;
             options.onChunk(combinedData);
