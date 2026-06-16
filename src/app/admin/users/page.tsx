@@ -7,10 +7,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { requestJson } from "@/lib/api";
+import { requestJson } from "@chyuan/ui-kit";
 import type { UserInfoDTO, UserListResponse } from "@/types/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@chyuan/ui-kit";
+import { Card, CardContent } from "@chyuan/ui-kit";
 import { Users, Shield, UserX, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 

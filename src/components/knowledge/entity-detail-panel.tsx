@@ -8,10 +8,10 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { X, ExternalLink, GitBranch } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { requestJson } from "@/lib/api";
+import { Button } from "@chyuan/ui-kit";
+import { ScrollArea } from "@chyuan/ui-kit";
+import { Badge } from "@chyuan/ui-kit";
+import { requestJson } from "@chyuan/ui-kit";
 import type { GraphNode, GraphEntity, GraphSubgraph } from "@/types/api";
 
 /** 实体类型 Badge 变体 */

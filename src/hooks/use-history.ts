@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { requestJson } from "@/lib/api";
+import { requestJson } from "@chyuan/ui-kit";
 import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
 import { groupHistoriesByAgent, migrateLegacyHistory } from "@/utils/session-utils";
 

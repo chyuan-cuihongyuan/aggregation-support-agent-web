@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { chatSessionCache } from "@/lib/session-storage";
+import { chatSessionCache } from "@chyuan/ui-kit";
 import { generateTempSessionId } from "@/utils/session-utils";
 import type { SessionCacheData, Message } from "@/types/api";
 

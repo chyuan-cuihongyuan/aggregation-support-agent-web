@@ -353,6 +353,26 @@ export interface UpdateRoleRequest {
 // ========== 会话状态相关 ==========
 
 /**
+ * RAG 引用来源
+ */
+export interface RagSource {
+  /** 文档 ID */
+  documentId?: string;
+  /** 文档名称 */
+  documentName?: string;
+  /** 块 ID */
+  chunkId?: string;
+  /** 块索引 */
+  chunkIndex?: number;
+  /** 相关性分数 */
+  score?: number;
+  /** 检索类型 */
+  retrievalType?: string;
+  /** 内容片段 */
+  snippet?: string;
+}
+
+/**
  * 消息类型（用于会话缓存）
  */
 export interface Message {
@@ -364,6 +384,8 @@ export interface Message {
   content: string;
   /** 是否正在流式输出 */
   isStreaming?: boolean;
+  /** RAG 引用来源 */
+  sources?: RagSource[];
 }
 
 /**

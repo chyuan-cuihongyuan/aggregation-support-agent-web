@@ -9,23 +9,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@chyuan/ui-kit";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@chyuan/ui-kit";
+import { Input } from "@chyuan/ui-kit";
+import { ScrollArea } from "@chyuan/ui-kit";
+import { Label } from "@chyuan/ui-kit";
+import { Textarea } from "@chyuan/ui-kit";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@chyuan/ui-kit";
 import { BookOpen, Upload, Search, Plus, FileText, Trash2, Download, ChevronLeft, Network, ImageIcon, FlaskConical } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { requestJson, uploadFile } from "@/lib/api";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@chyuan/ui-kit";
+import { requestJson, uploadFile } from "@chyuan/ui-kit";
 import { GraphViewer } from "@/components/knowledge/graph-viewer";
 import { EntityDetailPanel } from "@/components/knowledge/entity-detail-panel";
 import { ImageUpload } from "@/components/knowledge/image-upload";

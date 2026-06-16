@@ -8,12 +8,12 @@
 
 import { useState } from "react";
 import { Plus, Search, MessageSquare, Settings, Trash2, BookOpen, Loader2, ChevronDown, ChevronRight, Plug, Circle, CircleCheck, CircleDot } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ViewToggle } from "@/components/ui/view-toggle";
+import { Button } from "@chyuan/ui-kit";
+import { Input } from "@chyuan/ui-kit";
+import { ScrollArea } from "@chyuan/ui-kit";
+import { ViewToggle } from "@chyuan/ui-kit";
 import { useRouter } from "next/navigation";
-import { usePluginStatus } from "@/hooks/use-plugin-status";
+import { usePluginStatus } from "@chyuan/ui-kit";
 import type { ChatHistoryDTO, HistoryViewMode } from "@/types/api";
 
 interface ChatSidebarProps {

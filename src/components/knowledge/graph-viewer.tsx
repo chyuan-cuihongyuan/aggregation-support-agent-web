@@ -8,10 +8,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@chyuan/ui-kit";
+import { Button } from "@chyuan/ui-kit";
 import { Search, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
-import { requestJson } from "@/lib/api";
+import { requestJson } from "@chyuan/ui-kit";
 import type { GraphNode, GraphSubgraph } from "@/types/api";
 
 // 动态导入力导向图组件，避免 SSR 问题

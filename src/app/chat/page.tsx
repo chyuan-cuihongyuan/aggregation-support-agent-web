@@ -14,12 +14,12 @@ import { ChatTopbar } from "@/components/chat/chat-topbar";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { StatusBar } from "@/components/chat/status-bar";
 import { SessionHeader } from "@/components/chat/session-header";
-import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@chyuan/ui-kit";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@chyuan/ui-kit";
 import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
-import { requestJson } from "@/lib/api";
+import { requestJson } from "@chyuan/ui-kit";
 import { useSessionManager } from "@/components/session/session-manager";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 

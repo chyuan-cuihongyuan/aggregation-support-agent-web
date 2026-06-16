@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { requestJson } from "@/lib/api";
+import { requestJson } from "@chyuan/ui-kit";
 import type { PluginStatusResponse } from "@/types/plugin";
 
 interface UsePluginStatusOptions {

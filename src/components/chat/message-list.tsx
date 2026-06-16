@@ -9,13 +9,7 @@
 import { useEffect, useRef } from "react";
 import { MessageBubble } from "./message-bubble";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-export interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  isStreaming?: boolean;
-}
+import type { Message } from "@/types/api";
 
 interface MessageListProps {
   messages: Message[];
@@ -53,6 +47,7 @@ export function MessageList({ messages }: MessageListProps) {
               role={message.role}
               content={message.content}
               isStreaming={message.isStreaming}
+              sources={message.sources}
             />
           ))}
           <div ref={bottomRef} />

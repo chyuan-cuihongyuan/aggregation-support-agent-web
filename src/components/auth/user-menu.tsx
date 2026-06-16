@@ -15,8 +15,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/use-auth";
+} from "@chyuan/ui-kit";
+import { useAuth } from "@chyuan/ui-kit";
 import { useRouter } from "next/navigation";
 
 export function UserMenu() {

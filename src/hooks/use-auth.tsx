@@ -7,7 +7,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { getCurrentUser, login as authLogin, logout as authLogout, register as authRegister, updateUser as authUpdateUser } from "@/lib/auth";
+import { getCurrentUser, login as authLogin, logout as authLogout, register as authRegister, updateUser as authUpdateUser } from "@chyuan/ui-kit";
 import type { UserInfoDTO, LoginRequest, RegisterRequest, UpdateUserRequest } from "@/types/api";
 
 interface AuthState {

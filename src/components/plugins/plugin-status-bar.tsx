@@ -8,9 +8,9 @@
 
 import { useState } from "react";
 import { Settings, ChevronDown, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { usePluginStatus } from "@/hooks/use-plugin-status";
+import { Button } from "@chyuan/ui-kit";
+import { Badge } from "@chyuan/ui-kit";
+import { usePluginStatus } from "@chyuan/ui-kit";
 
 interface PluginStatusBarProps {
   onOpenSettings: () => void;

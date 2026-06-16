@@ -7,13 +7,13 @@
 "use client";
 
 import { Copy, Download, FileText, File } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@chyuan/ui-kit";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@chyuan/ui-kit";
 import { marked } from "marked";
 import { toast } from "sonner";
 

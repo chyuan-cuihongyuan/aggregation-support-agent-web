@@ -9,9 +9,9 @@
 "use client";
 
 import { useEffect, useCallback, useRef } from "react";
-import { useSession } from "@/hooks/use-session";
-import { useChat } from "@/hooks/use-chat";
-import { useHistory } from "@/hooks/use-history";
+import { useSession } from "@chyuan/ui-kit";
+import { useChat } from "@chyuan/ui-kit";
+import { useHistory } from "@chyuan/ui-kit";
 import { historyItemsToMessages } from "@/utils/session-utils";
 import type { ChatHistoryDTO, Message } from "@/types/api";
 

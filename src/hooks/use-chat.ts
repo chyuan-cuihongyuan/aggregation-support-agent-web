@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { requestSSE } from "@/lib/api";
+import { requestSSE } from "@chyuan/ui-kit";
 import type { Message } from "@/types/api";
 import { historyItemsToMessages } from "@/utils/session-utils";
 
@@ -213,6 +213,16 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
                 effectiveSessionId = nextSessionId;
                 onSessionId?.(nextSessionId);
               }
+            },
+            onSources: (sources) => {
+              // 将检索来源附加到 AI 消息
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === aiMessageId
+                    ? { ...msg, sources: sources as Message['sources'] }
+                    : msg
+                )
+              );
             },
             onReset: () => {
               // author 变化：清空打字机缓冲和当前消息内容，只保留最终 agent 的 markdown 输出

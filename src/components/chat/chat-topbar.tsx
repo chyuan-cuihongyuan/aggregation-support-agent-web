@@ -7,18 +7,18 @@
 "use client";
 
 import { BookOpen, Menu, Monitor } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@chyuan/ui-kit";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@chyuan/ui-kit";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useRouter } from "next/navigation";
 import { UserMenu } from "@/components/auth/user-menu";
-import { usePluginStatus } from "@/hooks/use-plugin-status";
+import { usePluginStatus } from "@chyuan/ui-kit";
 import type { AgentConfig } from "@/types/api";
 
 interface ChatTopbarProps {

@@ -10,9 +10,9 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useAuth } from "@chyuan/ui-kit";
+import { Button } from "@chyuan/ui-kit";
+import { Input } from "@chyuan/ui-kit";
 
 function LoginForm() {
   const router = useRouter();

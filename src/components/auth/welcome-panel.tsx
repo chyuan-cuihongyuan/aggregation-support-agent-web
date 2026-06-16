@@ -8,7 +8,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@chyuan/ui-kit";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Search, Activity, FileUp } from "lucide-react";
 

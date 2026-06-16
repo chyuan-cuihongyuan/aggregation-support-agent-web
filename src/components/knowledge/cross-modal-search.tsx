@@ -9,11 +9,11 @@
 import { useState, useCallback, useRef } from "react";
 import { Search, Upload, FileText, ImageIcon } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { requestJson, uploadFile } from "@/lib/api";
+import { Button } from "@chyuan/ui-kit";
+import { Input } from "@chyuan/ui-kit";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@chyuan/ui-kit";
+import { ScrollArea } from "@chyuan/ui-kit";
+import { requestJson, uploadFile } from "@chyuan/ui-kit";
 import { ImageGrid } from "@/components/knowledge/image-grid";
 import type { CrossModalSearchResult } from "@/types/api";
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/hooks/use-auth";
-import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@chyuan/ui-kit";
+import { Toaster } from "@chyuan/ui-kit";
 
 export const metadata: Metadata = {
   title: "AI 智能体聚合平台",

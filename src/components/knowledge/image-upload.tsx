@@ -9,9 +9,9 @@
 import { useState, useCallback, useRef } from "react";
 import { ImageIcon, X } from "lucide-react";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { uploadFile } from "@/lib/api";
+import { Card, CardContent } from "@chyuan/ui-kit";
+import { Progress } from "@chyuan/ui-kit";
+import { uploadFile } from "@chyuan/ui-kit";
 
 interface ImageUploadProps {
   onUploadComplete?: (imageId: string) => void;

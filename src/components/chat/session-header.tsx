@@ -7,7 +7,7 @@
 "use client";
 
 import { Download, Share2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@chyuan/ui-kit";
 import { toast } from "sonner";
 
 interface SessionHeaderProps {

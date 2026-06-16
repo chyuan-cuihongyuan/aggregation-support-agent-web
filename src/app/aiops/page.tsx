@@ -9,15 +9,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { useAlerts } from "@/hooks/use-alerts";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@chyuan/ui-kit";
+import { useAlerts } from "@chyuan/ui-kit";
+import { Button } from "@chyuan/ui-kit";
+import { Input } from "@chyuan/ui-kit";
+import { ScrollArea } from "@chyuan/ui-kit";
 import { Activity, RefreshCw, ChevronLeft, Search, Terminal, Zap, Loader2 } from "lucide-react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { requestSSE } from "@/lib/api";
+import { requestSSE } from "@chyuan/ui-kit";
 import type { AlertDTO } from "@/types/api";
 
 export default function AIOpsPage() {

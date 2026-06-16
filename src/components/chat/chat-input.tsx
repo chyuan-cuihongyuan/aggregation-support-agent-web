@@ -8,21 +8,21 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Send, Square } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@chyuan/ui-kit";
+import { Textarea } from "@chyuan/ui-kit";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@chyuan/ui-kit";
 import type { AgentConfig } from "@/types/api";
 import {
   APP_SETTINGS_CHANGED_EVENT,
   loadAppSettings,
   type SendMode,
-} from "@/lib/app-settings";
+} from "@chyuan/ui-kit";
 
 /** 输入模式 */
 export type InputMode = "chat" | "ssh" | "local" | "aiops";

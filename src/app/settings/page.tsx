@@ -8,14 +8,14 @@
 
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@chyuan/ui-kit";
 import { useTheme } from "next-themes";
-import { usePluginStatus } from "@/hooks/use-plugin-status";
-import { usePluginConfig } from "@/hooks/use-plugin-config";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { usePluginStatus } from "@chyuan/ui-kit";
+import { usePluginConfig } from "@chyuan/ui-kit";
+import { Button } from "@chyuan/ui-kit";
+import { Input } from "@chyuan/ui-kit";
+import { Switch } from "@chyuan/ui-kit";
+import { Badge } from "@chyuan/ui-kit";
 import { toast } from "sonner";
 import {
   User, Lock, Settings as SettingsIcon, Layers, Wrench, Terminal,
@@ -30,7 +30,7 @@ import {
   type AppSettings,
   type SendMode,
   type SeverityLevel,
-} from "@/lib/app-settings";
+} from "@chyuan/ui-kit";
 
 type NavKey = "profile" | "security" | "general" | "ai-config" | "plugins" | "ssh" | "notifications" | "aiops" | "about";
 

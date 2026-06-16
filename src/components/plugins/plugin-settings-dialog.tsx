@@ -14,14 +14,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { usePluginConfig } from "@/hooks/use-plugin-config";
-import { usePluginStatus } from "@/hooks/use-plugin-status";
+} from "@chyuan/ui-kit";
+import { Button } from "@chyuan/ui-kit";
+import { Switch } from "@chyuan/ui-kit";
+import { Badge } from "@chyuan/ui-kit";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@chyuan/ui-kit";
+import { ScrollArea } from "@chyuan/ui-kit";
+import { usePluginConfig } from "@chyuan/ui-kit";
+import { usePluginStatus } from "@chyuan/ui-kit";
 import { BuiltInConfigDialog } from "./dialogs/builtin-config-dialog";
 import { toast } from "sonner";
 import type { BuiltInPluginConfig, CustomToolConfig, MCPServerConfig } from "@/types/plugin";

@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from "react";
-import { requestJson } from "@/lib/api";
+import { requestJson } from "@chyuan/ui-kit";
 import type { PluginConfig, BuiltInPluginConfig } from "@/types/plugin";
 
 const PLUGIN_CONFIG_KEY = "ai_agent_plugin_config";

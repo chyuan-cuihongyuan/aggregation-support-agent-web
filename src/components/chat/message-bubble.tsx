@@ -3,17 +3,18 @@
  *
  * 用户消息：红色背景气泡，右对齐
  * AI 消息：卡片式，左对齐，支持 Markdown 渲染
- * 新增：时间戳、工具调用结果卡片、代码块语法高亮
+ * 新增：时间戳、工具调用结果卡片、代码块语法高亮、引用来源展示
  */
 
 "use client";
 
-import { Bot, User, Terminal, Activity, Copy, Check } from "lucide-react";
+import { Bot, User, Terminal, Activity, Copy, Check, FileText, ExternalLink } from "lucide-react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { memo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@chyuan/ui-kit";
 import { ExportActions } from "./export-actions";
+import type { RagSource } from "@/types/api";
 
 interface MessageBubbleProps {
   id: string;
@@ -21,6 +22,7 @@ interface MessageBubbleProps {
   content: string;
   isStreaming?: boolean;
   timestamp?: string;
+  sources?: RagSource[];
 }
 
 /** 工具调用结果卡片 */
@@ -101,7 +103,78 @@ function MetricCard({ label, value, status, change }: { label: string; value: st
   );
 }
 
-export const MessageBubble = memo(({ id, role, content, isStreaming, timestamp }: MessageBubbleProps) => {
+/** 引用来源卡片 */
+function SourceCard({ source, index }: { source: RagSource; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  
+  const scoreColor = source.score && source.score >= 0.8 
+    ? "text-[var(--status-success)]" 
+    : source.score && source.score >= 0.6 
+    ? "text-[var(--status-warning)]" 
+    : "text-[var(--text-muted)]";
+
+  return (
+    <div className="bg-[var(--surface-card)] border border-[var(--chat-border)] rounded-lg p-3 hover:border-[var(--brand-accent)] transition-colors">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <FileText className="w-4 h-4 text-[var(--brand-accent)] shrink-0" />
+          <span className="text-[13px] font-medium text-[var(--text-primary)] truncate">
+            {source.documentName || `文档 ${source.documentId?.slice(0, 8) || '未知'}`}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`text-[11px] font-mono ${scoreColor}`}>
+            {source.score ? (source.score * 100).toFixed(1) : '--'}%
+          </span>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-[var(--text-muted)] hover:text-[var(--brand-accent)] transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+      
+      {expanded && source.snippet && (
+        <div className="mt-2 text-[12px] text-[var(--text-secondary)] bg-[var(--surface-main)] rounded p-2 max-h-[120px] overflow-y-auto">
+          {source.snippet}
+        </div>
+      )}
+      
+      <div className="flex items-center gap-2 mt-2 text-[11px] text-[var(--text-muted)]">
+        {source.chunkIndex !== undefined && (
+          <span>块 #{source.chunkIndex}</span>
+        )}
+        {source.retrievalType && (
+          <span>· {source.retrievalType}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** 引用来源面板 */
+function SourcesPanel({ sources }: { sources: RagSource[] }) {
+  if (!sources || sources.length === 0) return null;
+
+  return (
+    <div className="mt-3 bg-[var(--surface-card)] border border-[var(--chat-border)] rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <FileText className="w-4 h-4 text-[var(--brand-accent)]" />
+        <span className="text-[14px] font-semibold text-[var(--text-primary)]">
+          引用来源 ({sources.length})
+        </span>
+      </div>
+      <div className="space-y-2">
+        {sources.map((source, index) => (
+          <SourceCard key={index} source={source} index={index} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export const MessageBubble = memo(({ id, role, content, isStreaming, timestamp, sources }: MessageBubbleProps) => {
   const isUser = role === "user";
   const now = timestamp || new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 
@@ -172,6 +245,11 @@ PID  USER   %CPU  %MEM  COMMAND
         {/* 示例：系统指标分析 */}
         {!isUser && content.includes("性能") && content.includes("CPU") && (
           <AnalysisCard />
+        )}
+
+        {/* 引用来源展示 */}
+        {!isUser && sources && sources.length > 0 && (
+          <SourcesPanel sources={sources} />
         )}
 
         {/* 导出操作 - 仅 AI 消息且非流式状态时显示 */}
