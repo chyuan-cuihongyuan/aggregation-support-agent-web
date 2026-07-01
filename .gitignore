@@ -47,3 +47,12 @@ next-env.d.ts
 # worktrees (保留用于版本控制)
 # .worktrees/
 /e2e/
+
+### 文档清理：不提交到 GitHub ###
+doc/
+docs/
+claude.md
+CLAUDE.md
+*.md
+!README.md
+!**/README.md
