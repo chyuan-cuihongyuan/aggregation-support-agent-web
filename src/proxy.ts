@@ -12,8 +12,8 @@ import type { NextRequest } from "next/server";
 /** Cookie 名称 */
 const COOKIE_NAME = "auth_token";
 
-/** 后端 API 基础地址 */
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
+/** 后端 API 基础地址（服务端 middleware 用 BACKEND_URL，运行时读取） */
+const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
 
 /** 验证超时时间（毫秒） */
 const VERIFY_TIMEOUT = 5000;
