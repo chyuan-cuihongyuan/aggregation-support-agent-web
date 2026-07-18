@@ -23,6 +23,9 @@ import { requestJson } from "@/lib/api";
 import { useSessionManager } from "@/components/session/session-manager";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 
+// 禁止 build 时静态预渲染：SSR 时无 cookie/user 会导致 router.replace 被缓存为 307
+export const dynamic = "force-dynamic";
+
 export default function ChatPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();

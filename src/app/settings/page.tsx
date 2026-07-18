@@ -32,6 +32,9 @@ import {
   type SeverityLevel,
 } from "@/lib/app-settings";
 
+// 禁止 build 时静态预渲染：SSR 时无 cookie/user 会导致 router.push 被缓存为 307
+export const dynamic = "force-dynamic";
+
 type NavKey = "profile" | "security" | "general" | "ai-config" | "plugins" | "ssh" | "notifications" | "aiops" | "about";
 
 const NAV_GROUPS = [

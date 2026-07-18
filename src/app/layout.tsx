@@ -4,6 +4,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
 
+// 强制所有路由动态渲染：避免 build 时静态预渲染缓存 307 重定向
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "AI 智能体聚合平台",
   description: "集成对话、知识库、AIOps 的 AI 智能体平台",
@@ -25,6 +28,16 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
+            <footer className="fixed bottom-2 right-3 text-[11px] text-muted-foreground/70 z-50 pointer-events-auto">
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                京ICP备2026041953号-1
+              </a>
+            </footer>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
