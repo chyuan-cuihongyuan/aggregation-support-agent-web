@@ -526,7 +526,7 @@ function SecuritySection({
           <Input
             value={settings.trustedIpRange}
             onChange={(e) => onChange({ trustedIpRange: e.target.value })}
-            placeholder="10.0.0.0/24"
+            placeholder="127.0.0.0/24"
             className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
           />
         </SettingRow>

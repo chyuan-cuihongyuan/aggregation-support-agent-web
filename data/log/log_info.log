@@ -18,13 +18,13 @@
 26-05-24.14:40:40.073 [main            ] INFO  ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2565 ms
 26-05-24.14:40:40.683 [main            ] INFO  EmbeddingCacheConfig   - 启用嵌入向量缓存: maxSize=10000, expireHours=24
 26-05-24.14:40:40.685 [main            ] INFO  CachedEmbeddingService - 嵌入向量缓存初始化: maxSize=10000, expireHours=24
-26-05-24.14:40:40.691 [main            ] INFO  MilvusClientConfig     - 初始化 Milvus 客户端连接: 49.232.169.33:19530
+26-05-24.14:40:40.691 [main            ] INFO  MilvusClientConfig     - 初始化 Milvus 客户端连接: 127.0.0.1:19530
 26-05-24.14:40:41.275 [main            ] INFO  DocumentParserFactory  - 文档解析器工厂初始化，已注册 5 个解析器
-26-05-24.14:40:41.307 [main            ] INFO  ElasticsearchConfig    - 初始化Elasticsearch客户端: 49.232.169.33:9200
+26-05-24.14:40:41.307 [main            ] INFO  ElasticsearchConfig    - 初始化Elasticsearch客户端: 127.0.0.1:9200
 26-05-24.14:40:41.596 [main            ] INFO  ElasticsearchBM25SearchService - Elasticsearch BM25索引初始化完成: index=rag-documents
 26-05-24.14:40:41.759 [main            ] INFO  ImageStorageConfiguration - 启用本地文件系统存储服务
-26-05-24.14:40:41.776 [main            ] INFO  QueryLogsTools         - QueryLogsTools 初始化完成, mockEnabled=false, lokiBaseUrl=http://49.232.169.33:3100
-26-05-24.14:40:41.778 [main            ] INFO  QueryMetricsTools      - QueryMetricsTools 初始化完成, mockEnabled=false, prometheusBaseUrl=http://49.232.169.33:9090
+26-05-24.14:40:41.776 [main            ] INFO  QueryLogsTools         - QueryLogsTools 初始化完成, mockEnabled=false, lokiBaseUrl=http://127.0.0.1:3100
+26-05-24.14:40:41.778 [main            ] INFO  QueryMetricsTools      - QueryMetricsTools 初始化完成, mockEnabled=false, prometheusBaseUrl=http://127.0.0.1:9090
 26-05-24.14:40:41.873 [main            ] INFO  AsyncExecutorConfig    - 初始化审计异步线程池 auditExecutor: core=4, max=16, queue=2000
 26-05-24.14:40:41.875 [main            ] INFO  AsyncExecutorConfig    - 初始化 RAG 追踪异步线程池 ragTraceExecutor: core=4, max=16, queue=2000
 26-05-24.14:40:41.879 [main            ] INFO  CacheConfig            - Caffeine缓存管理器初始化完成
