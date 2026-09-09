@@ -56,3 +56,6 @@ CLAUDE.md
 *.md
 !README.md
 !**/README.md
+
+# Mimosa 扫描器会话状态（与主仓 .gitignore 口径一致）
+.mimosa/
