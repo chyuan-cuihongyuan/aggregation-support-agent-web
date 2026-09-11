@@ -21,6 +21,7 @@ import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
 import { useSessionManager } from "@/components/session/session-manager";
+import { LoadingState } from "@/components/state/loading-state";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
 
 // 禁止 build 时静态预渲染：SSR 时无 cookie/user 会导致 router.replace 被缓存为 307
@@ -141,7 +142,7 @@ export default function ChatPage() {
           <div className="bg-orb bg-orb-1 w-[500px] h-[500px] -top-[100px] -right-[100px] bg-[rgba(102,126,234,0.06)] dark:bg-[rgba(102,126,234,0.08)]" />
           <div className="bg-orb bg-orb-2 w-[400px] h-[400px] -bottom-[80px] -left-[80px] bg-[rgba(230,57,70,0.04)] dark:bg-[rgba(230,57,70,0.06)]" />
         </div>
-        <div className="relative z-10 text-[var(--text-muted)]">加载中...</div>
+        <div className="relative z-10"><LoadingState className="py-0" /></div>
       </div>
     );
   }

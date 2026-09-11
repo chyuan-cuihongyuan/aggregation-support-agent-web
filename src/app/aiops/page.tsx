@@ -18,6 +18,7 @@ import { Activity, RefreshCw, ChevronLeft, Search, Terminal, Zap, Loader2 } from
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { requestSSE } from "@/lib/api";
+import { LoadingState } from "@/components/state/loading-state";
 import type { AlertDTO } from "@/types/api";
 
 // 禁止 build 时静态预渲染：SSR 时无 cookie/user 会导致 router.push 被缓存为 307
@@ -179,7 +180,11 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
   }, [question, activeAlert, user, handleStopAnalysis]);
 
   if (authLoading || !user) {
-    return <div className="flex h-screen items-center justify-center bg-[#0f0f14] text-[#55556a]">加载中...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0f0f14]">
+        <LoadingState className="py-0" />
+      </div>
+    );
   }
 
   return (

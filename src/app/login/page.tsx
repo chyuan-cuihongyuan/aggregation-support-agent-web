@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingState } from "@/components/state/loading-state";
 
 function LoginForm() {
   const router = useRouter();
@@ -204,7 +205,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[var(--surface-bg)] dark:bg-[#0f0f14]">
-        <div className="text-[var(--text-muted)]">加载中...</div>
+        <LoadingState className="py-0" />
       </div>
     }>
       <LoginForm />

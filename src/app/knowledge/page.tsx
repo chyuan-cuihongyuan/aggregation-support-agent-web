@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LoadingState } from "@/components/state/loading-state";
 import {
   Dialog,
   DialogContent,
@@ -335,7 +336,11 @@ export default function KnowledgePage() {
   };
 
   if (authLoading || !user) {
-    return <div className="flex h-screen items-center justify-center bg-[var(--surface-bg)] text-[var(--text-muted)]">加载中...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--surface-bg)]">
+        <LoadingState className="py-0" />
+      </div>
+    );
   }
 
   return (

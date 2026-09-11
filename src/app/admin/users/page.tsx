@@ -11,7 +11,8 @@ import { requestJson } from "@/lib/api";
 import type { UserInfoDTO, UserListResponse } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Shield, UserX, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Shield, UserX, CheckCircle } from "lucide-react";
+import { LoadingState } from "@/components/state/loading-state";
 import { toast } from "sonner";
 
 export default function UsersPage() {
@@ -83,10 +84,7 @@ export default function UsersPage() {
   if (isLoading && users.length === 0) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="mt-2 text-muted-foreground">加载中...</p>
-        </div>
+        <LoadingState className="py-0" />
       </div>
     );
   }

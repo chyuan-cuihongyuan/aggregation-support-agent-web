@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { LoadingState } from "@/components/state/loading-state";
 import { toast } from "sonner";
 import {
   User, Lock, Settings as SettingsIcon, Layers, Wrench, Terminal,
@@ -173,7 +174,11 @@ export default function SettingsPage() {
   };
 
   if (authLoading || !user) {
-    return <div className="flex h-screen items-center justify-center bg-[var(--surface-bg)] text-[var(--text-muted)]">加载中...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--surface-bg)]">
+        <LoadingState className="py-0" />
+      </div>
+    );
   }
 
   return (

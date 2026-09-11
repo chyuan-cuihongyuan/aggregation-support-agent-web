@@ -10,6 +10,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { LoadingState } from "@/components/state/loading-state";
 
 // 禁止 build 时静态预渲染：SSR 时无 cookie/user 会导致 router.replace 被缓存为 307
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="text-muted-foreground">加载中...</div>
+      <LoadingState className="py-0" />
     </div>
   );
 }
