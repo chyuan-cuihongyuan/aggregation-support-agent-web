@@ -1,5 +1,7 @@
 # Aggregation Support Agent Web
 
+[![build](https://github.com/chyuan-cuihongyuan/aggregation-support-agent-web/actions/workflows/build.yml/badge.svg?branch=online-main)](https://github.com/chyuan-cuihongyuan/aggregation-support-agent-web/actions/workflows/build.yml)
+
 ## 项目概述
 
 Aggregation Support Agent Web 是智能运维聚合平台的前端应用，对接 `aggregation-support-agent`（默认 8091），提供 RAG 智能问答对话、知识库管理、AIOps 告警分析与多会话管理能力。基于 Next.js 16 App Router + React 19 + TypeScript 构建，使用 Tailwind CSS 4、shadcn/ui 与 Radix UI 组件体系，支持流式（SSE）对话、文档上传、知识图谱可视化与多租户登录。
