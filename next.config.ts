@@ -8,6 +8,9 @@ const BACKEND_URL =
 
 const nextConfig: NextConfig = {
   output: 'standalone', // 独立 Node SSR 部署所需
+  // SELFLOOP2 loop-226：安全与质量基线
+  poweredByHeader: false,
+  reactStrictMode: true,
 
   async rewrites() {
     return [

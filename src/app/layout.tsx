@@ -8,8 +8,29 @@ import { Toaster } from "@/components/ui/sonner";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "AI 智能体聚合平台",
   description: "集成对话、知识库、AIOps 的 AI 智能体平台",
+  // SELFLOOP2 loop-226：元数据完整化（对外平台口径：允许索引）
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
+  title: {
+    default: "AI 智能体聚合平台",
+    template: "%s | AI 智能体聚合平台",
+  },
+  keywords: ["AI", "智能体", "知识库", "AIOps", "Agent"],
+  openGraph: {
+    title: "AI 智能体聚合平台",
+    description: "集成对话、知识库、AIOps 的 AI 智能体平台",
+    type: "website",
+    locale: "zh_CN",
+    siteName: "AI 智能体聚合平台",
+  },
+  twitter: {
+    card: "summary",
+    title: "AI 智能体聚合平台",
+    description: "集成对话、知识库、AIOps 的 AI 智能体平台",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
