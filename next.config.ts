@@ -1,4 +1,5 @@
 import type {NextConfig} from "next";
+import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const BACKEND_URL =
   process.env.BACKEND_URL ||
@@ -18,4 +19,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// AUTOLOOP al-20 / 工单 1020：产物体积分析开关（借鉴 vercel/next.js 插件，
+// ANALYZE=true 时启用，默认构建零开销）；npm run analyze
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+})(nextConfig);
