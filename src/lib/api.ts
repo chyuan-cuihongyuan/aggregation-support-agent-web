@@ -4,6 +4,8 @@
  * 封装后端 API 调用，支持 JSON 请求、文件上传和 SSE 流式读取
  */
 
+import type { ZodType } from "zod";
+
 import type { ApiResponse } from "@/types/api";
 
 /** 后端 API 基础地址（通过 Next.js rewrites 代理） */
@@ -43,29 +45,49 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * AUTOLOOP al-07 / 工单 1007：响应边界校验（借鉴 colinhacks/zod，模式承 obs-web al-04）。
+ * safeParse 失败抛 ApiError(code=ESCHEMA) 并带字段路径摘要。导出以供单测锁定行为。
+ */
+export function parseWithSchema<T>(data: unknown, schema: ZodType<T>): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    const summary = result.error.issues
+      .slice(0, 5)
+      .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("; ");
+    throw new ApiError(`响应结构校验失败: ${summary}`, "ESCHEMA");
+  }
+  return result.data;
+}
+
+/** 请求选项：透传 fetch init，另可携带响应校验 schema（输出类型由调用方 T 收口） */
+type RequestOptions = RequestInit & { schema?: ZodType };
+
 // ========== JSON 请求 ==========
 
 /**
  * 发送 JSON 请求
  * @param path - API 路径（不含基础地址）
- * @param options - fetch 选项
+ * @param options - fetch 选项（可携带 schema 做响应边界校验）
  * @returns 响应数据
  * @throws {ApiError} 请求失败或响应码非 "0000"
  */
 export async function requestJson<T>(
   path: string,
-  options?: RequestInit
+  options?: RequestOptions
 ): Promise<T> {
+  const { schema, ...init } = options ?? {};
   const url = `${API_BASE}${path}`;
   const defaultOptions: RequestInit = {
     headers: {
       "Content-Type": "application/json",
-      ...options?.headers,
+      ...init.headers,
     },
   };
 
   try {
-    const response = await fetch(url, { ...defaultOptions, ...options, credentials: 'include' });
+    const response = await fetch(url, { ...defaultOptions, ...init, credentials: 'include' });
 
     if (response.status === 401) {
       if (typeof window !== 'undefined') {
@@ -82,7 +104,7 @@ export async function requestJson<T>(
         const errorResult = await response.json();
         errorMessage = errorResult.info || errorMessage;
       } catch {
-        // 非 JSON 响应，使用默认错误信息
+        // 非 JSON 响应
       }
       throw new ApiError(errorMessage, undefined, false, response.status);
     }
@@ -90,7 +112,8 @@ export async function requestJson<T>(
     const result: ApiResponse<T> = await response.json();
 
     if (result.code === SUCCESS_CODE) {
-      return result.data;
+      const data = result.data;
+      return schema ? (parseWithSchema(data, schema) as T) : data;
     }
 
     const errorInfo = result.info || "请求失败";

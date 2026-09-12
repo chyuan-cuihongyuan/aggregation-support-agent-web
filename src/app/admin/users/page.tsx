@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { requestJson } from "@/lib/api";
+import { userListSchema } from "@/lib/schemas";
 import type { UserInfoDTO, UserListResponse } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,9 @@ export default function UsersPage() {
     const loadUsers = async () => {
       setIsLoading(true);
       try {
-        const data = await requestJson<UserListResponse>(`/api/v1/user/list?page=${page}&pageSize=20`);
+        const data = await requestJson<UserListResponse>(`/api/v1/user/list?page=${page}&pageSize=20`, {
+          schema: userListSchema,
+        });
         if (!cancelled) {
           setUsers(data.list);
           setTotal(data.total);

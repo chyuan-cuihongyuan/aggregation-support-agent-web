@@ -6,7 +6,10 @@
 
 import { NextRequest } from "next/server";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
+import { resolveBackendBase } from "@/lib/backend-url";
+
+// AUTOLOOP al-07 / 工单 1007：SSRF 加固——基址经规范化（协议白名单/禁 userinfo/仅 origin）
+const API_BASE = resolveBackendBase();
 
 export async function POST(request: NextRequest) {
   const body = await request.text();

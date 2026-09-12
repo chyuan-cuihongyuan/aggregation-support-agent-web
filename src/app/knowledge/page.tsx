@@ -27,6 +27,11 @@ import {
 import { BookOpen, Upload, Search, Plus, FileText, Trash2, Download, ChevronLeft, Network, ImageIcon, FlaskConical } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requestJson, uploadFile } from "@/lib/api";
+import {
+  knowledgeBaseListSchema,
+  documentListSchema,
+  imageListSchema,
+} from "@/lib/schemas";
 import { GraphViewer } from "@/components/knowledge/graph-viewer";
 import { EntityDetailPanel } from "@/components/knowledge/entity-detail-panel";
 import { ImageUpload } from "@/components/knowledge/image-upload";
@@ -87,7 +92,9 @@ export default function KnowledgePage() {
   /** 加载知识库列表 */
   const loadKnowledgeBases = useCallback(async () => {
     try {
-      const data = await requestJson<KnowledgeBaseDTO[]>("/api/v1/knowledge-bases");
+      const data = await requestJson<KnowledgeBaseDTO[]>("/api/v1/knowledge-bases", {
+        schema: knowledgeBaseListSchema,
+      });
       setKnowledgeBases(data);
       return data;
     } catch {
@@ -102,7 +109,7 @@ export default function KnowledgePage() {
       const url = activeKbId
         ? `/api/v1/documents?knowledgeBaseId=${activeKbId}`
         : `/api/v1/documents?userId=${userId}`;
-      const data = await requestJson<DocumentDTO[]>(url);
+      const data = await requestJson<DocumentDTO[]>(url, { schema: documentListSchema });
       setDocuments(data);
     } catch {
       // 静默
@@ -112,7 +119,9 @@ export default function KnowledgePage() {
   /** 加载图片列表 */
   const loadImages = useCallback(async () => {
     try {
-      const data = await requestJson<ImageDTO[]>(`/api/v1/images?userId=${userId}`);
+      const data = await requestJson<ImageDTO[]>(`/api/v1/images?userId=${userId}`, {
+        schema: imageListSchema,
+      });
       setImages(data);
     } catch {
       // 静默

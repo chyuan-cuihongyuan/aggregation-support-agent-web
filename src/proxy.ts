@@ -9,11 +9,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { resolveBackendBase } from "@/lib/backend-url";
+
 /** Cookie 名称 */
 const COOKIE_NAME = "auth_token";
 
-/** 后端 API 基础地址（服务端 middleware 用 BACKEND_URL，运行时读取） */
-const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
+/** 后端 API 基础地址（服务端 middleware 用 BACKEND_URL，运行时读取；
+ * AUTOLOOP al-07 / 工单 1007：经 resolveBackendBase 规范化，SSRF 加固） */
+const API_BASE = resolveBackendBase();
 
 /** 验证超时时间（毫秒） */
 const VERIFY_TIMEOUT = 5000;

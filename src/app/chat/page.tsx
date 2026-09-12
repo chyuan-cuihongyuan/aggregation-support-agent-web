@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { WelcomePanel } from "@/components/auth/welcome-panel";
 import { useRouter } from "next/navigation";
 import { requestJson } from "@/lib/api";
+import { agentConfigListSchema } from "@/lib/schemas";
 import { useSessionManager } from "@/components/session/session-manager";
 import { LoadingState } from "@/components/state/loading-state";
 import type { AgentConfig, ChatHistoryDTO } from "@/types/api";
@@ -88,7 +89,9 @@ export default function ChatPage() {
   useEffect(() => {
     const loadAgents = async () => {
       try {
-        const data = await requestJson<AgentConfig[]>("/api/v1/query_ai_agent_config_list");
+        const data = await requestJson<AgentConfig[]>("/api/v1/query_ai_agent_config_list", {
+          schema: agentConfigListSchema,
+        });
         setAgents(data);
         if (data.length > 0) {
           setSelectedAgentId(data[0].agentId);
