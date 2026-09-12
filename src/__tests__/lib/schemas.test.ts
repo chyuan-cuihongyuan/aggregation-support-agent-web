@@ -39,12 +39,19 @@ describe("schemas 宽容式校验", () => {
 
   it("文档 fileSize 为字符串即失败", () => {
     const ok = [
-      { documentId: "d1", fileName: "a.pdf", fileExtension: ".pdf", fileSize: 1, mimeType: "application/pdf", processingStatus: "success" },
+      {
+        documentId: "d1",
+        fileName: "a.pdf",
+        fileExtension: ".pdf",
+        fileSize: 1,
+        mimeType: "application/pdf",
+        processingStatus: "success",
+      },
     ];
     expect(parseWithSchema(ok, documentListSchema)).toHaveLength(1);
-    expect(() =>
-      parseWithSchema([{ ...ok[0], fileSize: "1024" }], documentListSchema)
-    ).toThrow(/fileSize/);
+    expect(() => parseWithSchema([{ ...ok[0], fileSize: "1024" }], documentListSchema)).toThrow(
+      /fileSize/
+    );
   });
 
   it("用户分页结构：list 非数组即失败", () => {
@@ -52,7 +59,8 @@ describe("schemas 宽容式校验", () => {
       parseWithSchema({ list: {}, total: 1, page: 1, pageSize: 20 }, userListSchema)
     ).toThrow(ApiError);
     expect(
-      parseWithSchema({ list: [{ userId: "u1" }], total: 1, page: 1, pageSize: 20 }, userListSchema).total
+      parseWithSchema({ list: [{ userId: "u1" }], total: 1, page: 1, pageSize: 20 }, userListSchema)
+        .total
     ).toBe(1);
   });
 });

@@ -7,11 +7,8 @@
  * - 只保留 origin，剥除任何 path/query 片段
  * env 来源不可控时宁可显式失败，不带病转发。
  */
-export function resolveBackendBase(
-  env: Record<string, string | undefined> = process.env
-): string {
-  const raw =
-    env.BACKEND_URL || env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
+export function resolveBackendBase(env: Record<string, string | undefined> = process.env): string {
+  const raw = env.BACKEND_URL || env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8091";
   let url: URL;
   try {
     url = new URL(raw);
