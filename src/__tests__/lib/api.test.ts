@@ -11,6 +11,9 @@ import {
   readSSEStream,
   ApiError,
   isBackendUnavailable,
+  getTimeoutMs,
+  mergeSignals,
+  createTimeoutSignal,
 } from "@/lib/api";
 
 // ========== Mock 设置 ==========
@@ -558,5 +561,56 @@ describe("API 客户端单元测试", () => {
 
       expect(received).toEqual(["第一条", "第二条", "第三条"]);
     });
+  });
+});
+
+// ========== 超时基线（SELFLOOP2 loop-214：防回归） ==========
+
+describe("API 超时基线", () => {
+  const realEnv = process.env.NEXT_PUBLIC_API_TIMEOUT_MS;
+
+  afterEach(() => {
+    if (realEnv === undefined) delete process.env.NEXT_PUBLIC_API_TIMEOUT_MS;
+    else process.env.NEXT_PUBLIC_API_TIMEOUT_MS = realEnv;
+  });
+
+  function hangingFetch() {
+    return jest.fn().mockImplementation((_url: string, init?: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          const e = new Error("The operation was aborted");
+          e.name = "AbortError";
+          reject(e);
+        });
+      })
+    );
+  }
+
+  it("挂死请求在超时阈值后抛 ApiError（isUnavailable=true）", async () => {
+    process.env.NEXT_PUBLIC_API_TIMEOUT_MS = "50";
+    global.fetch = hangingFetch();
+
+    await expect(requestJson("/api/v1/anything")).rejects.toMatchObject({
+      isUnavailable: true,
+    });
+  }, 10000);
+
+  it("getTimeoutMs：默认 15000，env 覆盖与非法值回退", () => {
+    delete process.env.NEXT_PUBLIC_API_TIMEOUT_MS;
+    expect(getTimeoutMs()).toBe(15000);
+    process.env.NEXT_PUBLIC_API_TIMEOUT_MS = "3000";
+    expect(getTimeoutMs()).toBe(3000);
+    process.env.NEXT_PUBLIC_API_TIMEOUT_MS = "abc";
+    expect(getTimeoutMs()).toBe(15000);
+  });
+
+  it("mergeSignals：调用方中止即整体中止；无调用方返回超时 signal", () => {
+    const timeoutSignal = createTimeoutSignal(5000);
+    const caller = new AbortController();
+    const merged = mergeSignals(timeoutSignal, caller.signal);
+    expect(merged.aborted).toBe(false);
+    caller.abort();
+    expect(merged.aborted).toBe(true);
+    expect(mergeSignals(createTimeoutSignal(5000), undefined).aborted).toBe(false);
   });
 });

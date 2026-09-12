@@ -22,8 +22,43 @@ const SUCCESS_CODE = "0000";
  * @returns 是否为后端不可用错误
  */
 export function isBackendUnavailable(message: string): boolean {
-  const keywords = ["Failed to fetch", "NetworkError", "Load failed", "CORS"];
+  const keywords = ["Failed to fetch", "NetworkError", "Load failed", "CORS", "abort"];
   return keywords.some((keyword) => message.includes(keyword));
+}
+
+/** 请求超时基线（SELFLOOP2 loop-214）：默认 15s，NEXT_PUBLIC_API_TIMEOUT_MS 可覆盖 */
+export function getTimeoutMs(): number {
+  const n = Number(process.env.NEXT_PUBLIC_API_TIMEOUT_MS);
+  return Number.isFinite(n) && n > 0 ? n : 15000;
+}
+
+/** 超时 signal：原生 AbortSignal.timeout 优先，缺失时（jsdom/旧浏览器）手动定时 abort */
+export function createTimeoutSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(ms);
+  }
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
+}
+
+/** 调用方 signal 与超时 signal 合并（AbortSignal.any 不可用时监听联动回退） */
+export function mergeSignals(timeoutSignal: AbortSignal, callerSignal?: AbortSignal | null): AbortSignal {
+  if (!callerSignal) {
+    return timeoutSignal;
+  }
+  if (typeof AbortSignal.any === "function") {
+    return AbortSignal.any([timeoutSignal, callerSignal]);
+  }
+  const ctrl = new AbortController();
+  const onAbort = () => ctrl.abort();
+  if (timeoutSignal.aborted || callerSignal.aborted) {
+    ctrl.abort();
+  } else {
+    timeoutSignal.addEventListener("abort", onAbort, { once: true });
+    callerSignal.addEventListener("abort", onAbort, { once: true });
+  }
+  return ctrl.signal;
 }
 
 /**
@@ -87,7 +122,13 @@ export async function requestJson<T>(
   };
 
   try {
-    const response = await fetch(url, { ...defaultOptions, ...init, credentials: 'include' });
+    // 超时基线（SELFLOOP2 loop-214）：与调用方 signal 合并；SSE 走 requestSSE 不在此列
+    const response = await fetch(url, {
+      ...defaultOptions,
+      ...init,
+      signal: mergeSignals(createTimeoutSignal(getTimeoutMs()), init.signal ?? null),
+      credentials: 'include'
+    });
 
     if (response.status === 401) {
       if (typeof window !== 'undefined') {
@@ -146,6 +187,13 @@ export function uploadFile<T>(
   return new Promise((resolve, reject) => {
     const url = `${API_BASE}${path}`;
     const xhr = new XMLHttpRequest();
+
+    // 上传超时基线（SELFLOOP2 loop-214）：60s 无响应失败，进度回调不受影响
+    const UPLOAD_TIMEOUT_MS = 60000;
+    xhr.timeout = UPLOAD_TIMEOUT_MS;
+    xhr.addEventListener("timeout", () => {
+      reject(new ApiError(`上传超时（${UPLOAD_TIMEOUT_MS}ms）`, undefined, true));
+    });
 
     // 监听上传进度
     xhr.upload.addEventListener("progress", (event) => {
