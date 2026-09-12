@@ -141,6 +141,17 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
 
   const typer = useTypingRenderer(setMessages);
 
+  // 组件卸载时中断在途流请求（SELFLOOP2 loop-221：此前只清打字机 RAF，
+  // 在途 SSE 会继续消耗网络并在卸载后 setState）
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
+
   // 停止生成
   const stopGeneration = useCallback(() => {
     if (abortControllerRef.current) {

@@ -453,3 +453,34 @@ describe("useChat Hook", () => {
     });
   });
 });
+
+// ==================== 卸载中断（SELFLOOP2 loop-221） ====================
+
+describe("卸载中断", () => {
+  it("组件卸载时应中断在途流请求（signal.aborted=true）", async () => {
+    let capturedSignal: AbortSignal | undefined;
+    mockRequestSSE.mockImplementation(
+      (_path: string, _body: unknown, _handlers: unknown, signal?: AbortSignal) => {
+        capturedSignal = signal;
+        return new Promise<void>(() => {
+          /* 挂死流 */
+        });
+      }
+    );
+
+    const { result, unmount } = renderHook(() => useChat(defaultOptions));
+
+    await act(async () => {
+      // 不 await：让流保持在途
+      void result.current.sendMessage("流式中...");
+      await Promise.resolve();
+    });
+
+    expect(capturedSignal).toBeDefined();
+    expect(capturedSignal!.aborted).toBe(false);
+
+    unmount();
+
+    expect(capturedSignal!.aborted).toBe(true);
+  });
+});
