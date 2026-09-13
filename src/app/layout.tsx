@@ -4,6 +4,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/query-provider";
+// b-18 / 工单 1132：web-vitals 采集（环境变量开关式，默认关）
+import { WebVitalsReporter } from "@/components/web-vitals-reporter";
 
 // 强制所有路由动态渲染：避免 build 时静态预渲染缓存 307 重定向
 export const dynamic = "force-dynamic";
@@ -40,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className="h-full" suppressHydrationWarning>
       <body className="min-h-full font-sans antialiased">
+        <WebVitalsReporter />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
