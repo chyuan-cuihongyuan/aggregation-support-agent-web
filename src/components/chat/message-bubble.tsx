@@ -23,8 +23,29 @@ interface MessageBubbleProps {
   timestamp?: string;
 }
 
+/** 渲染长度护栏（SELFLOOP2 loop-247）：后端 spill guard 的前端兜底，防异常长响应卡顿 */
+const MAX_RENDER_CHARS = 20000;
+
+export function enforceContentLimit(content: string): string {
+  if (content.length <= MAX_RENDER_CHARS) return content;
+  return (
+    content.slice(0, MAX_RENDER_CHARS) +
+    "\n\n[内容过长已截断渲染，原始长度 " +
+    content.length +
+    " 字符]"
+  );
+}
+
 /** 工具调用结果卡片 */
-function ToolResultCard({ toolName, command, result }: { toolName: string; command?: string; result: string }) {
+function ToolResultCard({
+  toolName,
+  command,
+  result,
+}: {
+  toolName: string;
+  command?: string;
+  result: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -42,9 +63,7 @@ function ToolResultCard({ toolName, command, result }: { toolName: string; comma
           工具调用 · {toolName}
         </span>
         {command && (
-          <span className="truncate text-[11px] text-[var(--text-muted)] font-mono">
-            {command}
-          </span>
+          <span className="truncate text-[11px] text-[var(--text-muted)] font-mono">{command}</span>
         )}
       </div>
 
@@ -85,7 +104,17 @@ function AnalysisCard() {
 }
 
 /** 单个指标卡片 */
-function MetricCard({ label, value, status, change }: { label: string; value: string; status: "danger" | "warning" | "normal"; change: string }) {
+function MetricCard({
+  label,
+  value,
+  status,
+  change,
+}: {
+  label: string;
+  value: string;
+  status: "danger" | "warning" | "normal";
+  change: string;
+}) {
   const statusColors = {
     danger: "text-[var(--status-error)]",
     warning: "text-[var(--status-warning)]",
@@ -101,63 +130,75 @@ function MetricCard({ label, value, status, change }: { label: string; value: st
   );
 }
 
-export const MessageBubble = memo(({ id, role, content, isStreaming, timestamp }: MessageBubbleProps) => {
-  const isUser = role === "user";
-  const now = timestamp || new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+export const MessageBubble = memo(
+  ({ id, role, content, isStreaming, timestamp }: MessageBubbleProps) => {
+    const isUser = role === "user";
+    const now =
+      timestamp || new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 
-  return (
-    <div className={`flex gap-3 px-6 py-4 hover:bg-[rgba(255,255,255,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors ${isUser ? "flex-row-reverse" : ""} group`}>
-      {/* 头像 */}
+    return (
       <div
-        className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold ${
-          isUser
-            ? "bg-[var(--brand-accent)] text-white"
-            : "bg-gradient-to-br from-[var(--brand-gradient-start)] to-[var(--brand-gradient-end)] text-white"
-        }`}
+        className={`flex gap-3 px-6 py-4 hover:bg-[rgba(255,255,255,0.02)] dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors ${isUser ? "flex-row-reverse" : ""} group`}
       >
-        {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-      </div>
-
-      {/* 消息内容 */}
-      <div className={`flex-1 max-w-[800px] ${isUser ? "flex flex-col items-end" : ""}`}>
-        {/* 发送者名称和时间 */}
-        <div className={`flex items-center gap-2 mb-1.5 ${isUser ? "flex-row-reverse" : ""}`}>
-          <span className="text-[14px] font-semibold text-[var(--text-primary)]">
-            {isUser ? "Admin" : "Claude"}
-          </span>
-          <span className="text-[11px] text-[var(--text-muted)]">{now}</span>
-        </div>
-
+        {/* 头像 */}
         <div
-          className={`rounded-2xl px-4 py-3 ${
+          className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold ${
             isUser
-              ? "bg-[var(--brand-accent)] text-white rounded-[12px_12px_4px_12px]"
-              : "border border-[var(--chat-border)] text-[var(--chat-ai-text)]"
+              ? "bg-[var(--brand-accent)] text-white"
+              : "bg-gradient-to-br from-[var(--brand-gradient-start)] to-[var(--brand-gradient-end)] text-white"
           }`}
-          style={
-            !isUser
-              ? { background: "var(--chat-ai-bubble)", color: "var(--chat-ai-text)" }
-              : undefined
-          }
         >
-          {isUser ? (
-            <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{content}</p>
-          ) : (
-            <div
-              className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed [&_pre]:bg-[#0d0d15] [&_pre]:text-[#cdd6f4] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-[var(--chat-border)] [&_code]:text-[#f0abfc] [&_code]:bg-[var(--surface-card)] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(content, { async: false, gfm: true, breaks: true }) as string) }}
-            />
-          )}
-          {isStreaming && (
-            <span className="inline-block w-[3px] h-[18px] bg-[var(--brand-accent)] animate-pulse ml-0.5 rounded-sm align-text-bottom" />
-          )}
+          {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
         </div>
 
-        {/* 示例：如果是 AI 消息且包含工具调用，显示工具结果卡片 */}
-        {!isUser && content.includes("SSH") && content.includes("top") && (
-          <ToolResultCard
-            toolName="ssh_shell"
-            result="$ top -bn1 | head -20
+        {/* 消息内容 */}
+        <div className={`flex-1 max-w-[800px] ${isUser ? "flex flex-col items-end" : ""}`}>
+          {/* 发送者名称和时间 */}
+          <div className={`flex items-center gap-2 mb-1.5 ${isUser ? "flex-row-reverse" : ""}`}>
+            <span className="text-[14px] font-semibold text-[var(--text-primary)]">
+              {isUser ? "Admin" : "Claude"}
+            </span>
+            <span className="text-[11px] text-[var(--text-muted)]">{now}</span>
+          </div>
+
+          <div
+            className={`rounded-2xl px-4 py-3 ${
+              isUser
+                ? "bg-[var(--brand-accent)] text-white rounded-[12px_12px_4px_12px]"
+                : "border border-[var(--chat-border)] text-[var(--chat-ai-text)]"
+            }`}
+            style={
+              !isUser
+                ? { background: "var(--chat-ai-bubble)", color: "var(--chat-ai-text)" }
+                : undefined
+            }
+          >
+            {isUser ? (
+              <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{content}</p>
+            ) : (
+              <div
+                className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed [&_pre]:bg-[#0d0d15] [&_pre]:text-[#cdd6f4] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-[var(--chat-border)] [&_code]:text-[#f0abfc] [&_code]:bg-[var(--surface-card)] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    marked.parse(enforceContentLimit(content), {
+                      async: false,
+                      gfm: true,
+                      breaks: true,
+                    }) as string
+                  ),
+                }}
+              />
+            )}
+            {isStreaming && (
+              <span className="inline-block w-[3px] h-[18px] bg-[var(--brand-accent)] animate-pulse ml-0.5 rounded-sm align-text-bottom" />
+            )}
+          </div>
+
+          {/* 示例：如果是 AI 消息且包含工具调用，显示工具结果卡片 */}
+          {!isUser && content.includes("SSH") && content.includes("top") && (
+            <ToolResultCard
+              toolName="ssh_shell"
+              result="$ top -bn1 | head -20
 top - 14:23:01 up 45 days, 3:21
 Tasks: 186 total, 3 running
 %Cpu(s): 87.3 us, 4.2 sy
@@ -166,21 +207,18 @@ MiB Mem: 32768.0 total
 PID  USER   %CPU  %MEM  COMMAND
 2847 java    78.2  12.1  app-server.jar
 3192 node    5.4   3.2   worker.js"
-          />
-        )}
+            />
+          )}
 
-        {/* 示例：系统指标分析 */}
-        {!isUser && content.includes("性能") && content.includes("CPU") && (
-          <AnalysisCard />
-        )}
+          {/* 示例：系统指标分析 */}
+          {!isUser && content.includes("性能") && content.includes("CPU") && <AnalysisCard />}
 
-        {/* 导出操作 - 仅 AI 消息且非流式状态时显示 */}
-        {!isUser && !isStreaming && content && (
-          <ExportActions content={content} messageId={id} />
-        )}
+          {/* 导出操作 - 仅 AI 消息且非流式状态时显示 */}
+          {!isUser && !isStreaming && content && <ExportActions content={content} messageId={id} />}
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 MessageBubble.displayName = "MessageBubble";
