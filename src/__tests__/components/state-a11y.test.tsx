@@ -20,9 +20,7 @@ describe("状态组件 a11y 冒烟", () => {
   });
 
   it("ErrorState 无可访问性违规（含重试按钮）", async () => {
-    const { container } = render(
-      <ErrorState message="加载失败" onRetry={() => undefined} />
-    );
+    const { container } = render(<ErrorState title="加载失败" onRetry={() => undefined} />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
