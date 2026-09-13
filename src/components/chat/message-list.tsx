@@ -6,9 +6,9 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
 import { MessageBubble } from "./message-bubble";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAutoScroll } from "@/hooks/use-auto-scroll";
 
 export interface Message {
   id: string;
@@ -22,14 +22,8 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages }: MessageListProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  // 自动滚动到底部
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
+  // 跟随滚动（SELFLOOP2 loop-243）：贴底才自动滚，上翻阅读不拉回
+  const { containerRef, bottomRef, handleScroll } = useAutoScroll([messages]);
 
   if (messages.length === 0) {
     return (
@@ -44,7 +38,7 @@ export function MessageList({ messages }: MessageListProps) {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="w-full max-w-3xl mx-auto">
+      <div ref={containerRef} onScroll={handleScroll} className="w-full max-w-3xl mx-auto">
         <div className="space-y-4 p-4">
           {messages.map((message) => (
             <MessageBubble
