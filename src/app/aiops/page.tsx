@@ -73,59 +73,60 @@ export default function AIOpsPage() {
   }, []);
 
   // AI分析告警
-  const handleAiAnalysis = useCallback(async (alertId?: string) => {
-    if (!activeAlert && !alertId) return;
+  const handleAiAnalysis = useCallback(
+    async (alertId?: string) => {
+      if (!activeAlert && !alertId) return;
 
-    // 取消之前的请求
-    handleStopAnalysis();
+      // 取消之前的请求
+      handleStopAnalysis();
 
-    setIsAnalyzing(true);
-    setAiAnalysis("");
+      setIsAnalyzing(true);
+      setAiAnalysis("");
 
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
-    try {
-      const targetAlert = alertId
-        ? alerts.find(a => a.id === alertId)
-        : activeAlert;
+      try {
+        const targetAlert = alertId ? alerts.find((a) => a.id === alertId) : activeAlert;
 
-      if (!targetAlert) return;
+        if (!targetAlert) return;
 
-      const alertDescription = `告警名称: ${targetAlert.name}
+        const alertDescription = `告警名称: ${targetAlert.name}
 告警摘要: ${targetAlert.summary}
 告警主机: ${targetAlert.host}
 严重程度: ${targetAlert.severity}
-${targetAlert.metrics ? `指标数据: ${JSON.stringify(targetAlert.metrics)}` : ''}
-${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
+${targetAlert.metrics ? `指标数据: ${JSON.stringify(targetAlert.metrics)}` : ""}
+${targetAlert.description ? `详细描述: ${targetAlert.description}` : ""}
 
 请分析这个告警的根本原因，并提供处置建议。`;
 
-      await requestSSE(
-        "/api/v1/ai_ops",
-        {
-          agentId: "200002",
-          userId: user?.username || "default",
-          alertDescription,
-        },
-        (chunk) => {
-          if (!abortController.signal.aborted) {
-            setAiAnalysis(prev => prev + chunk);
-          }
-        },
-        abortController.signal
-      );
-    } catch (err) {
-      if (!abortController.signal.aborted) {
-        setAiAnalysis(`分析失败: ${err instanceof Error ? err.message : "未知错误"}`);
+        await requestSSE(
+          "/api/v1/ai_ops",
+          {
+            agentId: "200002",
+            userId: user?.username || "default",
+            alertDescription,
+          },
+          (chunk) => {
+            if (!abortController.signal.aborted) {
+              setAiAnalysis((prev) => prev + chunk);
+            }
+          },
+          abortController.signal
+        );
+      } catch (err) {
+        if (!abortController.signal.aborted) {
+          setAiAnalysis(`分析失败: ${err instanceof Error ? err.message : "未知错误"}`);
+        }
+      } finally {
+        if (!abortController.signal.aborted) {
+          setIsAnalyzing(false);
+        }
+        abortControllerRef.current = null;
       }
-    } finally {
-      if (!abortController.signal.aborted) {
-        setIsAnalyzing(false);
-      }
-      abortControllerRef.current = null;
-    }
-  }, [activeAlert, alerts, user, handleStopAnalysis]);
+    },
+    [activeAlert, alerts, user, handleStopAnalysis]
+  );
 
   // 提交问题
   const handleAskQuestion = useCallback(async () => {
@@ -158,7 +159,7 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
         },
         (chunk) => {
           if (!abortController.signal.aborted) {
-            setAiAnalysis(prev => prev + chunk);
+            setAiAnalysis((prev) => prev + chunk);
           }
         },
         abortController.signal
@@ -192,14 +193,17 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
       {/* 顶栏 */}
       <header className="h-14 border-b border-[#2a2a3a] bg-[#1a1a24] flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/chat")} className="h-8 w-8 text-[#8888a0] hover:bg-[#22222e]">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/chat")}
+            className="h-8 w-8 text-[#8888a0] hover:bg-[#22222e]"
+          >
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <Activity className="w-5 h-5 text-[#ef4444]" />
           <span className="text-sm font-bold">AIOps 告警中心</span>
-          {counts.total > 0 && (
-            <span className="w-2 h-2 bg-[#ef4444] rounded-full animate-pulse" />
-          )}
+          {counts.total > 0 && <span className="w-2 h-2 bg-[#ef4444] rounded-full animate-pulse" />}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -272,21 +276,34 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${
-                      alert.severity === "critical" ? "bg-[#ef4444] shadow-[0_0_8px_#ef4444]" :
-                      alert.severity === "warning" ? "bg-[#f59e0b]" : "bg-[#6366f1]"
-                    }`} />
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        alert.severity === "critical"
+                          ? "bg-[#ef4444] shadow-[0_0_8px_#ef4444]"
+                          : alert.severity === "warning"
+                            ? "bg-[#f59e0b]"
+                            : "bg-[#6366f1]"
+                      }`}
+                    />
                     <span className="text-[13px] font-semibold truncate flex-1">{alert.name}</span>
                     <span className="text-[11px] text-[#55556a] shrink-0">{alert.time}</span>
                   </div>
-                  <div className="text-[12px] text-[#8888a0] leading-relaxed line-clamp-2">{alert.summary}</div>
+                  <div className="text-[12px] text-[#8888a0] leading-relaxed line-clamp-2">
+                    {alert.summary}
+                  </div>
                   <div className="flex gap-1 mt-2">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#2a2a38] text-[#8888a0]">{alert.host}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#2a2a38] text-[#8888a0]">
+                      {alert.host}
+                    </span>
                     {alert.severity === "critical" && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/15 text-[#ef4444]">严重</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/15 text-[#ef4444]">
+                        严重
+                      </span>
                     )}
                     {alert.status === "acknowledged" && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f59e0b]/15 text-[#f59e0b]">已确认</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f59e0b]/15 text-[#f59e0b]">
+                        已确认
+                      </span>
                     )}
                   </div>
                 </div>
@@ -302,17 +319,31 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
               {/* 分析头部 */}
               <div className="px-7 py-5 border-b border-[#2a2a3a]">
                 <h2 className="text-[18px] font-bold flex items-center gap-2.5">
-                  <span className={`w-2.5 h-2.5 rounded-full ${
-                    activeAlert.severity === "critical" ? "bg-[#ef4444]" :
-                    activeAlert.severity === "warning" ? "bg-[#f59e0b]" : "bg-[#6366f1]"
-                  }`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      activeAlert.severity === "critical"
+                        ? "bg-[#ef4444]"
+                        : activeAlert.severity === "warning"
+                          ? "bg-[#f59e0b]"
+                          : "bg-[#6366f1]"
+                    }`}
+                  />
                   {activeAlert.name}
                 </h2>
                 <div className="flex gap-4 mt-2 text-[12px] text-[#55556a]">
-                  <span className="flex items-center gap-1"><Terminal className="w-3.5 h-3.5" /> {activeAlert.host}</span>
-                  <span className="flex items-center gap-1"><Activity className="w-3.5 h-3.5" /> {activeAlert.time}</span>
                   <span className="flex items-center gap-1">
-                    状态: {activeAlert.status === "active" ? "活跃" : activeAlert.status === "acknowledged" ? "已确认" : "已解决"}
+                    <Terminal className="w-3.5 h-3.5" /> {activeAlert.host}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Activity className="w-3.5 h-3.5" /> {activeAlert.time}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    状态:{" "}
+                    {activeAlert.status === "active"
+                      ? "活跃"
+                      : activeAlert.status === "acknowledged"
+                        ? "已确认"
+                        : "已解决"}
                   </span>
                 </div>
               </div>
@@ -324,21 +355,30 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
                     <Activity className="w-[18px] h-[18px] text-[#8888a0]" />
                     告警摘要
                   </h3>
-                  <p className="text-[13px] text-[#8888a0] leading-relaxed">{activeAlert.summary}</p>
+                  <p className="text-[13px] text-[#8888a0] leading-relaxed">
+                    {activeAlert.summary}
+                  </p>
                   {activeAlert.description && (
-                    <p className="text-[13px] text-[#8888a0] leading-relaxed mt-2">{activeAlert.description}</p>
+                    <p className="text-[13px] text-[#8888a0] leading-relaxed mt-2">
+                      {activeAlert.description}
+                    </p>
                   )}
                 </div>
 
                 {/* 指标卡片 */}
                 {activeAlert.metrics && Object.keys(activeAlert.metrics).length > 0 && (
                   <div className="grid grid-cols-4 gap-3 mb-5">
-                    {Object.entries(activeAlert.metrics).slice(0, 4).map(([key, value]) => (
-                      <div key={key} className="bg-[#1a1a24] border border-[#2a2a3a] rounded-[10px] p-4">
-                        <div className="text-[11px] text-[#55556a] mb-1.5">{key}</div>
-                        <div className="text-2xl font-bold text-[#e4e4ef]">{String(value)}</div>
-                      </div>
-                    ))}
+                    {Object.entries(activeAlert.metrics)
+                      .slice(0, 4)
+                      .map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="bg-[#1a1a24] border border-[#2a2a3a] rounded-[10px] p-4"
+                        >
+                          <div className="text-[11px] text-[#55556a] mb-1.5">{key}</div>
+                          <div className="text-2xl font-bold text-[#e4e4ef]">{String(value)}</div>
+                        </div>
+                      ))}
                   </div>
                 )}
 
@@ -348,10 +388,35 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
                     <h3 className="text-[15px] font-semibold mb-4 flex items-center gap-2">
                       <Search className="w-[18px] h-[18px] text-[#e63946]" />
                       AI 分析结果
+                      <button
+                        onClick={() => {
+                          // 下载 Markdown（SELFLOOP3 loop-337，工单 0472/0473）：SSE 拼接全文即报告源文本
+                          const blob = new Blob([aiAnalysis], {
+                            type: "text/markdown;charset=utf-8",
+                          });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `aiops-report-${activeAlert?.id ?? "session"}.md`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="ml-auto text-xs px-2 py-1 rounded border border-[#2a2a3a] text-[#8888a0] hover:text-[#cdd6f4] hover:border-[#4a4a6a] transition-colors"
+                      >
+                        下载 .md
+                      </button>
                     </h3>
                     <div
                       className="prose prose-sm prose-invert max-w-none text-[13px] text-[#8888a0] leading-relaxed [&_pre]:bg-[#0d0d15] [&_pre]:text-[#cdd6f4] [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-[#2a2a3a] [&_code]:text-[#f0abfc] [&_code]:bg-[#1a1a24] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded"
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(aiAnalysis, { async: false, gfm: true, breaks: true }) as string) }}
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(
+                          marked.parse(aiAnalysis, {
+                            async: false,
+                            gfm: true,
+                            breaks: true,
+                          }) as string
+                        ),
+                      }}
                     />
                   </div>
                 )}
@@ -360,7 +425,7 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ''}
                 <div className="flex gap-3 mb-5">
                   <Button
                     className="h-10 px-4 bg-[#e63946] hover:bg-[#c1121f] text-white rounded-[10px] shadow-none gap-2"
-                    onClick={() => isAnalyzing ? handleStopAnalysis() : handleAiAnalysis()}
+                    onClick={() => (isAnalyzing ? handleStopAnalysis() : handleAiAnalysis())}
                   >
                     {isAnalyzing ? (
                       <>
