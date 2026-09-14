@@ -4,8 +4,6 @@
  * 用于 AI 消息中展示工具调用结果（SSH 命令输出等）
  */
 
-"use client";
-
 import { Terminal } from "lucide-react";
 
 interface ToolResultCardProps {
@@ -36,7 +34,16 @@ export function ToolResultCard({
         </span>
         {status === "completed" && (
           <span className="flex items-center gap-1 text-[12px] text-[var(--status-success)]">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             完成
           </span>
         )}

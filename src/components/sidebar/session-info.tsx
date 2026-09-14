@@ -4,8 +4,6 @@
  * 显示当前会话的元数据
  */
 
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -16,12 +14,7 @@ interface SessionInfoProps {
   agentName?: string;
 }
 
-export function SessionInfo({
-  userId = "admin",
-  agentId,
-  sessionId,
-  agentName,
-}: SessionInfoProps) {
+export function SessionInfo({ userId = "admin", agentId, sessionId, agentName }: SessionInfoProps) {
   return (
     <div className="space-y-4">
       <Card>
