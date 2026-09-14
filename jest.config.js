@@ -15,7 +15,10 @@ const config = {
   testMatch: ["<rootDir>/src/**/*.test.{ts,tsx}", "<rootDir>/src/**/__tests__/**/*.{ts,tsx}"],
 
   // 模块名映射（处理路径别名）
+  // marked 仅发布 ESM（next/jest 的 transformIgnorePatterns 前置且不可让位），
+  // 映射到 UMD 构建供 jest 消费（工单 1142）
   moduleNameMapper: {
+    "^marked$": "<rootDir>/node_modules/marked/lib/marked.umd.js",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
 
