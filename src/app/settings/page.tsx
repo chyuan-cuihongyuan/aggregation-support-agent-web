@@ -105,7 +105,7 @@ const BUILTIN_PLUGIN_NAMES: Record<string, string> = {
 };
 
 const selectClassName =
-  "h-9 w-full sm:w-[260px] px-3 text-[13px] bg-[var(--surface-card)] dark:bg-[#22222e] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg outline-none cursor-pointer";
+  "h-9 w-full sm:w-[260px] px-3 text-[13px] bg-[var(--surface-card)] dark:bg-[#22222e] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 function severityLabel(value: SeverityLevel) {
   const labels: Record<SeverityLevel, string> = {
