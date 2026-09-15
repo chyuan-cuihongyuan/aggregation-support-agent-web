@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LiveAnnouncer } from "@/components/state/live-announcer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
@@ -42,6 +43,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className="h-full" suppressHydrationWarning>
       <body className="min-h-full font-sans antialiased">
+        <LiveAnnouncer />
         <WebVitalsReporter />
         <ThemeProvider
           attribute="class"

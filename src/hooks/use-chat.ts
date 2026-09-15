@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { announce } from "@/lib/announce";
 import { requestSSE } from "@/lib/api";
 import type { Message } from "@/types/api";
 import { historyItemsToMessages } from "@/utils/session-utils";
@@ -31,9 +32,7 @@ interface UseChatOptions {
  *   前端都按统一节奏逐字显示
  * - 仅当积压过多（buffer 远超光标）时按比例加速，避免长响应拖尾过久
  */
-function useTypingRenderer(
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
-) {
+function useTypingRenderer(setMessages: React.Dispatch<React.SetStateAction<Message[]>>) {
   const bufferRef = useRef("");
   const cursorRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -54,17 +53,12 @@ function useTypingRenderer(
       // 仅当积压超过 BACKLOG_THRESHOLD 时按比例追赶，防止一次性整段返回时拖尾过久。
       const CHARS_PER_FRAME = 2;
       const BACKLOG_THRESHOLD = 120;
-      const step =
-        pending > BACKLOG_THRESHOLD
-          ? Math.ceil(pending / 30)
-          : CHARS_PER_FRAME;
+      const step = pending > BACKLOG_THRESHOLD ? Math.ceil(pending / 30) : CHARS_PER_FRAME;
       cursorRef.current = Math.min(cursorRef.current + step, buffer.length);
 
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, content: buffer.substring(0, cursorRef.current) }
-            : msg
+          msg.id === messageId ? { ...msg, content: buffer.substring(0, cursorRef.current) } : msg
         )
       );
 
@@ -101,11 +95,7 @@ function useTypingRenderer(
       cursorRef.current = bufferRef.current.length;
       const fullContent = bufferRef.current;
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, content: fullContent }
-            : msg
-        )
+        prev.map((msg) => (msg.id === messageId ? { ...msg, content: fullContent } : msg))
       );
       return fullContent;
     },
@@ -134,7 +124,14 @@ function useTypingRenderer(
   return { append, finish, reset };
 }
 
-export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSessionId, onMessageComplete }: UseChatOptions) {
+export function useChat({
+  userId,
+  agentId,
+  sessionId,
+  setHasUnsavedChanges,
+  onSessionId,
+  onMessageComplete,
+}: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -219,7 +216,9 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
             },
             onSession: (session) => {
               const nextSessionId =
-                typeof session === "string" ? session : (session as { sessionId?: string })?.sessionId;
+                typeof session === "string"
+                  ? session
+                  : (session as { sessionId?: string })?.sessionId;
               if (nextSessionId) {
                 effectiveSessionId = nextSessionId;
                 onSessionId?.(nextSessionId);
@@ -234,9 +233,7 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
           const finalContent = typer.finish(aiMessageId);
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.id === aiMessageId
-                ? { ...msg, content: finalContent, isStreaming: false }
-                : msg
+              msg.id === aiMessageId ? { ...msg, content: finalContent, isStreaming: false } : msg
             )
           );
 
@@ -260,7 +257,10 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
           );
         } else {
           typer.finish(aiMessageId);
+          // 屏幕阅读器公告（loop-422/J1）：生成完成对辅助技术可见
+          announce("回复生成完成");
           const errorMessage = error instanceof Error ? error.message : "发送失败";
+          announce("回复生成失败");
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === aiMessageId
@@ -283,101 +283,105 @@ export function useChat({ userId, agentId, sessionId, setHasUnsavedChanges, onSe
   }, []);
 
   // 加载历史对话
-  const loadConversation = useCallback((historyItems: Array<{ question: string; answer: string }>) => {
-    const loadedMessages = historyItemsToMessages(historyItems);
-    setMessages(loadedMessages);
-  }, []);
+  const loadConversation = useCallback(
+    (historyItems: Array<{ question: string; answer: string }>) => {
+      const loadedMessages = historyItemsToMessages(historyItems);
+      setMessages(loadedMessages);
+    },
+    []
+  );
 
   // 发送 AIOps 分析请求
-  const sendAiOps = useCallback(async (aiOpsAgentId: string) => {
-    const effectiveAgentId = aiOpsAgentId || agentId || "200002";
+  const sendAiOps = useCallback(
+    async (aiOpsAgentId: string) => {
+      const effectiveAgentId = aiOpsAgentId || agentId || "200002";
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: "请分析当前所有活动告警并生成运维报告",
-    };
-    setMessages((prev) => [...prev, userMessage]);
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        role: "user",
+        content: "请分析当前所有活动告警并生成运维报告",
+      };
+      setMessages((prev) => [...prev, userMessage]);
 
-    const aiMessageId = (Date.now() + 1).toString();
-    const aiMessage: Message = {
-      id: aiMessageId,
-      role: "assistant",
-      content: "",
-      isStreaming: true,
-    };
-    setMessages((prev) => [...prev, aiMessage]);
+      const aiMessageId = (Date.now() + 1).toString();
+      const aiMessage: Message = {
+        id: aiMessageId,
+        role: "assistant",
+        content: "",
+        isStreaming: true,
+      };
+      setMessages((prev) => [...prev, aiMessage]);
 
-    setIsStreaming(true);
-    typer.reset();
+      setIsStreaming(true);
+      typer.reset();
 
-    // 创建新的 AbortController
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
+      // 创建新的 AbortController
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
-    try {
-      await requestSSE(
-        "/api/v1/ai_ops",
-        {
-          agentId: effectiveAgentId,
-          userId,
-          alertDescription: "请分析当前所有活动告警并生成运维报告",
-        },
-        (chunk) => {
-          typer.append(chunk, aiMessageId);
-        },
-        abortController.signal
-      );
-
-      // 如果不是被取消的，立即显示全部剩余内容
-      if (!abortController.signal.aborted) {
-        const finalContent = typer.finish(aiMessageId);
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...msg, content: finalContent, isStreaming: false }
-              : msg
-          )
+      try {
+        await requestSSE(
+          "/api/v1/ai_ops",
+          {
+            agentId: effectiveAgentId,
+            userId,
+            alertDescription: "请分析当前所有活动告警并生成运维报告",
+          },
+          (chunk) => {
+            typer.append(chunk, aiMessageId);
+          },
+          abortController.signal
         );
 
-        const finalMessage: Message = {
-          id: aiMessageId,
-          role: "assistant",
-          content: finalContent,
-        };
-        onMessageComplete?.(finalMessage);
+        // 如果不是被取消的，立即显示全部剩余内容
+        if (!abortController.signal.aborted) {
+          const finalContent = typer.finish(aiMessageId);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId ? { ...msg, content: finalContent, isStreaming: false } : msg
+            )
+          );
 
-        return { question: "请分析当前所有活动告警并生成运维报告", answer: finalContent };
+          const finalMessage: Message = {
+            id: aiMessageId,
+            role: "assistant",
+            content: finalContent,
+          };
+          onMessageComplete?.(finalMessage);
+
+          return { question: "请分析当前所有活动告警并生成运维报告", answer: finalContent };
+        }
+        return null;
+      } catch (error) {
+        // 如果是取消操作，不显示错误
+        if (abortController.signal.aborted) {
+          const stoppedContent = typer.finish(aiMessageId);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: stoppedContent + "\n\n[已停止生成]", isStreaming: false }
+                : msg
+            )
+          );
+        } else {
+          typer.finish(aiMessageId);
+          const errorMessage = error instanceof Error ? error.message : "AIOps 分析失败";
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMessageId
+                ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
+                : msg
+            )
+          );
+        }
+        return null;
+      } finally {
+        setIsStreaming(false);
+        abortControllerRef.current = null;
       }
-      return null;
-    } catch (error) {
-      // 如果是取消操作，不显示错误
-      if (abortController.signal.aborted) {
-        const stoppedContent = typer.finish(aiMessageId);
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...msg, content: stoppedContent + "\n\n[已停止生成]", isStreaming: false }
-              : msg
-          )
-        );
-      } else {
-        typer.finish(aiMessageId);
-        const errorMessage = error instanceof Error ? error.message : "AIOps 分析失败";
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId
-              ? { ...msg, content: `错误: ${errorMessage}`, isStreaming: false }
-              : msg
-          )
-        );
-      }
-      return null;
-    } finally {
-      setIsStreaming(false);
-      abortControllerRef.current = null;
-    }
-  }, [userId, agentId, onMessageComplete, typer]);
+    },
+    [userId, agentId, onMessageComplete, typer]
+  );
 
   return {
     messages,
