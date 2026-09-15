@@ -22,7 +22,9 @@ const SUCCESS_CODE = "0000";
  * @returns 是否为后端不可用错误
  */
 export function isBackendUnavailable(message: string): boolean {
-  const keywords = ["Failed to fetch", "NetworkError", "Load failed", "CORS", "abort"];
+  // W48 裁决（loop-654）：fetch 超时=后端无响应，与 obs-web 口径统一标为不可用
+  // （原「超时=普通异常」口径与请求层 createTimeoutSignal 语义矛盾，见 654 REPORT）
+  const keywords = ["Failed to fetch", "NetworkError", "Load failed", "CORS", "abort", "超时"];
   return keywords.some((keyword) => message.includes(keyword));
 }
 
@@ -43,7 +45,10 @@ export function createTimeoutSignal(ms: number): AbortSignal {
 }
 
 /** 调用方 signal 与超时 signal 合并（AbortSignal.any 不可用时监听联动回退） */
-export function mergeSignals(timeoutSignal: AbortSignal, callerSignal?: AbortSignal | null): AbortSignal {
+export function mergeSignals(
+  timeoutSignal: AbortSignal,
+  callerSignal?: AbortSignal | null
+): AbortSignal {
   if (!callerSignal) {
     return timeoutSignal;
   }
@@ -108,10 +113,7 @@ type RequestOptions = RequestInit & { schema?: ZodType };
  * @returns 响应数据
  * @throws {ApiError} 请求失败或响应码非 "0000"
  */
-export async function requestJson<T>(
-  path: string,
-  options?: RequestOptions
-): Promise<T> {
+export async function requestJson<T>(path: string, options?: RequestOptions): Promise<T> {
   const { schema, ...init } = options ?? {};
   const url = `${API_BASE}${path}`;
   const defaultOptions: RequestInit = {
@@ -127,15 +129,15 @@ export async function requestJson<T>(
       ...defaultOptions,
       ...init,
       signal: mergeSignals(createTimeoutSignal(getTimeoutMs()), init.signal ?? null),
-      credentials: 'include'
+      credentials: "include",
     });
 
     if (response.status === 401) {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // 通知 AuthProvider 认证失效，由其统一处理跳转
-        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
       }
-      throw new ApiError('登录已过期，请重新登录', 'A0004', false, 401);
+      throw new ApiError("登录已过期，请重新登录", "A0004", false, 401);
     }
 
     // 非 2xx 响应，尝试解析错误信息
@@ -207,10 +209,10 @@ export function uploadFile<T>(
     xhr.addEventListener("load", () => {
       if (xhr.status === 401) {
         // 401 认证失效，触发全局事件
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("auth:unauthorized"));
         }
-        reject(new ApiError('登录已过期，请重新登录', 'A0004', false, 401));
+        reject(new ApiError("登录已过期，请重新登录", "A0004", false, 401));
         return;
       }
       if (xhr.status >= 200 && xhr.status < 300) {
@@ -286,9 +288,8 @@ export async function readSSEStream(
   onChunkOrOptions: ((text: string) => void) | ReadSSEOptions
 ): Promise<void> {
   // 兼容旧的回调方式和新的选项方式
-  const options: ReadSSEOptions = typeof onChunkOrOptions === 'function'
-    ? { onChunk: onChunkOrOptions }
-    : onChunkOrOptions;
+  const options: ReadSSEOptions =
+    typeof onChunkOrOptions === "function" ? { onChunk: onChunkOrOptions } : onChunkOrOptions;
 
   if (!response.body) {
     throw new ApiError("响应体为空");
@@ -407,8 +408,14 @@ export async function readSSEStream(
         try {
           const json = JSON.parse(buffer);
           const content =
-            json.data?.answer ?? json.data?.content ?? json.data?.message ??
-            json.data ?? json.answer ?? json.content ?? json.message ?? "";
+            json.data?.answer ??
+            json.data?.content ??
+            json.data?.message ??
+            json.data ??
+            json.answer ??
+            json.content ??
+            json.message ??
+            "";
           if (content) {
             options.onChunk(typeof content === "string" ? content : JSON.stringify(content));
           }
@@ -442,27 +449,32 @@ export async function requestSSE(
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify(body),
       signal,
     });
 
     if (response.status === 401) {
       // 401 认证失效，触发全局事件
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
       }
-      throw new ApiError('登录已过期，请重新登录', 'A0004', false, 401);
+      throw new ApiError("登录已过期，请重新登录", "A0004", false, 401);
     }
 
     if (!response.ok) {
-      throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, undefined, false, response.status);
+      throw new ApiError(
+        `HTTP ${response.status}: ${response.statusText}`,
+        undefined,
+        false,
+        response.status
+      );
     }
 
     await readSSEStream(response, onChunkOrOptions);
   } catch (error) {
     // 如果是用户主动取消，不抛出错误
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return;
     }
 

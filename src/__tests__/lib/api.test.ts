@@ -92,9 +92,7 @@ function createErrorResponse(status: number, body?: unknown): Response {
     ok: status >= 200 && status < 300,
     status,
     statusText: `HTTP ${status}`,
-    json: jest.fn().mockResolvedValue(
-      body || { code: "A0001", info: "请求失败", data: null }
-    ),
+    json: jest.fn().mockResolvedValue(body || { code: "A0001", info: "请求失败", data: null }),
     body: null,
   } as unknown as Response;
 }
@@ -140,6 +138,10 @@ describe("API 客户端单元测试", () => {
 
     it("应该识别包含 'CORS' 的错误消息", () => {
       expect(isBackendUnavailable("CORS policy error")).toBe(true);
+    });
+
+    it("应该识别包含 '超时' 的中文错误消息（W48：与 obs-web 裁决对齐）", () => {
+      expect(isBackendUnavailable("请求超时")).toBe(true);
     });
 
     it("应该在消息不包含任何关键词时返回 false", () => {
@@ -216,9 +218,7 @@ describe("API 客户端单元测试", () => {
         body: null,
       } as unknown as Response);
 
-      await expect(requestJson("/api/v1/user/info")).rejects.toThrow(
-        "登录已过期，请重新登录"
-      );
+      await expect(requestJson("/api/v1/user/info")).rejects.toThrow("登录已过期，请重新登录");
       expect(mockDispatchEvent).toHaveBeenCalledWith(expect.any(CustomEvent));
     });
 
@@ -243,9 +243,7 @@ describe("API 客户端单元测试", () => {
         body: null,
       } as unknown as Response);
 
-      await expect(requestJson("/api/v1/test")).rejects.toThrow(
-        "请求失败: HTTP 502"
-      );
+      await expect(requestJson("/api/v1/test")).rejects.toThrow("请求失败: HTTP 502");
     });
 
     it("应该在业务错误码非 0000 时抛出对应错误", async () => {
@@ -273,7 +271,8 @@ describe("API 客户端单元测试", () => {
     });
 
     it("应该在普通异常时不标记 isUnavailable", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("超时"));
+      // W48 裁决：「超时」归为不可用（对齐 obs-web），改用普通业务异常验证
+      mockFetch.mockRejectedValueOnce(new Error("business rule broken"));
 
       try {
         await requestJson("/api/v1/test");
@@ -299,20 +298,14 @@ describe("API 客户端单元测试", () => {
         data: { documentId: "doc-123" },
       });
 
-      const promise = uploadFile<{ documentId: string }>(
-        "/api/v1/document/upload",
-        formData
-      );
+      const promise = uploadFile<{ documentId: string }>("/api/v1/document/upload", formData);
 
       // 触发 load 事件
       mockXHRInstance._fire("load");
 
       const result = await promise;
       expect(result).toEqual({ documentId: "doc-123" });
-      expect(mockXHRInstance.open).toHaveBeenCalledWith(
-        "POST",
-        "/api/v1/document/upload"
-      );
+      expect(mockXHRInstance.open).toHaveBeenCalledWith("POST", "/api/v1/document/upload");
       expect(mockXHRInstance.withCredentials).toBe(true);
     });
 
@@ -409,10 +402,14 @@ describe("API 客户端单元测试", () => {
       const receivedChunks: string[] = [];
       const receivedSources: unknown[] = [];
 
-      await requestSSE("/api/v1/chat", { message: "test" }, {
-        onChunk: (text) => receivedChunks.push(text),
-        onSources: (sources) => receivedSources.push(sources),
-      });
+      await requestSSE(
+        "/api/v1/chat",
+        { message: "test" },
+        {
+          onChunk: (text) => receivedChunks.push(text),
+          onSources: (sources) => receivedSources.push(sources),
+        }
+      );
 
       expect(receivedChunks).toEqual(["回答内容"]);
       expect(receivedSources).toEqual([[{ documentId: "doc-1" }]]);
@@ -427,9 +424,9 @@ describe("API 客户端单元测试", () => {
         body: null,
       } as unknown as Response);
 
-      await expect(
-        requestSSE("/api/v1/chat", { message: "test" }, jest.fn())
-      ).rejects.toThrow("登录已过期，请重新登录");
+      await expect(requestSSE("/api/v1/chat", { message: "test" }, jest.fn())).rejects.toThrow(
+        "登录已过期，请重新登录"
+      );
     });
 
     it("应该在 HTTP 非 2xx 响应时抛出错误", async () => {
@@ -441,15 +438,13 @@ describe("API 客户端单元测试", () => {
         body: null,
       } as unknown as Response);
 
-      await expect(
-        requestSSE("/api/v1/chat", { message: "test" }, jest.fn())
-      ).rejects.toThrow("HTTP 500");
+      await expect(requestSSE("/api/v1/chat", { message: "test" }, jest.fn())).rejects.toThrow(
+        "HTTP 500"
+      );
     });
 
     it("应该在请求被取消时静默处理 AbortError", async () => {
-      mockFetch.mockRejectedValueOnce(
-        new DOMException("The operation was aborted", "AbortError")
-      );
+      mockFetch.mockRejectedValueOnce(new DOMException("The operation was aborted", "AbortError"));
 
       await expect(
         requestSSE("/api/v1/chat", { message: "test" }, jest.fn())
@@ -474,11 +469,7 @@ describe("API 客户端单元测试", () => {
   // ==================== readSSEStream ====================
   describe("readSSEStream", () => {
     it("应该解析 SSE 命名事件并正确分发", async () => {
-      const chunks = [
-        "event: sources\n",
-        'data: [{"source": "文档1"}]\n\n',
-        "data: 普通消息\n\n",
-      ];
+      const chunks = ["event: sources\n", 'data: [{"source": "文档1"}]\n\n', "data: 普通消息\n\n"];
       const response = createSSEResponse(chunks);
 
       const receivedChunks: string[] = [];
@@ -515,9 +506,7 @@ describe("API 客户端单元测试", () => {
     it("应该在响应体为空时抛出错误", async () => {
       const response = { body: null } as unknown as Response;
 
-      await expect(readSSEStream(response, jest.fn())).rejects.toThrow(
-        "响应体为空"
-      );
+      await expect(readSSEStream(response, jest.fn())).rejects.toThrow("响应体为空");
     });
 
     it("应该处理 JSON 格式的非 SSE 响应降级", async () => {
@@ -549,11 +538,7 @@ describe("API 客户端单元测试", () => {
     });
 
     it("应该处理多个连续的 SSE 事件", async () => {
-      const chunks = [
-        "data: 第一条\n\n",
-        "data: 第二条\n\n",
-        "data: 第三条\n\n",
-      ];
+      const chunks = ["data: 第一条\n\n", "data: 第二条\n\n", "data: 第三条\n\n"];
       mockFetch.mockResolvedValueOnce(createSSEResponse(chunks));
 
       const received: string[] = [];
@@ -575,14 +560,15 @@ describe("API 超时基线", () => {
   });
 
   function hangingFetch() {
-    return jest.fn().mockImplementation((_url: string, init?: RequestInit) =>
-      new Promise((_resolve, reject) => {
-        init?.signal?.addEventListener("abort", () => {
-          const e = new Error("The operation was aborted");
-          e.name = "AbortError";
-          reject(e);
-        });
-      })
+    return jest.fn().mockImplementation(
+      (_url: string, init?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            const e = new Error("The operation was aborted");
+            e.name = "AbortError";
+            reject(e);
+          });
+        })
     );
   }
 
