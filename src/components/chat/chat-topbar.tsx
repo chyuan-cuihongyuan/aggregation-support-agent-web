@@ -42,13 +42,15 @@ export function ChatTopbar({
   // 计算已启用插件数
   const pluginStats = pluginStatus
     ? {
-      enabled: Object.values(pluginStatus.builtIn || {}).filter((p) => p.enabled).length +
-        (pluginStatus.mcpServers || []).filter((s) => s.enabled).length +
-        (pluginStatus.customTools || []).filter((t) => t.enabled).length,
-      total: Object.keys(pluginStatus.builtIn || {}).length +
-        (pluginStatus.mcpServers || []).length +
-        (pluginStatus.customTools || []).length,
-    }
+        enabled:
+          Object.values(pluginStatus.builtIn || {}).filter((p) => p.enabled).length +
+          (pluginStatus.mcpServers || []).filter((s) => s.enabled).length +
+          (pluginStatus.customTools || []).filter((t) => t.enabled).length,
+        total:
+          Object.keys(pluginStatus.builtIn || {}).length +
+          (pluginStatus.mcpServers || []).length +
+          (pluginStatus.customTools || []).length,
+      }
     : { enabled: 0, total: 0 };
 
   return (
@@ -60,6 +62,7 @@ export function ChatTopbar({
           size="icon"
           className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)] lg:hidden"
           onClick={onMenuClick}
+          aria-label="打开菜单"
           title="打开菜单"
         >
           <Menu className="w-[18px] h-[18px]" />
@@ -72,7 +75,9 @@ export function ChatTopbar({
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
             </svg>
           </div>
-          <span className="text-sm font-bold text-[var(--text-primary)] hidden sm:inline">AgentHub</span>
+          <span className="text-sm font-bold text-[var(--text-primary)] hidden sm:inline">
+            AgentHub
+          </span>
         </div>
 
         {/* 智能体选择器 */}
@@ -98,8 +103,11 @@ export function ChatTopbar({
               {Array.from({ length: Math.min(pluginStats.total, 5) }).map((_, i) => (
                 <span
                   key={i}
-                  className={`w-[6px] h-[6px] rounded-full ${i < pluginStats.enabled ? "bg-[var(--status-success)]" : "bg-[var(--text-muted)]"
-                    }`}
+                  className={`w-[6px] h-[6px] rounded-full ${
+                    i < pluginStats.enabled
+                      ? "bg-[var(--status-success)]"
+                      : "bg-[var(--text-muted)]"
+                  }`}
                 />
               ))}
             </div>
@@ -115,6 +123,7 @@ export function ChatTopbar({
           size="icon"
           className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)]"
           onClick={() => router.push("/knowledge")}
+          aria-label="知识库"
           title="知识库"
         >
           <BookOpen className="w-[18px] h-[18px]" />
@@ -125,6 +134,7 @@ export function ChatTopbar({
           size="icon"
           className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)]"
           onClick={onAiOpsClick}
+          aria-label="AIOps 分析"
           title="AIOps 分析"
         >
           <Monitor className="w-[18px] h-[18px]" />

@@ -19,10 +19,30 @@ import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/state/loading-state";
 import { toast } from "sonner";
 import {
-  User, Lock, Settings as SettingsIcon, Layers, Wrench, Terminal,
-  Bell, Activity, FileText, ChevronLeft, Save, LogOut, KeyRound,
-  Server, Mail, ShieldCheck, Plug, Globe2, Code2, CircleCheck,
-  CircleOff, CircleDot, Info, Monitor,
+  User,
+  Lock,
+  Settings as SettingsIcon,
+  Layers,
+  Wrench,
+  Terminal,
+  Bell,
+  Activity,
+  FileText,
+  ChevronLeft,
+  Save,
+  LogOut,
+  KeyRound,
+  Server,
+  Mail,
+  ShieldCheck,
+  Plug,
+  Globe2,
+  Code2,
+  CircleCheck,
+  CircleOff,
+  CircleDot,
+  Info,
+  Monitor,
 } from "lucide-react";
 import {
   loadAppSettings,
@@ -36,7 +56,16 @@ import {
 // 禁止 build 时静态预渲染：SSR 时无 cookie/user 会导致 router.push 被缓存为 307
 export const dynamic = "force-dynamic";
 
-type NavKey = "profile" | "security" | "general" | "ai-config" | "plugins" | "ssh" | "notifications" | "aiops" | "about";
+type NavKey =
+  | "profile"
+  | "security"
+  | "general"
+  | "ai-config"
+  | "plugins"
+  | "ssh"
+  | "notifications"
+  | "aiops"
+  | "about";
 
 const NAV_GROUPS = [
   {
@@ -64,9 +93,7 @@ const NAV_GROUPS = [
   },
   {
     label: "系统",
-    items: [
-      { key: "about" as NavKey, label: "关于平台", icon: FileText },
-    ],
+    items: [{ key: "about" as NavKey, label: "关于平台", icon: FileText }],
   },
 ];
 
@@ -186,7 +213,13 @@ export default function SettingsPage() {
       {/* 顶栏 */}
       <header className="h-14 border-b border-[var(--border-default)] dark:border-[#2a2a3a] bg-[var(--surface-main)] flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/chat")} className="h-8 w-8 text-[var(--text-secondary)]">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="返回对话"
+            onClick={() => router.push("/chat")}
+            className="h-8 w-8 text-[var(--text-secondary)]"
+          >
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <span className="text-sm font-bold text-[var(--text-primary)]">设置</span>
@@ -194,7 +227,10 @@ export default function SettingsPage() {
         <Button
           variant="outline"
           className="h-8 text-[13px] gap-2 border-[var(--border-default)] dark:border-[#2a2a3a] text-[var(--text-secondary)]"
-          onClick={async () => { await logout(); router.push("/login"); }}
+          onClick={async () => {
+            await logout();
+            router.push("/login");
+          }}
         >
           <LogOut className="w-3.5 h-3.5" />
           退出登录
@@ -206,7 +242,9 @@ export default function SettingsPage() {
         <nav className="w-[240px] bg-[var(--surface-main)] border-r border-[var(--border-default)] dark:border-[#2a2a3a] p-3 overflow-y-auto shrink-0">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
-              <div className="px-3 py-3 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">{group.label}</div>
+              <div className="px-3 py-3 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+                {group.label}
+              </div>
               {group.items.map((item) => (
                 <div
                   key={item.key}
@@ -230,7 +268,9 @@ export default function SettingsPage() {
           {activeNav === "profile" && (
             <>
               <h1 className="text-[24px] font-bold text-[var(--text-primary)] mb-1">个人资料</h1>
-              <p className="text-[14px] text-[var(--text-secondary)] mb-8">管理你的账户信息和个人偏好</p>
+              <p className="text-[14px] text-[var(--text-secondary)] mb-8">
+                管理你的账户信息和个人偏好
+              </p>
 
               <div className="bg-[var(--surface-main)] border border-[var(--border-default)] dark:border-[#2a2a3a] rounded-xl overflow-hidden mb-5">
                 <div className="flex items-center gap-4 p-5 border-b border-[var(--border-default)] dark:border-[#2a2a3a]">
@@ -238,18 +278,42 @@ export default function SettingsPage() {
                     {user.username?.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="text-[18px] font-bold text-[var(--text-primary)]">{user.nickname || user.username}</div>
-                    <div className="text-[13px] text-[var(--text-secondary)]">系统管理员 · {user.email || `${user.username}@example.com`}</div>
+                    <div className="text-[18px] font-bold text-[var(--text-primary)]">
+                      {user.nickname || user.username}
+                    </div>
+                    <div className="text-[13px] text-[var(--text-secondary)]">
+                      系统管理员 · {user.email || `${user.username}@example.com`}
+                    </div>
                   </div>
                 </div>
                 {[
-                  { label: "用户名", desc: "用于登录的账号名称", value: user.username, disabled: true },
-                  { label: "显示名称", desc: "在界面上显示的名称", value: formData.nickname, field: "nickname" as const },
-                  { label: "邮箱地址", desc: "用于接收通知", value: formData.email, field: "email" as const },
+                  {
+                    label: "用户名",
+                    desc: "用于登录的账号名称",
+                    value: user.username,
+                    disabled: true,
+                  },
+                  {
+                    label: "显示名称",
+                    desc: "在界面上显示的名称",
+                    value: formData.nickname,
+                    field: "nickname" as const,
+                  },
+                  {
+                    label: "邮箱地址",
+                    desc: "用于接收通知",
+                    value: formData.email,
+                    field: "email" as const,
+                  },
                 ].map((field) => (
-                  <div key={field.label} className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)] dark:border-[#2a2a3a] last:border-b-0">
+                  <div
+                    key={field.label}
+                    className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-default)] dark:border-[#2a2a3a] last:border-b-0"
+                  >
                     <div>
-                      <div className="text-[14px] font-medium text-[var(--text-primary)]">{field.label}</div>
+                      <div className="text-[14px] font-medium text-[var(--text-primary)]">
+                        {field.label}
+                      </div>
                       <div className="text-[12px] text-[var(--text-muted)]">{field.desc}</div>
                     </div>
                     <Input
@@ -257,7 +321,7 @@ export default function SettingsPage() {
                       disabled={field.disabled}
                       onChange={(e) => {
                         if (field.field) {
-                          setFormData(prev => ({ ...prev, [field.field!]: e.target.value }));
+                          setFormData((prev) => ({ ...prev, [field.field!]: e.target.value }));
                         }
                       }}
                       className="h-9 min-w-[200px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
@@ -444,7 +508,11 @@ function GeneralSection({
           label="主题模式"
           desc="选择界面主题"
         >
-          <select value={theme} onChange={(e) => onThemeChange(e.target.value)} className={selectClassName}>
+          <select
+            value={theme}
+            onChange={(e) => onThemeChange(e.target.value)}
+            className={selectClassName}
+          >
             <option value="system">跟随系统</option>
             <option value="light">浅色模式</option>
             <option value="dark">深色模式</option>
@@ -469,14 +537,20 @@ function GeneralSection({
           label="紧凑模式"
           desc="减少页面留白以提升信息密度"
         >
-          <Switch checked={settings.compactMode} onCheckedChange={(checked) => onChange({ compactMode: checked })} />
+          <Switch
+            checked={settings.compactMode}
+            onCheckedChange={(checked) => onChange({ compactMode: checked })}
+          />
         </SettingRow>
         <SettingRow
           icon={<FileText className="w-4 h-4" />}
           label="自动保存草稿"
           desc="保留未发送输入内容"
         >
-          <Switch checked={settings.autoSaveDraft} onCheckedChange={(checked) => onChange({ autoSaveDraft: checked })} />
+          <Switch
+            checked={settings.autoSaveDraft}
+            onCheckedChange={(checked) => onChange({ autoSaveDraft: checked })}
+          />
         </SettingRow>
       </SettingsPanel>
       <SaveSettingsButton onSave={onSave} />
@@ -514,14 +588,20 @@ function SecuritySection({
           label="登录提醒"
           desc="新设备登录后发送提醒"
         >
-          <Switch checked={settings.loginNotification} onCheckedChange={(checked) => onChange({ loginNotification: checked })} />
+          <Switch
+            checked={settings.loginNotification}
+            onCheckedChange={(checked) => onChange({ loginNotification: checked })}
+          />
         </SettingRow>
         <SettingRow
           icon={<KeyRound className="w-4 h-4" />}
           label="强密码策略"
           desc="注册和改密时校验复杂度"
         >
-          <Switch checked={settings.requireStrongPassword} onCheckedChange={(checked) => onChange({ requireStrongPassword: checked })} />
+          <Switch
+            checked={settings.requireStrongPassword}
+            onCheckedChange={(checked) => onChange({ requireStrongPassword: checked })}
+          />
         </SettingRow>
         <SettingRow
           icon={<Server className="w-4 h-4" />}
@@ -608,23 +688,64 @@ function SshSection({
     <>
       <SectionHeader title="SSH 连接" description="管理远程执行连接参数" />
       <SettingsPanel>
-        <SettingRow icon={<Server className="w-4 h-4" />} label="主机地址" desc="目标服务器 IP 或域名">
-          <Input value={settings.host} onChange={(e) => onChange({ host: e.target.value })} className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]" />
+        <SettingRow
+          icon={<Server className="w-4 h-4" />}
+          label="主机地址"
+          desc="目标服务器 IP 或域名"
+        >
+          <Input
+            value={settings.host}
+            onChange={(e) => onChange({ host: e.target.value })}
+            className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
+          />
         </SettingRow>
         <SettingRow icon={<Terminal className="w-4 h-4" />} label="端口" desc="SSH 服务端口">
-          <NumberInput value={settings.port} min={1} max={65535} onChange={(value) => onChange({ port: value })} />
+          <NumberInput
+            value={settings.port}
+            min={1}
+            max={65535}
+            onChange={(value) => onChange({ port: value })}
+          />
         </SettingRow>
         <SettingRow icon={<User className="w-4 h-4" />} label="用户名" desc="远程登录账号">
-          <Input value={settings.username} onChange={(e) => onChange({ username: e.target.value })} className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]" />
+          <Input
+            value={settings.username}
+            onChange={(e) => onChange({ username: e.target.value })}
+            className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
+          />
         </SettingRow>
-        <SettingRow icon={<KeyRound className="w-4 h-4" />} label="密钥别名" desc="引用已托管的密钥名称">
-          <Input value={settings.privateKeyAlias} onChange={(e) => onChange({ privateKeyAlias: e.target.value })} className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]" />
+        <SettingRow
+          icon={<KeyRound className="w-4 h-4" />}
+          label="密钥别名"
+          desc="引用已托管的密钥名称"
+        >
+          <Input
+            value={settings.privateKeyAlias}
+            onChange={(e) => onChange({ privateKeyAlias: e.target.value })}
+            className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
+          />
         </SettingRow>
-        <SettingRow icon={<Activity className="w-4 h-4" />} label="连接超时" desc="建立连接的最大等待秒数">
-          <NumberInput value={settings.connectTimeoutSeconds} min={5} max={120} onChange={(value) => onChange({ connectTimeoutSeconds: value })} />
+        <SettingRow
+          icon={<Activity className="w-4 h-4" />}
+          label="连接超时"
+          desc="建立连接的最大等待秒数"
+        >
+          <NumberInput
+            value={settings.connectTimeoutSeconds}
+            min={5}
+            max={120}
+            onChange={(value) => onChange({ connectTimeoutSeconds: value })}
+          />
         </SettingRow>
-        <SettingRow icon={<Globe2 className="w-4 h-4" />} label="启用跳板隧道" desc="通过网关代理连接目标主机">
-          <Switch checked={settings.enableTunnel} onCheckedChange={(checked) => onChange({ enableTunnel: checked })} />
+        <SettingRow
+          icon={<Globe2 className="w-4 h-4" />}
+          label="启用跳板隧道"
+          desc="通过网关代理连接目标主机"
+        >
+          <Switch
+            checked={settings.enableTunnel}
+            onCheckedChange={(checked) => onChange({ enableTunnel: checked })}
+          />
         </SettingRow>
       </SettingsPanel>
       <SaveSettingsButton onSave={onSave} />
@@ -645,23 +766,50 @@ function NotificationsSection({
     <>
       <SectionHeader title="通知设置" description="配置系统消息和告警通知方式" />
       <SettingsPanel>
-        <SettingRow icon={<Mail className="w-4 h-4" />} label="邮件通知" desc="发送关键事件到账号邮箱">
-          <Switch checked={settings.email} onCheckedChange={(checked) => onChange({ email: checked })} />
+        <SettingRow
+          icon={<Mail className="w-4 h-4" />}
+          label="邮件通知"
+          desc="发送关键事件到账号邮箱"
+        >
+          <Switch
+            checked={settings.email}
+            onCheckedChange={(checked) => onChange({ email: checked })}
+          />
         </SettingRow>
-        <SettingRow icon={<Monitor className="w-4 h-4" />} label="浏览器通知" desc="在当前设备显示系统通知">
-          <Switch checked={settings.browser} onCheckedChange={(checked) => onChange({ browser: checked })} />
+        <SettingRow
+          icon={<Monitor className="w-4 h-4" />}
+          label="浏览器通知"
+          desc="在当前设备显示系统通知"
+        >
+          <Switch
+            checked={settings.browser}
+            onCheckedChange={(checked) => onChange({ browser: checked })}
+          />
         </SettingRow>
-        <SettingRow icon={<FileText className="w-4 h-4" />} label="每日摘要" desc="每日汇总运行和告警情况">
-          <Switch checked={settings.dailyDigest} onCheckedChange={(checked) => onChange({ dailyDigest: checked })} />
+        <SettingRow
+          icon={<FileText className="w-4 h-4" />}
+          label="每日摘要"
+          desc="每日汇总运行和告警情况"
+        >
+          <Switch
+            checked={settings.dailyDigest}
+            onCheckedChange={(checked) => onChange({ dailyDigest: checked })}
+          />
         </SettingRow>
-        <SettingRow icon={<Bell className="w-4 h-4" />} label="最低通知级别" desc="低于该级别的事件不发送通知">
+        <SettingRow
+          icon={<Bell className="w-4 h-4" />}
+          label="最低通知级别"
+          desc="低于该级别的事件不发送通知"
+        >
           <select
             value={settings.minSeverity}
             onChange={(e) => onChange({ minSeverity: e.target.value as SeverityLevel })}
             className={selectClassName}
           >
             {(["info", "warning", "critical"] as SeverityLevel[]).map((level) => (
-              <option key={level} value={level}>{severityLabel(level)}</option>
+              <option key={level} value={level}>
+                {severityLabel(level)}
+              </option>
             ))}
           </select>
         </SettingRow>
@@ -684,21 +832,38 @@ function AiopsSection({
     <>
       <SectionHeader title="AIOps 告警" description="配置告警分析和报告输出" />
       <SettingsPanel>
-        <SettingRow icon={<Activity className="w-4 h-4" />} label="自动分析" desc="告警进入后自动触发根因分析">
-          <Switch checked={settings.autoAnalyze} onCheckedChange={(checked) => onChange({ autoAnalyze: checked })} />
+        <SettingRow
+          icon={<Activity className="w-4 h-4" />}
+          label="自动分析"
+          desc="告警进入后自动触发根因分析"
+        >
+          <Switch
+            checked={settings.autoAnalyze}
+            onCheckedChange={(checked) => onChange({ autoAnalyze: checked })}
+          />
         </SettingRow>
-        <SettingRow icon={<Bell className="w-4 h-4" />} label="分析阈值" desc="达到该级别后进入分析队列">
+        <SettingRow
+          icon={<Bell className="w-4 h-4" />}
+          label="分析阈值"
+          desc="达到该级别后进入分析队列"
+        >
           <select
             value={settings.severityThreshold}
             onChange={(e) => onChange({ severityThreshold: e.target.value as SeverityLevel })}
             className={selectClassName}
           >
             {(["info", "warning", "critical"] as SeverityLevel[]).map((level) => (
-              <option key={level} value={level}>{severityLabel(level)}</option>
+              <option key={level} value={level}>
+                {severityLabel(level)}
+              </option>
             ))}
           </select>
         </SettingRow>
-        <SettingRow icon={<FileText className="w-4 h-4" />} label="报告周期" desc="自动生成运维报告的频率">
+        <SettingRow
+          icon={<FileText className="w-4 h-4" />}
+          label="报告周期"
+          desc="自动生成运维报告的频率"
+        >
           <select
             value={settings.reportSchedule}
             onChange={(e) => onChange({ reportSchedule: e.target.value })}
@@ -709,8 +874,16 @@ function AiopsSection({
             <option value="weekly">每周</option>
           </select>
         </SettingRow>
-        <SettingRow icon={<Globe2 className="w-4 h-4" />} label="Webhook 地址" desc="向外部系统推送分析结果">
-          <Input value={settings.webhookUrl} onChange={(e) => onChange({ webhookUrl: e.target.value })} className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]" />
+        <SettingRow
+          icon={<Globe2 className="w-4 h-4" />}
+          label="Webhook 地址"
+          desc="向外部系统推送分析结果"
+        >
+          <Input
+            value={settings.webhookUrl}
+            onChange={(e) => onChange({ webhookUrl: e.target.value })}
+            className="h-9 w-full sm:w-[260px] bg-[var(--surface-card)] dark:bg-[#22222e] border-[var(--border-default)] dark:border-[#2a2a3a] rounded-lg text-[13px]"
+          />
         </SettingRow>
       </SettingsPanel>
       <SaveSettingsButton onSave={onSave} />
@@ -742,7 +915,13 @@ function PluginsSection() {
               enabled={enabled}
               available={available}
               statusText="内置插件"
-              action={<Switch checked={plugin.enabled} disabled={!available} onCheckedChange={() => togglePlugin(plugin.id)} />}
+              action={
+                <Switch
+                  checked={plugin.enabled}
+                  disabled={!available}
+                  onCheckedChange={() => togglePlugin(plugin.id)}
+                />
+              }
             />
           );
         })}
@@ -765,7 +944,13 @@ function PluginsSection() {
             key={tool.id}
             icon={<Code2 className="w-4 h-4" />}
             name={tool.name}
-            description={tool.description || tool.config.apiUrl || tool.config.webhookUrl || tool.config.scriptPath || "自定义工具"}
+            description={
+              tool.description ||
+              tool.config.apiUrl ||
+              tool.config.webhookUrl ||
+              tool.config.scriptPath ||
+              "自定义工具"
+            }
             enabled={tool.enabled}
             available={tool.available}
             statusText={tool.toolType.toUpperCase()}
@@ -799,9 +984,22 @@ function PluginRow({
   statusText: string;
   action?: ReactNode;
 }) {
-  const StatusIcon = !available ? CircleOff : connected === false ? CircleDot : enabled ? CircleCheck : CircleOff;
-  const statusLabel = !available ? "不可用" : connected === false ? "未连接" : enabled ? "已启用" : "未启用";
-  const statusClass = !available || !enabled ? "text-[var(--text-muted)]" : "text-[var(--status-success)]";
+  const StatusIcon = !available
+    ? CircleOff
+    : connected === false
+      ? CircleDot
+      : enabled
+        ? CircleCheck
+        : CircleOff;
+  const statusLabel = !available
+    ? "不可用"
+    : connected === false
+      ? "未连接"
+      : enabled
+        ? "已启用"
+        : "未启用";
+  const statusClass =
+    !available || !enabled ? "text-[var(--text-muted)]" : "text-[var(--status-success)]";
 
   return (
     <div className="flex flex-col gap-3 px-5 py-3.5 border-b border-[var(--border-default)] dark:border-[#2a2a3a] last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
@@ -810,12 +1008,16 @@ function PluginRow({
           {icon}
         </div>
         <div className="min-w-0">
-          <div className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{name}</div>
+          <div className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
+            {name}
+          </div>
           <div className="text-[11px] text-[var(--text-muted)] truncate">{description}</div>
         </div>
       </div>
       <div className="flex items-center gap-3 justify-between sm:justify-end">
-        <Badge variant="outline" className="h-6 text-[11px]">{statusText}</Badge>
+        <Badge variant="outline" className="h-6 text-[11px]">
+          {statusText}
+        </Badge>
         <span className={`inline-flex items-center gap-1.5 text-[12px] ${statusClass}`}>
           <StatusIcon className="w-3.5 h-3.5" />
           {statusLabel}
@@ -832,12 +1034,18 @@ function AboutSection() {
       <SectionHeader title="关于平台" description="查看当前前端应用和运行环境" />
       <SettingsPanel>
         <SettingRow icon={<Info className="w-4 h-4" />} label="应用名称" desc="当前运行的前端项目">
-          <span className="text-[13px] text-[var(--text-primary)]">aggregation-support-agent-web</span>
+          <span className="text-[13px] text-[var(--text-primary)]">
+            aggregation-support-agent-web
+          </span>
         </SettingRow>
         <SettingRow icon={<FileText className="w-4 h-4" />} label="版本" desc="前端包版本">
           <span className="text-[13px] text-[var(--text-primary)]">0.1.0</span>
         </SettingRow>
-        <SettingRow icon={<Server className="w-4 h-4" />} label="运行模式" desc="Next.js 客户端运行环境">
+        <SettingRow
+          icon={<Server className="w-4 h-4" />}
+          label="运行模式"
+          desc="Next.js 客户端运行环境"
+        >
           <span className="text-[13px] text-[var(--text-primary)]">{process.env.NODE_ENV}</span>
         </SettingRow>
       </SettingsPanel>

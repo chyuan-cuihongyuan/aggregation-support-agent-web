@@ -24,7 +24,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" disabled>
+      <Button variant="ghost" size="icon" disabled aria-label="切换主题">
         <Sun className="h-5 w-5" />
       </Button>
     );
@@ -35,14 +35,11 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      aria-label={theme === "dark" ? "切换到浅色模式" : "切换到深色模式"}
       title={theme === "dark" ? "切换到浅色模式" : "切换到深色模式"}
       className="h-9 w-9 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-card)] border border-[var(--chat-border)]"
     >
-      {theme === "dark" ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
+      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
       <span className="sr-only">切换主题</span>
     </Button>
   );

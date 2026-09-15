@@ -43,14 +43,22 @@ export function Topbar({
     <header className="h-14 border-b border-white/[0.1] bg-[#0b1022]/76 backdrop-blur-[14px] flex items-center justify-between px-4 lg:px-5">
       {/* 左侧：品牌和菜单按钮 */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden text-white/70 hover:text-white hover:bg-white/10">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="打开菜单"
+          onClick={onMenuClick}
+          className="lg:hidden text-white/70 hover:text-white hover:bg-white/10"
+        >
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-[12px] bg-gradient-to-br from-[#62f6c7]/90 to-[#5aa9ff]/90 flex items-center justify-center font-extrabold text-[#070a12] text-[13px]">
             AI
           </div>
-          <span className="text-[13px] font-bold text-white/90 hidden sm:inline-block">AI 智能体对话</span>
+          <span className="text-[13px] font-bold text-white/90 hidden sm:inline-block">
+            AI 智能体对话
+          </span>
         </div>
         <Select value={selectedAgentId} onValueChange={onAgentChange}>
           <SelectTrigger className="w-[160px] ml-3 bg-black/20 border-white/[0.14] rounded-[10px] text-xs text-white/70 h-9">
@@ -69,8 +77,12 @@ export function Topbar({
       {/* 右侧：操作按钮 */}
       <div className="flex items-center gap-2.5">
         {user?.role === "admin" && (
-          <Button variant="outline" size="sm" onClick={() => router.push("/admin/users")}
-            className="border-white/[0.14] text-white/70 hover:bg-white/10 hover:text-white">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/admin/users")}
+            className="border-white/[0.14] text-white/70 hover:bg-white/10 hover:text-white"
+          >
             <Users className="w-4 h-4 mr-2" />
             用户管理
           </Button>

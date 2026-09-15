@@ -196,6 +196,7 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ""}
           <Button
             variant="ghost"
             size="icon"
+            aria-label="返回对话"
             onClick={() => router.push("/chat")}
             className="h-8 w-8 text-[#8888a0] hover:bg-[#22222e]"
           >
@@ -210,6 +211,7 @@ ${targetAlert.description ? `详细描述: ${targetAlert.description}` : ""}
             variant="ghost"
             size="icon"
             className="h-9 w-9 text-[#8888a0] hover:bg-[#22222e] border border-[#2a2a3a]"
+            aria-label="刷新"
             onClick={handleRefresh}
             disabled={isLoading}
           >

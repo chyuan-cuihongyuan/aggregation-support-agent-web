@@ -18,11 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AgentConfig } from "@/types/api";
-import {
-  APP_SETTINGS_CHANGED_EVENT,
-  loadAppSettings,
-  type SendMode,
-} from "@/lib/app-settings";
+import { APP_SETTINGS_CHANGED_EVENT, loadAppSettings, type SendMode } from "@/lib/app-settings";
 
 /** 输入模式 */
 export type InputMode = "chat" | "ssh" | "local" | "aiops";
@@ -114,16 +110,21 @@ export function ChatInput({
     if (isImeComposing(e)) {
       return;
     }
-    if ((e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    if (
+      (e.key === "ArrowUp" || e.key === "ArrowDown") &&
+      !e.shiftKey &&
+      !e.altKey &&
+      !e.ctrlKey &&
+      !e.metaKey
+    ) {
       const textarea = e.currentTarget;
       const isAtFirstLine = !input.slice(0, textarea.selectionStart).includes("\n");
       const isAtLastLine = !input.slice(textarea.selectionEnd).includes("\n");
 
       if (e.key === "ArrowUp" && isAtFirstLine && inputHistory.length > 0) {
         e.preventDefault();
-        const nextIndex = historyIndex === null
-          ? inputHistory.length - 1
-          : Math.max(0, historyIndex - 1);
+        const nextIndex =
+          historyIndex === null ? inputHistory.length - 1 : Math.max(0, historyIndex - 1);
         if (historyIndex === null) {
           draftInputRef.current = input;
         }
@@ -178,6 +179,7 @@ export function ChatInput({
           />
           {isStreaming ? (
             <Button
+              aria-label="停止生成"
               onClick={onStop}
               className="shrink-0 rounded-xl h-10 w-10 mr-2 mb-2 bg-[#ef4444] hover:bg-[#dc2626] text-white shadow-none"
               size="icon"
@@ -186,6 +188,7 @@ export function ChatInput({
             </Button>
           ) : (
             <Button
+              aria-label="发送消息"
               onClick={handleSend}
               disabled={disabled || !input.trim()}
               className="shrink-0 rounded-xl h-10 w-10 mr-2 mb-2 bg-[var(--brand-accent)] hover:bg-[var(--brand-accent-hover)] text-white shadow-none disabled:opacity-40"

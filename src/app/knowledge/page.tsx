@@ -332,6 +332,7 @@ export default function KnowledgePage() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="返回对话"
             onClick={() => router.push("/chat")}
             className="h-8 w-8 text-[var(--text-secondary)]"
           >
@@ -759,6 +760,7 @@ export default function KnowledgePage() {
                     <button
                       key={icon}
                       type="button"
+                      aria-label={`选择图标 ${icon}`}
                       onClick={() => setNewKbIcon(icon)}
                       className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg border transition-colors ${
                         newKbIcon === icon

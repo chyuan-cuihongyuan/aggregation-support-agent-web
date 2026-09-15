@@ -49,11 +49,7 @@ export function DocumentList({ documents, onDelete }: DocumentListProps) {
   };
 
   if (documents.length === 0) {
-    return (
-      <div className="text-center text-sm text-muted-foreground py-8">
-        暂无文档
-      </div>
-    );
+    return <div className="text-center text-sm text-muted-foreground py-8">暂无文档</div>;
   }
 
   return (
@@ -86,6 +82,7 @@ export function DocumentList({ documents, onDelete }: DocumentListProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="删除文档"
                 onClick={() => onDelete(doc.documentId)}
                 className="h-8 w-8 text-destructive hover:text-destructive"
               >
